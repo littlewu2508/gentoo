@@ -21,3 +21,7 @@ RDEPEND="app-arch/cpio"
 src_configure() {
 	tc-export CC
 }
+
+src_install() {
+	emake DESTDIR="${ED}" install # need explicit install line #397835
+}
