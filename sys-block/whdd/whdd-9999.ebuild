@@ -32,3 +32,7 @@ src_compile() {
 	tc-export CC
 	default
 }
+
+src_install() {
+	emake DESTDIR="${ED}" install
+}

@@ -24,11 +24,15 @@ IUSE=""
 
 DEPEND="
 	dev-util/dialog:=
-	sys-libs/ncurses:=[unicode(+)]"
+	sys-libs/ncurses:0=[unicode]"
 RDEPEND="${DEPEND}
 	sys-apps/smartmontools"
 
 src_compile() {
 	tc-export CC
 	default
+}
+
+src_install() {
+	emake DESTDIR="${ED}" install
 }
