@@ -34,3 +34,7 @@ src_compile() {
 	emake \
 		CC=$(tc-getCC)
 }
+
+src_install() {
+	emake DESTDIR="${ED}" install
+}
