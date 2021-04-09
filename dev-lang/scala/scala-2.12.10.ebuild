@@ -60,7 +60,10 @@ DEPEND="${COMMON_DEP}
 		>=dev-java/sbt-${SBTV}:0
 		media-gfx/graphviz
 	)
-	>=virtual/jdk-1.8:*
+	binary? (
+		>=virtual/jdk-1.8:*
+		>=dev-java/sbt-${SBTV}:0
+	)
 	app-arch/xz-utils:0"
 
 RDEPEND="${COMMON_DEP}
