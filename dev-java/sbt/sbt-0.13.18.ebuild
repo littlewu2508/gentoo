@@ -20,7 +20,7 @@ SRC_URI="
 		http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/${L_PN}/${PV}/${L_PN}.jar -> ${L_P}.jar
 	)
 	binary? (
-		https://dev.gentoo.org/~gienah/files/dist/${P}-gentoo-binary.tar.xz
+		https://dev.gentoo.org/~gienah/distfiles/${P}-gentoo-binary.tar.xz
 	)"
 LICENSE="BSD"
 SLOT="0"
