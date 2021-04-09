@@ -63,6 +63,7 @@ DEPEND="${COMMON_DEP}
 	)
 	binary? (
 		>=virtual/jdk-1.8:*
+		>=dev-java/sbt-${SBTV}:0
 	)
 	app-arch/xz-utils:0"
 
