@@ -172,7 +172,7 @@ src_install() {
 	dodir /usr/bin
 	for b in $(find bin/ -type f ! -iname '*.bat'); do
 		local _name=$(basename "${b}")
-		dosym "${SCALADIR}/bin/${_name}" "/usr/bin/${_name}-${SV}"
+		dosym "${EPREFIX}/${SCALADIR}/bin/${_name}" "/usr/bin/${_name}-${SV}"
 	done
 	popd || die
 	java-pkg_dojar $(find "${WORKDIR}"/.ivy2/local -name \*.jar -print)
