@@ -131,7 +131,7 @@ src_prepare() {
 			gjl_package=sbt
 			gjl_jar="sbt-launch.jar"
 			gjl_java_args="-Dsbt.version=${SBT_PVR} -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -Duser.home="${WORKDIR}""
-			source /usr/share/java-config-2/launcher/launcher.bash
+			source ${EPREFIX}/usr/share/java-config-2/launcher/launcher.bash
 		EOF
 		chmod u+x "${S}/sbt" || die
 
@@ -173,7 +173,7 @@ src_install() {
 	dodir /usr/bin
 	for b in $(find bin/ -type f ! -iname '*.bat'); do
 		local _name=$(basename "${b}")
-		dosym "${SCALADIR}/bin/${_name}" "/usr/bin/${_name}-${SV}"
+		dosym "${EPREFIX}/${SCALADIR}/bin/${_name}" "/usr/bin/${_name}-${SV}"
 	done
 	popd || die
 	java-pkg_dojar $(find "${WORKDIR}"/.ivy2/local -name \*.jar -print)
