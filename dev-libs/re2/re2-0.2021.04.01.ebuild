@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit multilib-minimal toolchain-funcs
+inherit cmake
 
 # Different date format used upstream.
 RE2_VER=${PV#0.}
@@ -22,7 +22,7 @@ KEYWORDS="~alpha amd64 arm arm64 ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sparc x86"
 IUSE="icu"
 
 BDEPEND="icu? ( virtual/pkgconfig )"
-DEPEND="icu? ( dev-libs/icu:0=[${MULTILIB_USEDEP}] )"
+DEPEND="icu? ( dev-libs/icu:0 )"
 RDEPEND="${DEPEND}"
 
 S="${WORKDIR}/re2-${RE2_VER}"
@@ -31,22 +31,9 @@ DOCS=( AUTHORS CONTRIBUTORS README doc/syntax.txt )
 HTML_DOCS=( doc/syntax.html )
 
 src_prepare() {
-	default
 	grep -q "^SONAME=${SONAME}\$" Makefile || die "SONAME mismatch"
 	if use icu; then
 		sed -i -e 's:^# \(\(CC\|LD\)ICU=.*\):\1:' Makefile || die
 	fi
-	multilib_copy_sources
-}
-
-src_configure() {
-	tc-export AR CXX
-}
-
-multilib_src_compile() {
-	emake SONAME="${SONAME}" shared
-}
-
-multilib_src_install() {
-	emake SONAME="${SONAME}" DESTDIR="${D}" prefix="${EPREFIX}/usr" libdir="\$(exec_prefix)/$(get_libdir)" shared-install
+	cmake_src_prepare
 }
