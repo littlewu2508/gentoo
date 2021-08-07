@@ -17,9 +17,9 @@ SRC_URI="https://www.paraview.org/files/v${MAJOR_PV}/${MY_P}.tar.xz"
 LICENSE="paraview GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="boost cg doc examples ffmpeg mpi mysql nvcontrol openmp offscreen plugins python +qt5 +sqlite test tk +webengine"
+IUSE="boost cg doc examples ffmpeg mpi mysql nvcontrol openmp offscreen plugins python +qt5 +sqlite test tk +webengine debug"
 
-RESTRICT="mirror test"
+RESTRICT="mirror test strip debug? ( strip )"
 
 # "vtksqlite, needed by vtkIOSQL" and "vtkIOSQL, needed by vtkIOMySQL"
 REQUIRED_USE="
@@ -130,11 +130,18 @@ src_prepare() {
 }
 
 src_configure() {
+	if use debug; then
+		CFLAGS="-O0 -pipe -march=native -g -ggdb"
+		CXXFLAGS="${CFLAGS}"
+		CMAKE_BUILD_TYPE="Debug"
+	fi
 	local mycmakeargs=(
 		-DCMAKE_INSTALL_LIBDIR="${PVLIBDIR}"
 		-UBUILD_SHARED_LIBS
 		-DPARAVIEW_BUILD_SHARED_LIBS=ON
 		-DCMAKE_VERBOSE_MAKEFILE=ON
+		-DParaView_DEBUG_MODULE_ALL=$(usex debug ON OFF)
+		# -DParaView_DEBUG_PLUGINS_ALL=$(usex debug ON OFF)
 
 		# boost
 		-DVTK_MODULE_ENABLE_VTK_IOInfovis="$(usex boost YES NO)"
