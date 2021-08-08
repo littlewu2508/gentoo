@@ -107,8 +107,6 @@ python_prepare_all() {
 }
 
 python_compile() {
-	export MAKEOPTS=-j1 #660754
-
 	distutils-r1_python_compile ${NUMPY_FCONFIG}
 }
 
