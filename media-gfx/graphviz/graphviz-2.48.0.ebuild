@@ -186,9 +186,12 @@ src_prepare() {
 	use java && append-cppflags $(java-pkg_get-jni-cflags)
 
 	eautoreconf
+
+	grep -l '\-L/usr/lib' | xargs sed -i "s,-L/usr/lib,-L${EPREFIX}/usr/lib,g" || die
 }
 
 src_configure() {
+	export LT_SYS_LIBRARY_PATH=${EROOT}/usr/lib64
 	local myconf=(
 		--disable-static
 		--enable-ltdl
