@@ -106,6 +106,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-4.0.1-xdmf-cstring.patch
 	"${FILESDIR}"/${PN}-5.5.0-allow_custom_build_type.patch
 	"${FILESDIR}"/${PN}-5.9.0-gcc11-include.patch
+	"${FILESDIR}"/${PN}-5.8.1-find-xmlpatterns.patch
 )
 
 pkg_setup() {

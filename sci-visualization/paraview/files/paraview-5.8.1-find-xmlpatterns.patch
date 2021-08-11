@@ -26,7 +26,7 @@ index b0dea2b328..13b59cd744 100644
 +  if (NOT qt_xmlpatterns_executable)
 +    find_program(qt_xmlpatterns_executable
 +      NAMES xmlpatterns-qt5 xmlpatterns
-+      HINTS "${Qt5_DIR}/../../../bin"
++      HINTS "${Qt5_DIR}/../../qt5/bin"
 +            "${Qt5_DIR}/../../../libexec/qt5/bin"
 +      DOC   "Path to xmlpatterns")
 +  endif ()
