@@ -45,6 +45,7 @@ src_configure() {
 	local mycmakeargs=(
 		-Wno-dev
 		-DCMAKE_INSTALL_INCLUDEDIR="include/rocFFT/"
+		-DCMAKE_SKIP_RPATH=ON
 	)
 
 	cmake_src_configure
