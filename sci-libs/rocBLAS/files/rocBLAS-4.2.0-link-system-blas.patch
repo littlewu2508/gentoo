@@ -1,0 +1,24 @@
+diff --color -uprN orig/clients/benchmarks/CMakeLists.txt rocBLAS-rocm-4.2.0/clients/benchmarks/CMakeLists.txt
+--- orig/clients/benchmarks/CMakeLists.txt	2021-08-02 20:31:19.586373297 +0800
++++ rocBLAS-rocm-4.2.0/clients/benchmarks/CMakeLists.txt	2021-08-02 20:33:04.902373996 +0800
+@@ -49,7 +49,7 @@ target_include_directories( rocblas-benc
+     $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
+ )
+ 
+-target_link_libraries( rocblas-bench PRIVATE rocblas_fortran_client roc::rocblas lapack cblas )
++target_link_libraries( rocblas-bench PRIVATE rocblas_fortran_client roc::rocblas lapack cblas -lblas )
+ if(LINK_BLIS)
+   target_link_libraries( rocblas-bench PRIVATE ${BLIS_LIBRARY} )
+ endif()
+diff --color -uprN orig/clients/gtest/CMakeLists.txt rocBLAS-rocm-4.2.0/clients/gtest/CMakeLists.txt
+--- orig/clients/gtest/CMakeLists.txt	2021-08-02 20:31:19.590373297 +0800
++++ rocBLAS-rocm-4.2.0/clients/gtest/CMakeLists.txt	2021-08-02 20:34:02.346374377 +0800
+@@ -129,7 +129,7 @@ target_include_directories( rocblas-test
+     $<BUILD_INTERFACE:${BLIS_INCLUDE_DIR}>
+ )
+ 
+-target_link_libraries( rocblas-test PRIVATE rocblas_fortran_client roc::rocblas lapack cblas ${GTEST_LIBRARIES} )
++target_link_libraries( rocblas-test PRIVATE rocblas_fortran_client roc::rocblas lapack cblas -lblas ${GTEST_LIBRARIES} )
+ if(LINK_BLIS)
+   target_link_libraries( rocblas-test PRIVATE ${BLIS_LIBRARY} )
+ endif()

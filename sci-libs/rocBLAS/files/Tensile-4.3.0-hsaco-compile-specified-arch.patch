@@ -1,0 +1,62 @@
+diff --color -uprN orig/Tensile/TensileCreateLibrary.py Tensile-rocm-4.3.0/Tensile/TensileCreateLibrary.py
+--- orig/Tensile/TensileCreateLibrary.py	2021-08-18 16:50:27.987455571 +0800
++++ Tensile-rocm-4.3.0/Tensile/TensileCreateLibrary.py	2021-08-18 16:53:34.375456807 +0800
+@@ -136,19 +136,8 @@ def buildSourceCodeObjectFile(CxxCompile
+                globalParameters["AsmCaps"][arch]["SupportedSource"]
+ 
+     if (CxxCompiler == "hipcc"):
+-      archs = []
+-      cmdlineArchs = []
+-      for arch in globalParameters['SupportedISA']:
+-        if isSupported(arch):
+-          if (arch == (9,0,6) or arch == (9,0,8) or arch == (9,0,10)):
+-            if (arch == (9,0,10)):
+-              archs += [gfxName(arch) + '-xnack+']
+-              cmdlineArchs += [gfxName(arch) + ':xnack+']
+-            archs += [gfxName(arch) + '-xnack-']
+-            cmdlineArchs += [gfxName(arch) + ':xnack-']
+-          else:
+-            archs += [gfxName(arch)]
+-            cmdlineArchs += [gfxName(arch)]
++      archs = globalParameters["ArchitectureList"]
++      cmdlineArchs = globalParameters["ArchitectureList"]
+ 
+       archFlags = ['--offload-arch=' + arch for arch in cmdlineArchs]
+ 
+@@ -1050,15 +1039,7 @@ def buildObjectFileNames(solutionWriter,
+ 
+   # Source based kernels are built for all supported architectures
+   if (cxxCompiler == 'hipcc'):
+-    sourceArchs = []
+-    for arch in globalParameters['SupportedISA']:
+-      if isSupported(arch):
+-        if (arch == (9,0,6) or arch == (9,0,8) or arch == (9,0,10)):
+-          if (arch == (9,0,10)):
+-            sourceArchs += [gfxName(arch) + '-xnack+']
+-          sourceArchs += [gfxName(arch) + '-xnack-']
+-        else:
+-          sourceArchs += [gfxName(arch)]
++    sourceArchs = globalParameters["ArchitectureList"]
+   else:
+     raise RuntimeError("Unknown compiler %s" % cxxCompiler)
+ 
+@@ -1396,8 +1377,6 @@ def TensileCreateLibrary():
+   for key, value in args.global_parameters:
+     arguments[key] = value
+ 
+-  assignGlobalParameters(arguments)
+-
+   print1("# CodeObjectVersion from TensileCreateLibrary: %s" % arguments["CodeObjectVersion"])
+   print1("# CxxCompiler       from TensileCreateLibrary: %s" % CxxCompiler)
+   print1("# Architecture      from TensileCreateLibrary: %s" % arguments["Architecture"])
+@@ -1407,6 +1386,10 @@ def TensileCreateLibrary():
+     printExit("LogicPath %s doesn't exist" % logicPath)
+ 
+   archs = arguments["Architecture"].split(";")
++
++  arguments["ArchitectureList"] = archs
++  assignGlobalParameters(arguments)
++
+   logicArchs = set()
+   for arch in archs:
+     if arch in architectureMap:
