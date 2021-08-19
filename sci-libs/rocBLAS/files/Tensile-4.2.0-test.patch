@@ -1,0 +1,112 @@
+diff --color -uprN Tensile-rocm-4.2.0/build/lib/Tensile/TensileCreateLibrary.py orig/build/lib/Tensile/TensileCreateLibrary.py
+--- Tensile-rocm-4.2.0/build/lib/Tensile/TensileCreateLibrary.py	2021-08-14 20:56:10.000000000 +0800
++++ orig/build/lib/Tensile/TensileCreateLibrary.py	2021-08-14 10:46:38.653018221 +0800
+@@ -1297,15 +1297,13 @@ def TensileCreateLibrary():
+ 
+   print2("Arguments: %s" % sys.argv)
+   argParser = argparse.ArgumentParser()
+-  archParser = argparse.ArgumentParser()
+   argParser.add_argument("LogicPath",       help="Path to LibraryLogic.yaml files.")
+   argParser.add_argument("OutputPath",      help="Where to write library files?")
+   argParser.add_argument("RuntimeLanguage", help="Which runtime language?", choices=["OCL", "HIP", "HSA"])
+   argParser.add_argument("--cxx-compiler",           dest="CxxCompiler",       choices=["hipcc"],       action="store", default="hipcc")
+   argParser.add_argument("--cmake-cxx-compiler",     dest="CmakeCxxCompiler",  action="store")
+   argParser.add_argument("--code-object-version",    dest="CodeObjectVersion", choices=["V2", "V3"], action="store", default="V3")
+-  argParser.add_argument("--architecture",           dest="Architecture",      default="all")
+-  archParser.add_argument("--architecture",          dest="Architecture",      choices=["all", "gfx000", "gfx803", "gfx900", "gfx906:xnack-", "gfx908:xnack-"], action="store", default="all", nargs="+")
++  argParser.add_argument("--architecture",           dest="Architecture",      choices=["all", "gfx000", "gfx803", "gfx900", "gfx906:xnack-", "gfx908:xnack-"], action="store", default="all")
+   argParser.add_argument("--merge-files",            dest="MergeFiles",        action="store_true")
+   argParser.add_argument("--no-merge-files",         dest="MergeFiles",        action="store_false")
+   argParser.add_argument("--short-file-names",       dest="ShortNames",        action="store_true")
+@@ -1345,9 +1343,7 @@ def TensileCreateLibrary():
+   arguments = {}
+   arguments["RuntimeLanguage"] = args.RuntimeLanguage
+   arguments["CodeObjectVersion"] = args.CodeObjectVersion
+-  archargs = archParser.parse_args(["--architecture"] + args.Architecture.split(",")) # split each arch and test vadility
+-  arguments["Architecture"] = archargs.Architecture ## list of parsed architecture
+-  if "all" in arguments["Architecture"] : arguments["Architecture"] = ["all"]
++  arguments["Architecture"] = args.Architecture
+   arguments["CxxCompiler"] = args.CxxCompiler
+   if args.CmakeCxxCompiler:
+     os.environ["CMAKE_CXX_COMPILER"] = args.CmakeCxxCompiler
+@@ -1389,17 +1385,16 @@ def TensileCreateLibrary():
+   if not os.path.exists(logicPath):
+     printExit("LogicPath %s doesn't exist" % logicPath)
+ 
+-  arguments["ArchitectureName"] = []
+   for key in architectureMap:
+-    if key in arguments["Architecture"]:
+-      arguments["ArchitectureName"].append(architectureMap[key])
++    if arguments["Architecture"] == key:
++      arguments["Architecture"] = architectureMap[key]
+ 
+   # Recursive directory search
+   logicFiles = []
+   for root, dirs, files in os.walk(logicPath):
+     logicFiles += [os.path.join(root, f) for f in files
+                        if os.path.splitext(f)[1]==".yaml" \
+-                       and any([archname in os.path.splitext(f)[0] for archname in arguments["ArchitectureName"]])\
++                       and arguments["Architecture"] in os.path.splitext(f)[0] \
+                        or "hip" in os.path.splitext(f)[0] ]
+ 
+   print1("# LibraryLogicFiles:" % logicFiles)
+diff --color -uprN Tensile-rocm-4.2.0/Tensile/TensileCreateLibrary.py orig/Tensile/TensileCreateLibrary.py
+--- Tensile-rocm-4.2.0/Tensile/TensileCreateLibrary.py	2021-08-14 20:56:10.369260820 +0800
++++ orig/Tensile/TensileCreateLibrary.py	2021-08-14 10:46:38.637018221 +0800
+@@ -1011,6 +1011,7 @@ def buildObjectFileNames(solutionWriter,
+   sourceLibFiles = []
+   asmLibFiles = []
+ 
++  breakpoint()
+   sourceKernels = list([k for k in kernels if k['KernelLanguage'] == 'Source'])
+   asmKernels = list([k for k in kernels if k['KernelLanguage'] == 'Assembly'])
+ 
+@@ -1297,15 +1298,13 @@ def TensileCreateLibrary():
+ 
+   print2("Arguments: %s" % sys.argv)
+   argParser = argparse.ArgumentParser()
+-  archParser = argparse.ArgumentParser()
+   argParser.add_argument("LogicPath",       help="Path to LibraryLogic.yaml files.")
+   argParser.add_argument("OutputPath",      help="Where to write library files?")
+   argParser.add_argument("RuntimeLanguage", help="Which runtime language?", choices=["OCL", "HIP", "HSA"])
+   argParser.add_argument("--cxx-compiler",           dest="CxxCompiler",       choices=["hipcc"],       action="store", default="hipcc")
+   argParser.add_argument("--cmake-cxx-compiler",     dest="CmakeCxxCompiler",  action="store")
+   argParser.add_argument("--code-object-version",    dest="CodeObjectVersion", choices=["V2", "V3"], action="store", default="V3")
+-  argParser.add_argument("--architecture",           dest="Architecture",      default="all")
+-  archParser.add_argument("--architecture",          dest="Architecture",      choices=["all", "gfx000", "gfx803", "gfx900", "gfx906:xnack-", "gfx908:xnack-"], action="store", default="all", nargs="+")
++  argParser.add_argument("--architecture",           dest="Architecture",      choices=["all", "gfx000", "gfx803", "gfx900", "gfx906:xnack-", "gfx908:xnack-"], action="store", default="all")
+   argParser.add_argument("--merge-files",            dest="MergeFiles",        action="store_true")
+   argParser.add_argument("--no-merge-files",         dest="MergeFiles",        action="store_false")
+   argParser.add_argument("--short-file-names",       dest="ShortNames",        action="store_true")
+@@ -1345,9 +1344,7 @@ def TensileCreateLibrary():
+   arguments = {}
+   arguments["RuntimeLanguage"] = args.RuntimeLanguage
+   arguments["CodeObjectVersion"] = args.CodeObjectVersion
+-  archargs = archParser.parse_args(["--architecture"] + args.Architecture.split(",")) # split each arch and test vadility
+-  arguments["Architecture"] = archargs.Architecture ## list of parsed architecture
+-  if "all" in arguments["Architecture"] : arguments["Architecture"] = ["all"]
++  arguments["Architecture"] = args.Architecture
+   arguments["CxxCompiler"] = args.CxxCompiler
+   if args.CmakeCxxCompiler:
+     os.environ["CMAKE_CXX_COMPILER"] = args.CmakeCxxCompiler
+@@ -1389,17 +1386,16 @@ def TensileCreateLibrary():
+   if not os.path.exists(logicPath):
+     printExit("LogicPath %s doesn't exist" % logicPath)
+ 
+-  arguments["ArchitectureName"] = []
+   for key in architectureMap:
+-    if key in arguments["Architecture"]:
+-      arguments["ArchitectureName"].append(architectureMap[key])
++    if arguments["Architecture"] == key:
++      arguments["Architecture"] = architectureMap[key]
+ 
+   # Recursive directory search
+   logicFiles = []
+   for root, dirs, files in os.walk(logicPath):
+     logicFiles += [os.path.join(root, f) for f in files
+                        if os.path.splitext(f)[1]==".yaml" \
+-                       and any([archname in os.path.splitext(f)[0] for archname in arguments["ArchitectureName"]])\
++                       and arguments["Architecture"] in os.path.splitext(f)[0] \
+                        or "hip" in os.path.splitext(f)[0] ]
+ 
+   print1("# LibraryLogicFiles:" % logicFiles)

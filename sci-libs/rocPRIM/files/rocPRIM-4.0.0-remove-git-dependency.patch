@@ -1,0 +1,14 @@
+https://bugs.gentoo.org/772173
+
+--- orig/cmake/Dependencies.cmake
++++ rocPRIM-rocm-4.0.0/cmake/Dependencies.cmake
+@@ -38,9 +38,6 @@ else()
+ endif()
+ 
+ # GIT
+-find_package(Git REQUIRED)
+-if (NOT Git_FOUND)
+-  message(FATAL_ERROR "Please ensure Git is installed on the system")
+ endif()
+ 
+ # Test dependencies

@@ -1,6 +1,6 @@
 diff --color -uprN orig/Tensile/TensileCreateLibrary.py Tensile-rocm-4.3.0/Tensile/TensileCreateLibrary.py
---- orig/Tensile/TensileCreateLibrary.py	2021-08-18 16:50:27.987455571 +0800
-+++ Tensile-rocm-4.3.0/Tensile/TensileCreateLibrary.py	2021-08-18 16:53:34.375456807 +0800
+--- orig/Tensile/TensileCreateLibrary.py	2021-08-18 17:49:17.919478986 +0800
++++ Tensile-rocm-4.3.0/Tensile/TensileCreateLibrary.py	2021-08-18 18:15:21.931489361 +0800
 @@ -136,19 +136,8 @@ def buildSourceCodeObjectFile(CxxCompile
                 globalParameters["AsmCaps"][arch]["SupportedSource"]
  
@@ -18,8 +18,8 @@ diff --color -uprN orig/Tensile/TensileCreateLibrary.py Tensile-rocm-4.3.0/Tensi
 -          else:
 -            archs += [gfxName(arch)]
 -            cmdlineArchs += [gfxName(arch)]
-+      archs = globalParameters["ArchitectureList"]
-+      cmdlineArchs = globalParameters["ArchitectureList"]
++      archs = globalParameters["ArchitectureNames"]
++      cmdlineArchs = globalParameters["ArchitectureFlags"]
  
        archFlags = ['--offload-arch=' + arch for arch in cmdlineArchs]
  
@@ -36,7 +36,7 @@ diff --color -uprN orig/Tensile/TensileCreateLibrary.py Tensile-rocm-4.3.0/Tensi
 -          sourceArchs += [gfxName(arch) + '-xnack-']
 -        else:
 -          sourceArchs += [gfxName(arch)]
-+    sourceArchs = globalParameters["ArchitectureList"]
++    sourceArchs = globalParameters["ArchitectureNames"]
    else:
      raise RuntimeError("Unknown compiler %s" % cxxCompiler)
  
@@ -49,12 +49,18 @@ diff --color -uprN orig/Tensile/TensileCreateLibrary.py Tensile-rocm-4.3.0/Tensi
    print1("# CodeObjectVersion from TensileCreateLibrary: %s" % arguments["CodeObjectVersion"])
    print1("# CxxCompiler       from TensileCreateLibrary: %s" % CxxCompiler)
    print1("# Architecture      from TensileCreateLibrary: %s" % arguments["Architecture"])
-@@ -1407,6 +1386,10 @@ def TensileCreateLibrary():
+@@ -1406,7 +1385,15 @@ def TensileCreateLibrary():
+   if not os.path.exists(logicPath):
      printExit("LogicPath %s doesn't exist" % logicPath)
  
-   archs = arguments["Architecture"].split(";")
+-  archs = arguments["Architecture"].split(";")
++  if arguments["Architecture"] == "all" :
++    archs = list(set(architectureMap) - {'all', 'gfx906', 'gfx908', 'gfx90a', 'gfx906:xnack+', 'gfx908:xnack+', 'gfx90a:xnack-'})
++  else :
++    archs = arguments["Architecture"].split(";")
 +
-+  arguments["ArchitectureList"] = archs
++  arguments["ArchitectureFlags"] = archs
++  arguments["ArchitectureNames"] = [re.sub(':', '-', arch) for arch in archs]
 +  assignGlobalParameters(arguments)
 +
    logicArchs = set()

@@ -1,0 +1,15 @@
+workaround for cmake list of tensile_architecture in list issue
+--- a/Tensile/TensileCreateLibrary.py
++++ b/Tensile/TensileCreateLibrary.py
+@@ -1406,7 +1437,10 @@ def TensileCreateLibrary():
+   if not os.path.exists(logicPath):
+     printExit("LogicPath %s doesn't exist" % logicPath)
+ 
+-  archs = arguments["Architecture"].split(";")
++  if ";" in arguments["Architecture"]:
++    archs = arguments["Architecture"].split(";") # user arg list format
++  else:
++    archs = arguments["Architecture"].split("_") # workaround for cmake list in list issue
+   logicArchs = set()
+   for arch in archs:
+     if arch in architectureMap:

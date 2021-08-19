@@ -1,0 +1,18 @@
+diff --color -uprN Tensile-rocm-4.2.0/Tensile/TensileCreateLibrary.py orig/Tensile/TensileCreateLibrary.py
+--- Tensile-rocm-4.2.0/Tensile/TensileCreateLibrary.py	2021-03-20 01:15:14.000000000 +0800
++++ orig/Tensile/TensileCreateLibrary.py	2021-08-13 14:19:00.384529607 +0800
+@@ -1032,13 +1032,7 @@ def buildObjectFileNames(solutionWriter,
+ 
+   # Source based kernels are built for all supported architectures
+   if (cxxCompiler == 'hipcc'):
+-    sourceArchs = []
+-    for arch in globalParameters['SupportedISA']:
+-      if isSupported(arch):
+-        if (arch == (9,0,6) or arch == (9,0,8)):
+-          sourceArchs += ['gfx'+''.join(map(str,arch))+'-xnack-']
+-        else:
+-          sourceArchs += ['gfx'+''.join(map(str,arch))]
++    sourceArchs = args.Architecture
+   else:
+     raise RuntimeError("Unknown compiler %s" % cxxCompiler)
+ 

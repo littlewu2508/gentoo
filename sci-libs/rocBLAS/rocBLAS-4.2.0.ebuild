@@ -29,7 +29,6 @@ BDEPEND="
 DEPEND="
 	dev-util/hip:${SLOT}
 	test? ( virtual/blas )
-	test? ( dev-cpp/gtest )
 	benchmark? ( virtual/blas )
 "
 # stripped library is not working
@@ -44,15 +43,16 @@ S="${WORKDIR}"/${PN}-rocm-${PV}
 
 rocBLAS_V="0.1"
 
-PATCHES=("${FILESDIR}"/${PN}-4.2.0-fix-glibc-2.32-and-above.patch
+PATCHES=( "${FILESDIR}"/${PN}-4.2.0-fix-Ninja-build.patch
+	"${FILESDIR}"/${PN}-4.2.0-fix-glibc-2.32-and-above.patch
 	"${FILESDIR}"/${PN}-4.2.0-link-system-blas.patch )
 
 src_prepare() {
 	eapply_user
 
 	pushd "${WORKDIR}"/Tensile-rocm-${PV} || die
-	eapply "${FILESDIR}/Tensile-4.3.0-hsaco-compile-specified-arch.patch"
-	eapply "${FILESDIR}/Tensile-4.3.0-output-commands.patch"
+	eapply "${FILESDIR}/Tensile-4.2.0-output-commands.patch"
+	# eapply "${FILESDIR}/Tensile-4.2.0-specify-source-kernel-arch.patch"
 	popd || die
 
 	sed -e "/PREFIX rocblas/d" \
@@ -76,9 +76,17 @@ src_configure() {
 
 	export PATH="${EPREFIX}/usr/lib/llvm/roc/bin:${PATH}"
 
+	if [ -n "${AMDGPU_TARGETS}" ]; then
+		local Tensile_ARCHITECTURE="${AMDGPU_TARGETS}"
+	else
+		local Tensile_ARCHITECTURE="all"
+	fi
+	einfo "HAHA ${Tensile_ARCHITECTURE}"
 	local mycmakeargs=(
-		-DTensile_LOGIC="asm_full"
+		-DTensile_LOGIC="asm_lite"
 		-DTensile_COMPILER="hipcc"
+		# -DTensile_ARCHITECTURE="${Tensile_ARCHITECTURE}"
+		-DTensile_ARCHITECTURE="gfx803;gfx906:xnack-"
 		-DTensile_LIBRARY_FORMAT="msgpack"
 		-DTensile_CODE_OBJECT_VERSION="V3"
 		-DTensile_TEST_LOCAL_PATH="${WORKDIR}/Tensile-rocm-${PV}"
