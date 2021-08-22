@@ -69,7 +69,8 @@ src_prepare() {
 src_compile() {
 	export EXTRA_BAZEL_ARGS="--jobs=$(makeopts_jobs) $(bazel-get-flags) --host_javabase=@local_jdk//:jdk"
 	if use static-libs; then
-		export BAZEL_LINKOPTS=-static-libs:-static-libgcc BAZEL_LINKLIBS=-l%:libstdc++.a:-lm
+		# export BAZEL_LINKOPTS=-static-libs:-static-libgcc BAZEL_LINKLIBS=-l%:libstdc++.a:-lm
+		einfo "HI"
 	fi
 	VERBOSE=yes ./compile.sh || die
 
