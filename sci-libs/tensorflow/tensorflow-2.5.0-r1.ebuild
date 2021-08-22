@@ -184,6 +184,8 @@ src_unpack() {
 	bazel_load_distfiles "${bazel_external_uris}"
 }
 
+PATCHES=( "${FILESDIR}"/cuda-10.2.patch )
+
 src_prepare() {
 	export JAVA_HOME=$(java-config --jre-home) # so keepwork works
 

@@ -1,0 +1,36 @@
+
+--- tf/third_party/cub.BUILD.bak	2021-05-12 13:26:41.000000000 +0000
++++ tf/third_party/cub.BUILD	2021-06-04 16:03:27.882398799 +0000
+@@ -11,5 +11,5 @@
+ cc_library(
+     name = "cub",
+     hdrs = glob(["cub/**"]),
+-    deps = ["@local_cuda//:cuda_headers"],
++    deps = ["@local_config_cuda//cuda:cuda_headers"],
+ )
+
+--- tf/third_party/absl/workspace.bzl.bak	2021-05-12 13:26:41.000000000 +0000
++++ tf/third_party/absl/workspace.bzl	2021-06-04 16:03:27.886398821 +0000
+@@ -14,7 +14,7 @@
+         sha256 = ABSL_SHA256,
+         build_file = "//third_party/absl:com_google_absl.BUILD",
+         # TODO(mihaimaruseac): Remove the patch when https://github.com/abseil/abseil-cpp/issues/326 is resolved
+-        patch_file = "//third_party/absl:com_google_absl_fix_mac_and_nvcc_build.patch",
++        #patch_file = "//third_party/absl:com_google_absl_fix_mac_and_nvcc_build.patch",
+         strip_prefix = "abseil-cpp-{commit}".format(commit = ABSL_COMMIT),
+         urls = [
+             "https://storage.googleapis.com/mirror.tensorflow.org/github.com/abseil/abseil-cpp/archive/{commit}.tar.gz".format(commit = ABSL_COMMIT),
+
+--- tf/tensorflow/core/platform/default/cord.h.bak	2021-05-12 13:26:41.000000000 +0000
++++ tf/tensorflow/core/platform/default/cord.h	2021-06-04 16:03:27.886398821 +0000
+@@ -16,7 +16,9 @@
+ #ifndef TENSORFLOW_CORE_PLATFORM_DEFAULT_CORD_H_
+ #define TENSORFLOW_CORE_PLATFORM_DEFAULT_CORD_H_
+
++#if !defined(__CUDACC__)
+ #include "absl/strings/cord.h"
+ #define TF_CORD_SUPPORT 1
++#endif
+
+ #endif  // TENSORFLOW_CORE_PLATFORM_DEFAULT_CORD_H_
+

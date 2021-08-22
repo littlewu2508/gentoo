@@ -62,6 +62,7 @@ src_prepare() {
 }
 
 src_configure() {
+	einfo "HAHA ${CXX}"
 	append-cppflags -DGOOGLE_PROTOBUF_NO_RTTI
 
 	if tc-ld-is-gold; then

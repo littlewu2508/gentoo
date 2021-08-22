@@ -5,7 +5,7 @@ EAPI=7
 
 PYTHON_COMPAT=( python3_{7,8,9} )
 
-inherit cmake flag-o-matic python-any-r1 toolchain-funcs
+inherit cmake flag-o-matic prefix python-any-r1 toolchain-funcs
 
 # yes, it needs SOURCE, not just installed one
 GTEST_COMMIT="aee0f9d9b5b87796ee8a0ab26b7587ec30e8858e"
@@ -51,6 +51,7 @@ src_prepare() {
 
 	# now generate cmake files
 	python_fix_shebang absl/copts/generate_copts.py
+	hprefixify absl/copts/generate_copts.py
 	absl/copts/generate_copts.py || die
 
 	if use test; then
