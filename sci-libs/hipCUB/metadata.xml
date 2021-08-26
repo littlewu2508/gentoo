@@ -15,4 +15,7 @@
   <upstream>
     <remote-id type="github">ROCm-Developer-Tools/hipCUB</remote-id>
   </upstream>
+	<use>
+		<flag name="benchmark">Build and install benchmark binaries.</flag>
+	</use>
 </pkgmetadata>
