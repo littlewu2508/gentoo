@@ -13,7 +13,7 @@ LICENSE="MIT"
 KEYWORDS="~amd64"
 SLOT="0/$(ver_cut 1-2)"
 
-IUSE="debug"
+IUSE="debug test"
 
 RDEPEND="
 	dev-util/hip:${SLOT}
@@ -25,6 +25,7 @@ RDEPEND="
 "
 
 DEPEND="${RDEPEND}"
+
 BDEPEND="app-admin/chrpath"
 
 S="${WORKDIR}/MIOpen-rocm-${PV}"
@@ -32,6 +33,9 @@ S="${WORKDIR}/MIOpen-rocm-${PV}"
 PATCHES=(
 	"${FILESDIR}/${PN}-4.2.0-disable-no-inline-boost.patch"
 	"${FILESDIR}/${PN}-4.2.0-gcc11-numeric_limits.patch"
+	"${FILESDIR}/${PN}-4.3.0-strip-xnack-in-flags.patch"
+	"${FILESDIR}/${PN}-4.3.0-fix-interface-include-in-HIP_COMPILER_FLAGS.patch"
+	"${FILESDIR}/${PN}-4.3.0-enable-test.patch"
 )
 
 src_prepare() {
@@ -43,6 +47,7 @@ src_prepare() {
 		-i CMakeLists.txt || die
 
 	sed -e "/rocm_install_symlink_subdir(\${MIOPEN_INSTALL_DIR})/d" -i src/CMakeLists.txt || die
+	sed -e "/add_test/s:--build \${CMAKE_CURRENT_BINARY_DIR}:--build ${BUILD_DIR}:" -i test/CMakeLists.txt || die
 
 	sed -e "s:\${AMD_DEVICE_LIBS_PREFIX}/lib:${EPREFIX}/usr/lib/amdgcn/bitcode:" -i cmake/hip-config.cmake || die
 
@@ -64,8 +69,9 @@ src_configure() {
 		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
 		-DMIOPEN_BACKEND=HIP
 		-DBoost_USE_STATIC_LIBS=OFF
+		-DBUILD_TESTS=$(usex test ON OFF)
+		${AMDGPU_TARGETS+-DAMDGPU_TARGETS="${AMDGPU_TARGETS}"}
 	)
-	[ -n "${AMDGPU_TARGETS}" ] && mycmakeargs+=( -DAMDGPU_TARGETS="${AMDGPU_TARGETS}" )
 
 	cmake_src_configure
 }
