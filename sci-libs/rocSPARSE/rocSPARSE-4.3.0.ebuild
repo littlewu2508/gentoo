@@ -3,7 +3,9 @@
 
 EAPI=7
 
-inherit cmake toolchain-funcs
+PYTHON_COMPAT=( python3_{7..10} )
+
+inherit cmake python-any-r1 toolchain-funcs
 
 DESCRIPTION="Basic Linear Algebra Subroutines for sparse computation"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/rocSPARSE"
@@ -44,8 +46,12 @@ SLOT="0/$(ver_cut 1-2)"
 RDEPEND="dev-util/hip:${SLOT}
 	sci-libs/rocPRIM:${SLOT}"
 DEPEND="${RDEPEND}"
-BDEPEND="test? ( dev-cpp/gtest )
-benchmark? ( app-admin/chrpath )"
+BDEPEND="test? (
+	dev-cpp/gtest
+	$(python_gen_any_dep 'dev-python/pyyaml[${PYTHON_USEDEP}]')
+)
+benchmark? ( app-admin/chrpath )
+"
 
 RESTRICT="!test? ( test )"
 
@@ -53,7 +59,14 @@ S="${WORKDIR}/rocSPARSE-rocm-${PV}"
 
 PATCHES=( "${FILESDIR}/${PN}-4.3.0-remove-matrices-unpacking.patch" )
 
+python_check_deps() {
+	if use test; then
+		has_version "dev-python/pyyaml[${PYTHON_USEDEP}]"
+	fi
+}
+
 src_prepare() {
+	eapply_user
 	sed -e "s/PREFIX rocsparse//" \
 		-e "/<INSTALL_INTERFACE/s,include,include/rocsparse," \
 		-e "/rocm_install_symlink_subdir(rocsparse)/d" \
@@ -63,6 +76,9 @@ src_prepare() {
 	# remove GIT dependency
 	sed -e "/find_package(Git/d" -i cmake/Dependencies.cmake || die
 
+	# use python interpreter specifyied by python-any-r1
+	sed -e "/COMMAND ..\/common\/rocsparse_gentest.py/s,COMMAND ,COMMAND python3 ," -i clients/tests/CMakeLists.txt || die
+
 	# Test need download data from https://sparse.tamu.edu (or other mirror site), check MD5, unpack and convert them into csr format
 	# This process is handled default by ${S}/cmake/ClientMatrices.cmake, but should be the responsibility of portage.
 	if use test; then
@@ -71,7 +87,7 @@ src_prepare() {
 		ebegin "$(tc-getCXX) deps/convert.cpp -o deps/convert"
 		$(tc-getCXX) deps/convert.cpp -o deps/convert
 		eend $?
-		find "${WORKDIR}" -maxdepth 2 -name "*.mtx" -print0 |
+		find "${WORKDIR}" -maxdepth 2 -regextype egrep -regex ".*/(.*)/\1\.mtx" -print0 |
 			while IFS= read -r -d '' mtxfile; do
 				destination=${BUILD_DIR}/matrices/$(basename -s '.mtx' ${mtxfile}).csr
 				ebegin "Converting ${mtxfile} to ${destination}"
@@ -108,7 +124,7 @@ src_test() {
 	addwrite /dev/kfd
 	addwrite /dev/dri/
 	cd "${BUILD_DIR}/clients/staging" || die
-	./rocsparse-test
+	./rocsparse-test || die
 }
 
 src_install() {
