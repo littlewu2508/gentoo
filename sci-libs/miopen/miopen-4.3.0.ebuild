@@ -36,6 +36,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-4.3.0-strip-xnack-in-flags.patch"
 	"${FILESDIR}/${PN}-4.3.0-fix-interface-include-in-HIP_COMPILER_FLAGS.patch"
 	"${FILESDIR}/${PN}-4.3.0-enable-test.patch"
+	"${FILESDIR}/${PN}-4.3.0-no-strip.patch"
 )
 
 src_prepare() {
@@ -66,6 +67,7 @@ src_configure() {
 	export CXX="${EPREFIX}/usr/lib/llvm/roc/bin/clang++"
 
 	local mycmakeargs=(
+		-DCMAKE_SKIP_RPATH=ON
 		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
 		-DMIOPEN_BACKEND=HIP
 		-DBoost_USE_STATIC_LIBS=OFF
@@ -74,10 +76,4 @@ src_configure() {
 	)
 
 	cmake_src_configure
-}
-
-src_install() {
-	cmake_src_install
-	chrpath --delete "${ED}/usr/bin/MIOpenDriver" || die
-	chrpath --delete "${ED}/usr/lib64/libMIOpen.so.1.0" || die
 }
