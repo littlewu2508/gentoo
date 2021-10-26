@@ -180,6 +180,8 @@ src_unpack() {
 
 src_prepare() {
 	use rocm && eapply "${FILESDIR}"/rocm.patch
+	use rocm && eapply "${FILESDIR}"/rocm-configure.patch
+	use rocm && eapply "${FILESDIR}"/rocm-src.patch
 	export JAVA_HOME=$(java-config --jre-home) # so keepwork works
 
 	append-flags $(get-cpu-flags)
@@ -258,7 +260,7 @@ src_configure() {
 		fi
 		if use rocm; then
 			export ROCM_PATH="${EPREFIX}"/usr
-			export GCC_HOST_COMPILER_PATH=$(tc-getCC)
+			export GCC_HOST_COMPILER_PATH=$(readlink $(which $(tc-getCC)))
 		fi
 
 		# com_googlesource_code_re2 weird branch using absl, doesnt work with released re2
