@@ -12,7 +12,7 @@ SRC_URI="https://github.com/RadeonOpenCompute/llvm-project/archive/rocm-${PV}.ta
 LICENSE="UoI-NCSA rc BSD public-domain"
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="debug +runtime"
+IUSE="debug +runtime +lld"
 
 RDEPEND="
 	dev-libs/libxml2
@@ -65,6 +65,9 @@ src_configure() {
 
 	if usex runtime; then
 		PROJECTS+=";compiler-rt"
+	fi
+	if usex lld; then
+		PROJECTS+=";lld"
 	fi
 
 	local mycmakeargs=(
