@@ -16,7 +16,7 @@ HOMEPAGE="https://www.tensorflow.org/"
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="cuda mpi +python xla"
+IUSE="cuda mpi +python rocm xla"
 CPU_USE_FLAGS_X86="sse sse2 sse3 sse4_1 sse4_2 avx avx2 fma3 fma4"
 for i in $CPU_USE_FLAGS_X86; do
 	IUSE+=" cpu_flags_x86_${i}"
@@ -179,6 +179,7 @@ src_unpack() {
 }
 
 src_prepare() {
+	use rocm && eapply "${FILESDIR}"/rocm.patch
 	export JAVA_HOME=$(java-config --jre-home) # so keepwork works
 
 	append-flags $(get-cpu-flags)
@@ -211,7 +212,7 @@ src_configure() {
 		export TF_NEED_OPENCL_SYCL=0
 		export TF_NEED_OPENCL=0
 		export TF_NEED_COMPUTECPP=0
-		export TF_NEED_ROCM=0
+		export TF_NEED_ROCM=$(usex rocm 1 0)
 		export TF_NEED_MPI=$(usex mpi 1 0)
 		export TF_SET_ANDROID_WORKSPACE=0
 
@@ -254,6 +255,10 @@ src_configure() {
 				ewarn "You can look up your GPU's CUDA compute capability at https://developer.nvidia.com/cuda-gpus"
 				ewarn "or by running /opt/cuda/extras/demo_suite/deviceQuery | grep 'CUDA Capability'"
 			fi
+		fi
+		if use rocm; then
+			export ROCM_PATH="${EPREFIX}"/usr
+			export GCC_HOST_COMPILER_PATH=$(tc-getCC)
 		fi
 
 		# com_googlesource_code_re2 weird branch using absl, doesnt work with released re2
