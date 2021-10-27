@@ -179,9 +179,6 @@ src_unpack() {
 }
 
 src_prepare() {
-	use rocm && eapply "${FILESDIR}"/rocm.patch
-	use rocm && eapply "${FILESDIR}"/rocm-configure.patch
-	use rocm && eapply "${FILESDIR}"/rocm-src.patch
 	export JAVA_HOME=$(java-config --jre-home) # so keepwork works
 
 	append-flags $(get-cpu-flags)
@@ -197,6 +194,17 @@ src_prepare() {
 
 	# Prefixify hard-coded command locations
 	hprefixify -w /host_compiler_prefix/ third_party/gpus/cuda_configure.bzl
+
+	if use rocm; then
+		eapply "${FILESDIR}"/rocm.patch
+		eprefixify tensorflow/compiler/xla/service/gpu/llvm_gpu_backend/gpu_backend_lib.cc
+		eprefixify third_party/gpus/rocm_configure.bzl
+		local ROCM_VERSION="$(hipconfig -v || die)-"
+		sed -e "s/@ROCM_VERSION@/${ROCM_VERSION}/" -i third_party/gpus/find_rocm_config.py || die
+		cd third_party/gpus || die
+		python compress_find_rocm_config.py || die
+		cd - || die
+	fi
 
 	default
 	use python && python_copy_sources
@@ -261,6 +269,7 @@ src_configure() {
 		if use rocm; then
 			export ROCM_PATH="${EPREFIX}"/usr
 			export GCC_HOST_COMPILER_PATH=$(readlink $(which $(tc-getCC)))
+			export TF_ROCM_AMDGPU_TARGETS="${AMDGPU_TARGETS/;/,}"
 		fi
 
 		# com_googlesource_code_re2 weird branch using absl, doesnt work with released re2

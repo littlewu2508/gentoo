@@ -1,3 +1,260 @@
+diff --color -upr orig/third_party/gpus/rocm_configure.bzl tensorflow-2.5.0/third_party/gpus/rocm_configure.bzl
+--- orig/third_party/gpus/rocm_configure.bzl	2021-10-26 11:01:14.677926624 +0800
++++ tensorflow-2.5.0/third_party/gpus/rocm_configure.bzl	2021-10-26 13:17:01.990086861 +0800
+@@ -182,19 +182,7 @@ def _rocm_include_path(repository_ctx, r
+ 
+     # Add HIP-Clang headers (realpath relative to compiler binary)
+     rocm_toolkit_path = realpath(repository_ctx, rocm_config.rocm_toolkit_path, bash_bin)
+-    inc_dirs.append(rocm_toolkit_path + "/llvm/lib/clang/8.0/include")
+-    inc_dirs.append(rocm_toolkit_path + "/llvm/lib/clang/9.0.0/include")
+-    inc_dirs.append(rocm_toolkit_path + "/llvm/lib/clang/10.0.0/include")
+-    inc_dirs.append(rocm_toolkit_path + "/llvm/lib/clang/11.0.0/include")
+-    inc_dirs.append(rocm_toolkit_path + "/llvm/lib/clang/12.0.0/include")
+-    inc_dirs.append(rocm_toolkit_path + "/llvm/lib/clang/13.0.0/include")
+-
+-    # Support hcc based off clang 10.0.0 (for ROCm 3.3)
+-    inc_dirs.append(rocm_toolkit_path + "/hcc/compiler/lib/clang/10.0.0/include/")
+-    inc_dirs.append(rocm_toolkit_path + "/hcc/lib/clang/10.0.0/include")
+-
+-    # Add hcc headers
+-    inc_dirs.append(rocm_toolkit_path + "/hcc/include")
++    inc_dirs.append("@GENTOO_PORTAGE_EPREFIX@/usr/lib/llvm/roc/lib/clang/13.0.0/include")
+ 
+     return inc_dirs
+ 
+@@ -326,15 +314,15 @@ def _find_libs(repository_ctx, rocm_conf
+     libs_paths = [
+         (name, _rocm_lib_paths(repository_ctx, name, path))
+         for name, path in [
+-            ("amdhip64", rocm_config.rocm_toolkit_path + "/hip"),
+-            ("rocblas", rocm_config.rocm_toolkit_path + "/rocblas"),
+-            (hipfft_or_rocfft, rocm_config.rocm_toolkit_path + "/" + hipfft_or_rocfft),
+-            ("hiprand", rocm_config.rocm_toolkit_path + "/hiprand"),
+-            ("MIOpen", rocm_config.rocm_toolkit_path + "/miopen"),
+-            ("rccl", rocm_config.rocm_toolkit_path + "/rccl"),
+-            ("hipsparse", rocm_config.rocm_toolkit_path + "/hipsparse"),
+-            ("roctracer64", rocm_config.rocm_toolkit_path + "/roctracer"),
+-            ("rocsolver", rocm_config.rocm_toolkit_path + "/rocsolver"),
++            ("amdhip64", "@GENTOO_PORTAGE_EPREFIX@/usr/lib/hip/lib"),
++            ("rocblas", "@GENTOO_PORTAGE_EPREFIX@/usr/lib64"),
++            (hipfft_or_rocfft, "@GENTOO_PORTAGE_EPREFIX@/usr/lib64"),
++            ("hiprand", "@GENTOO_PORTAGE_EPREFIX@/usr/lib64"),
++            ("MIOpen", "@GENTOO_PORTAGE_EPREFIX@/usr/lib64"),
++            ("rccl", "@GENTOO_PORTAGE_EPREFIX@/usr/lib64"),
++            ("hipsparse", "@GENTOO_PORTAGE_EPREFIX@/usr/lib64"),
++            ("roctracer64", "@GENTOO_PORTAGE_EPREFIX@/usr/lib64/roctracer"),
++            ("rocsolver", "@GENTOO_PORTAGE_EPREFIX@/usr/lib64"),
+         ]
+     ]
+ 
+@@ -549,80 +537,78 @@ def _create_local_rocm_repository(reposi
+     copy_rules = [
+         make_copy_dir_rule(
+             repository_ctx,
+-            name = "rocm-include",
+-            src_dir = rocm_toolkit_path + "/include",
+-            out_dir = "rocm/include",
+-            exceptions = ["gtest", "gmock"],
+-        ),
+-        make_copy_dir_rule(
+-            repository_ctx,
+             name = hipfft_or_rocfft + "-include",
+-            src_dir = rocm_toolkit_path + "/" + hipfft_or_rocfft + "/include",
++            src_dir = rocm_toolkit_path + "/include/" + hipfft_or_rocfft,
+             out_dir = "rocm/include/" + hipfft_or_rocfft,
+         ),
+         make_copy_dir_rule(
+             repository_ctx,
+             name = "rocblas-include",
+-            src_dir = rocm_toolkit_path + "/rocblas/include",
+-            out_dir = "rocm/include/rocblas",
++            src_dir = rocm_toolkit_path + "/include/rocblas",
++            out_dir = "rocm/include/",
+         ),
+         make_copy_dir_rule(
+             repository_ctx,
+             name = "miopen-include",
+-            src_dir = rocm_toolkit_path + "/miopen/include",
++            src_dir = rocm_toolkit_path + "/include/miopen",
+             out_dir = "rocm/include/miopen",
+         ),
+-        make_copy_dir_rule(
++        make_copy_files_rule(
+             repository_ctx,
+             name = "rccl-include",
+-            src_dir = rocm_toolkit_path + "/rccl/include",
+-            out_dir = "rocm/include/rccl",
++            srcs = [rocm_toolkit_path + "/include/rccl.h",],
++            outs = ["rocm/include/rccl/rccl.h",],
+         ),
+         make_copy_dir_rule(
+             repository_ctx,
+             name = "hipsparse-include",
+-            src_dir = rocm_toolkit_path + "/hipsparse/include",
++            src_dir = rocm_toolkit_path + "/include/hipsparse",
+             out_dir = "rocm/include/hipsparse",
+         ),
+         make_copy_dir_rule(
+             repository_ctx,
+             name = "rocsolver-include",
+-            src_dir = rocm_toolkit_path + "/rocsolver/include",
++            src_dir = rocm_toolkit_path + "/include/rocsolver",
+             out_dir = "rocm/include/rocsolver",
+         ),
++        make_copy_dir_rule(
++            repository_ctx,
++            name = "rocprim-include",
++            src_dir = rocm_toolkit_path + "/include/rocprim",
++            out_dir = "rocm/include/rocprim",
++        ),
++        make_copy_dir_rule(
++            repository_ctx,
++            name = "hipcub-include",
++            src_dir = rocm_toolkit_path + "/include/hipcub",
++            out_dir = "rocm/include/hipcub",
++        ),
++        make_copy_dir_rule(
++            repository_ctx,
++            name = "roctracer-include",
++            src_dir = rocm_toolkit_path + "/include/roctracer",
++            out_dir = "rocm/include/roctracer",
++        ),
++        make_copy_dir_rule(
++            repository_ctx,
++            name = "hip-include",
++            src_dir = rocm_toolkit_path + "/lib/hip/include/hip",
++            out_dir = "rocm/include/hip",
++        ),
++        make_copy_dir_rule(
++            repository_ctx,
++            name = "rocrand-include",
++            src_dir = rocm_toolkit_path + "/include/rocrand",
++            out_dir = "rocm/include/rocrand",
++        ),
++        make_copy_dir_rule(
++            repository_ctx,
++            name = "hiprand-include",
++            src_dir = rocm_toolkit_path + "/include/hiprand",
++            out_dir = "rocm/include/hiprand",
++        ),
+     ]
+ 
+-    # explicitly copy (into the local_config_rocm repo) the $ROCM_PATH/hiprand/include and
+-    # $ROCM_PATH/rocrand/include dirs, only once the softlink to them in $ROCM_PATH/include
+-    # dir has been removed. This removal will happen in a near-future ROCm release.
+-    hiprand_include = ""
+-    hiprand_include_softlink = rocm_config.rocm_toolkit_path + "/include/hiprand"
+-    softlink_exists = files_exist(repository_ctx, [hiprand_include_softlink], bash_bin)
+-    if not softlink_exists[0]:
+-        hiprand_include = '":hiprand-include",\n'
+-        copy_rules.append(
+-            make_copy_dir_rule(
+-                repository_ctx,
+-                name = "hiprand-include",
+-                src_dir = rocm_toolkit_path + "/hiprand/include",
+-                out_dir = "rocm/include/hiprand",
+-            )
+-        )
+-
+-    rocrand_include = ""
+-    rocrand_include_softlink = rocm_config.rocm_toolkit_path + "/include/rocrand"
+-    softlink_exists = files_exist(repository_ctx, [rocrand_include_softlink], bash_bin)
+-    if not softlink_exists[0]:
+-        rocrand_include = '":rocrand-include",\n'
+-        copy_rules.append(
+-            make_copy_dir_rule(
+-                repository_ctx,
+-                name = "rocrand-include",
+-                src_dir = rocm_toolkit_path + "/rocrand/include",
+-                out_dir = "rocm/include/rocrand",
+-            )
+-        )
+-
+     rocm_libs = _find_libs(repository_ctx, rocm_config, hipfft_or_rocfft, bash_bin)
+     rocm_lib_srcs = []
+     rocm_lib_outs = []
+@@ -679,14 +665,17 @@ def _create_local_rocm_repository(reposi
+             "%{roctracer_lib}": rocm_libs["roctracer64"].file_name,
+             "%{rocsolver_lib}": rocm_libs["rocsolver"].file_name,
+             "%{copy_rules}": "\n".join(copy_rules),
+-            "%{rocm_headers}": ('":rocm-include",\n' +
+-                                '":' + hipfft_or_rocfft + '-include",\n' +
++            "%{rocm_headers}": ('":' + hipfft_or_rocfft + '-include",\n' +
+                                 '":rocblas-include",\n' +
++                                '":roctracer-include",\n' +
++								'":hipcub-include",\n' +
++								'":hip-include",\n' +
+                                 '":miopen-include",\n' +
+                                 '":rccl-include",\n' +
+-                                hiprand_include +
+-                                rocrand_include +
+                                 '":hipsparse-include",\n' +
++                                '":hiprand-include",\n' +
++                                '":rocrand-include",\n' +
++                                '":rocprim-include",\n' +
+                                 '":rocsolver-include"'),
+         },
+     )
+@@ -721,7 +710,7 @@ def _create_local_rocm_repository(reposi
+     rocm_defines["%{host_compiler_path}"] = "clang/bin/crosstool_wrapper_driver_is_not_gcc"
+ 
+     rocm_defines["%{cxx_builtin_include_directories}"] = to_list_of_strings(
+-        host_compiler_includes + _rocm_include_path(repository_ctx, rocm_config, bash_bin),
++        host_compiler_includes + _rocm_include_path(repository_ctx, rocm_config, bash_bin) + ['@GENTOO_PORTAGE_EPREFIX@/usr/lib/hip/include', '@GENTOO_PORTAGE_EPREFIX@/usr/lib/llvm/roc/include'],
+     )
+ 
+     verify_build_defines(rocm_defines)
+@@ -745,11 +734,11 @@ def _create_local_rocm_repository(reposi
+         tpl_paths["crosstool:clang/bin/crosstool_wrapper_driver_rocm"],
+         {
+             "%{cpu_compiler}": str(cc),
+-            "%{hipcc_path}": rocm_config.rocm_toolkit_path + "/hip/bin/hipcc",
++            "%{hipcc_path}": rocm_config.rocm_toolkit_path + "/lib/hip/bin/hipcc",
+             "%{hipcc_env}": _hipcc_env(repository_ctx),
+-            "%{rocr_runtime_path}": rocm_config.rocm_toolkit_path + "/lib",
++            "%{rocr_runtime_path}": rocm_config.rocm_toolkit_path + "/lib64",
+             "%{rocr_runtime_library}": "hsa-runtime64",
+-            "%{hip_runtime_path}": rocm_config.rocm_toolkit_path + "/hip/lib",
++            "%{hip_runtime_path}": rocm_config.rocm_toolkit_path + "/lib/hip/lib",
+             "%{hip_runtime_library}": "amdhip64",
+             "%{crosstool_verbose}": _crosstool_verbose(repository_ctx),
+             "%{gcc_host_compiler_path}": str(cc),
+diff --color -upr a/tensorflowcompiler/xla/service/gpu/llvm_gpu_backend/gpu_backend_lib.cc tensorflow/compiler/xla/service/gpu/llvm_gpu_backend/gpu_backend_lib.cc
+--- a/tensorflowcompiler/xla/service/gpu/llvm_gpu_backend/gpu_backend_lib.cc	2021-05-12 21:26:41.000000000 +0800
++++ b/tensorflow/compiler/xla/service/gpu/llvm_gpu_backend/gpu_backend_lib.cc	2021-10-26 13:43:26.628572583 +0800
+@@ -730,7 +730,7 @@ StatusOr<std::vector<uint8>> EmitModuleT
+   // TODO(whchung@gmail.com): change to tensorflow::ROCmRoot() after
+   // ROCm-Device-Libs PR.
+   std::string lld_path_1 = tensorflow::io::JoinPath("/opt/rocm", "hcc/bin");
+-  std::string lld_path_2 = tensorflow::io::JoinPath("/opt/rocm", "llvm/bin");
++  std::string lld_path_2 = tensorflow::io::JoinPath("@GENTOO_PORTAGE_EPREFIX@/usr/lib/llvm/roc", "bin");
+   auto lld_program =
+       llvm::sys::findProgramByName("ld.lld", {lld_path_1, lld_path_2});
+   if (!lld_program) {
+diff --color -upr a/tensorflowcore/platform/default/rocm_rocdl_path.cc tensorflow/core/platform/default/rocm_rocdl_path.cc
+--- a/tensorflowcore/platform/default/rocm_rocdl_path.cc	2021-05-12 21:26:41.000000000 +0800
++++ b/tensorflow/core/platform/default/rocm_rocdl_path.cc	2021-10-26 13:43:26.800571563 +0800
+@@ -37,7 +37,7 @@ string RocmRoot() {
+ 
+ string RocdlRoot() {
+ #if TF_ROCM_VERSION >= 30900
+-  return tensorflow::io::JoinPath(tensorflow::RocmRoot(), "amdgcn/bitcode");
++  return tensorflow::io::JoinPath(tensorflow::RocmRoot(), "lib/amdgcn/bitcode");
+ #else
+   return tensorflow::io::JoinPath(tensorflow::RocmRoot(), "lib");
+ #endif
+diff --color -upr a/tensorflowstream_executor/gpu/asm_compiler.cc tensorflow/stream_executor/gpu/asm_compiler.cc
+--- a/tensorflowstream_executor/gpu/asm_compiler.cc	2021-05-12 21:26:41.000000000 +0800
++++ b/tensorflow/stream_executor/gpu/asm_compiler.cc	2021-10-26 13:43:26.956570635 +0800
+@@ -384,7 +384,7 @@ static std::string findRocmExecutable(co
+ port::StatusOr<std::vector<uint8>> BundleGpuAsm(
+     std::vector<HsacoImage> images, const std::string rocm_root_dir) {
+   std::string clang_offload_bundler_path =
+-      findRocmExecutable("llvm/bin/clang-offload-bundler", rocm_root_dir);
++      findRocmExecutable("lib/llvm/roc/bin/clang-offload-bundler", rocm_root_dir);
+ 
+   // Initialise the "--inputs" / "--targets" arguments for the
+   // clang-offload-bundler with a dummy file / host target triple...
 diff --color -upr orig/third_party/gpus/find_rocm_config.py tensorflow-2.5.0/third_party/gpus/find_rocm_config.py
 --- orig/third_party/gpus/find_rocm_config.py	2021-10-12 20:40:29.201725834 +0800
 +++ tensorflow-2.5.0/third_party/gpus/find_rocm_config.py	2021-10-12 20:40:53.109621436 +0800
@@ -12,7 +269,7 @@ diff --color -upr orig/third_party/gpus/find_rocm_config.py tensorflow-2.5.0/thi
 -    with open(version_file) as f:
 -      version_string = f.read().strip()
 -      version_numbers = version_string.split(".")
-+    version_string = "4.3.0-"
++    version_string = "@ROCM_VERSION@"
 +    version_numbers = version_string.split(".")
      major = int(version_numbers[0])
      minor = int(version_numbers[1])
@@ -100,11 +357,47 @@ diff --color -upr orig/third_party/gpus/find_rocm_config.py tensorflow-2.5.0/thi
      if not os.path.exists(version_file):
        raise ConfigError(
            'rocsolver version file "{}" not found'.format(version_file))
-diff --color -upr orig/third_party/gpus/find_rocm_config.py.gz.base64 tensorflow-2.5.0/third_party/gpus/find_rocm_config.py.gz.base64
---- orig/third_party/gpus/find_rocm_config.py.gz.base64	2021-10-12 20:40:29.201725834 +0800
-+++ tensorflow-2.5.0/third_party/gpus/find_rocm_config.py.gz.base64	2021-10-12 20:40:55.245612117 +0800
-@@ -1 +1 @@
--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
-\ No newline at end of file
-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
-\ No newline at end of file
+diff --color -upr orig/third_party/gpus/crosstool/clang/bin/crosstool_wrapper_driver_rocm.tpl tensorflow-2.5.0/third_party/gpus/crosstool/clang/bin/crosstool_wrapper_driver_rocm.tpl
+--- orig/third_party/gpus/crosstool/clang/bin/crosstool_wrapper_driver_rocm.tpl	2021-10-27 00:14:42.956249635 +0800
++++ tensorflow-2.5.0/third_party/gpus/crosstool/clang/bin/crosstool_wrapper_driver_rocm.tpl	2021-10-27 11:11:07.309805183 +0800
+@@ -56,9 +56,9 @@ def GetOptionValue(argv, option):
+   parser.add_argument('-' + option, nargs='*', action='append')
+   args, _ = parser.parse_known_args(argv)
+-  if not args or not vars(args)[option]:
++  if not args or not vars(args)[option.strip('-').replace('-','_')]:
+     return []
+   else:
+-    return sum(vars(args)[option], [])
++    return sum(vars(args)[option.strip('-').replace('-','_')], [])
+ 
+ 
+ def GetHostCompilerOptions(argv):
+@@ -138,6 +138,7 @@ def InvokeHipcc(argv, log=False):
+   hipcc_allowed_std_options = ["c++11"]
+   std_options = ''.join([' -std=' + define
+       for define in std_options if define in hipcc_allowed_std_options])
++  gpu_archs = GetOptionValue(argv, '-amdgpu-target')
+ 
+   # The list of source files get passed after the -c option. I don't know of
+   # any other reliable way to just get the list of source files to be compiled.
+@@ -179,6 +180,7 @@ def InvokeHipcc(argv, log=False):
+   hipccopts += defines
+   hipccopts += std_options
+   hipccopts += m_options
++  hipccopts += ' ' + ' '.join(['--amdgpu-target=' + arch for arch in gpu_archs])
+ 
+   if depfiles:
+     # Generate the dependency file
+diff --color -upr orig/compiler/mlir/tools/kernel_gen/transforms/gpu_kernel_to_blob_pass.cc tensorflow/compiler/mlir/tools/kernel_gen/transforms/gpu_kernel_to_blob_pass.cc
+--- orig/tensorflow/compiler/mlir/tools/kernel_gen/transforms/gpu_kernel_to_blob_pass.cc	2021-10-27 11:51:07.903006297 +0800
++++ tensorflow-2.5.0/tensorflow/compiler/mlir/tools/kernel_gen/transforms/gpu_kernel_to_blob_pass.cc	2021-10-27 11:49:31.797289639 +0800
+@@ -113,7 +113,8 @@ class GpuKernelToBlobPass
+             "Could not parse ROCm architecture prefix (expected gfx)");
+       }
+       uint32_t arch;
+-      if (!absl::SimpleAtoi(consumable_arch, &arch)) {
++      absl::SimpleAtoi(consumable_arch, &arch);
++      if (arch <= 0) {
+         return InternalError("Could not parse ROCm architecture number");
+       }
+ 
