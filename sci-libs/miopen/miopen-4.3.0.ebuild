@@ -17,7 +17,6 @@ IUSE="debug test"
 
 RDEPEND="
 	dev-util/hip:${SLOT}
-	<dev-libs/half-2
 	>=dev-db/sqlite-3.17
 	dev-libs/ocl-icd
 	dev-util/rocm-clang-ocl:${SLOT}
@@ -27,7 +26,7 @@ RDEPEND="
 
 DEPEND="${RDEPEND}"
 
-BDEPEND="app-admin/chrpath"
+BDEPEND="<dev-libs/half-2"
 
 S="${WORKDIR}/MIOpen-rocm-${PV}"
 
