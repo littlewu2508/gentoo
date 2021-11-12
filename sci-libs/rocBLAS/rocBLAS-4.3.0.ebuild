@@ -10,7 +10,8 @@ inherit cmake prefix python-any-r1
 DESCRIPTION="AMD's library for BLAS on ROCm"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/rocBLAS"
 SRC_URI="https://github.com/ROCmSoftwarePlatform/rocBLAS/archive/rocm-${PV}.tar.gz -> rocm-${P}.tar.gz
-	https://github.com/ROCmSoftwarePlatform/Tensile/archive/rocm-${PV}.tar.gz -> rocm-Tensile-${PV}.tar.gz"
+	https://github.com/ROCmSoftwarePlatform/Tensile/archive/rocm-${PV}.tar.gz -> rocm-Tensile-${PV}.tar.gz
+	rocBLAS-4.3.0-Tensile-asm_full-navi22.tar.gz"
 
 LICENSE="MIT"
 KEYWORDS="~amd64"
@@ -56,6 +57,7 @@ src_prepare() {
 	eapply "${FILESDIR}/Tensile-4.3.0-output-commands.patch"
 	eapply "${FILESDIR}/rocBLAS-Tensile-1031.patch"
 	popd || die
+	cp -a "${WORKDIR}/asm_full/" library/src/blas3/Tensile/Logic/ || die
 
 	# Fit for Gentoo FHS rule
 	sed -e "/PREFIX rocblas/d" \

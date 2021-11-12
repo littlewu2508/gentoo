@@ -1,5 +1,5 @@
---- /opt/origin/portage/sci-libs/rocBLAS-4.3.0/work/Tensile-rocm-4.3.0/pytest.ini	2021-04-22 22:35:33.000000000 +0800
-+++ /opt/build/portage/sci-libs/rocBLAS-4.3.0/work/Tensile-rocm-4.3.0/pytest.ini	2021-09-30 17:32:21.382806851 +0800
+--- a/pytest.ini	2021-04-22 22:35:33.000000000 +0800
++++ b/pytest.ini	2021-09-30 17:32:21.382806851 +0800
 @@ -88,6 +88,7 @@
   xfail-gfx1011: architecture
   xfail-gfx1012: architecture
