@@ -54,6 +54,7 @@ src_prepare() {
 	pushd "${WORKDIR}"/Tensile-rocm-${PV} || die
 	eapply "${FILESDIR}/Tensile-${PV}-hsaco-compile-specified-arch.patch" # backported from upstream, should remove after 4.3.0
 	eapply "${FILESDIR}/Tensile-4.3.0-output-commands.patch"
+	eapply "${FILESDIR}/rocBLAS-Tensile-1031.patch"
 	popd || die
 
 	# Fit for Gentoo FHS rule
