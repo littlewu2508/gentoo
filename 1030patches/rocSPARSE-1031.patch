@@ -1,13 +1,30 @@
-Binary files /opt/origin/portage/sci-libs/rocSPARSE-4.3.0/work/rocSPARSE-rocm-4.3.0/deps/convert and /opt/build/portage/sci-libs/rocSPARSE-4.3.0/work/rocSPARSE-rocm-4.3.0/deps/convert differ
-diff --color -upr /opt/origin/portage/sci-libs/rocSPARSE-4.3.0/work/rocSPARSE-rocm-4.3.0/library/src/include/common.h /opt/build/portage/sci-libs/rocSPARSE-4.3.0/work/rocSPARSE-rocm-4.3.0/library/src/include/common.h
---- /opt/origin/portage/sci-libs/rocSPARSE-4.3.0/work/rocSPARSE-rocm-4.3.0/library/src/include/common.h	2021-05-27 23:04:12.000000000 +0800
-+++ /opt/build/portage/sci-libs/rocSPARSE-4.3.0/work/rocSPARSE-rocm-4.3.0/library/src/include/common.h	2021-09-30 22:32:09.203071933 +0800
+diff --color -upr orig/CMakeLists.txt rocSPARSE-rocm-4.3.0/CMakeLists.txt
+--- orig/CMakeLists.txt	2021-11-13 20:26:44.173049765 +0800
++++ rocSPARSE-rocm-4.3.0/CMakeLists.txt	2021-11-13 20:27:15.820749752 +0800
+@@ -112,12 +112,12 @@ endif()
+ #Set the AMDGPU_TARGETS with backward compatiblity
+ if(COMMAND rocm_check_target_ids)
+    rocm_check_target_ids(DEFAULT_AMDGPU_TARGETS
+-       TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx1030"
++       TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx1030;gfx1031"
+    )
+ else()
+     # Use target ID syntax if supported for AMDGPU_TARGETS
+     if(TARGET_ID_SUPPORT)
+-        set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx1030")
++        set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx1030;gfx1031")
+     else()
+         set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900;gfx906;gfx908")
+     endif()
+diff --color -upr orig/library/src/include/common.h rocSPARSE-rocm-4.3.0/library/src/include/common.h
+--- orig/library/src/include/common.h	2021-11-13 20:26:44.181049690 +0800
++++ rocSPARSE-rocm-4.3.0/library/src/include/common.h	2021-11-13 20:26:49.760996791 +0800
 @@ -171,7 +171,7 @@ __device__ __forceinline__ void rocspars
      if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = min(data[i], data[i +   1]); } __syncthreads(); }
  }
  
 -#ifndef __gfx1030__
-+#ifndef __gfx1031__
++#if !defined(__gfx1030__) && !defined(__gfx1031__)
  // DPP-based wavefront reduction maximum
  template <unsigned int WFSIZE>
  __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
