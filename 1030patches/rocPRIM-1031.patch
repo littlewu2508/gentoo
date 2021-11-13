@@ -1,22 +1,36 @@
---- /opt/origin/portage/sci-libs/rocPRIM-4.3.0/work/rocPRIM-rocm-4.3.0/test/rocprim/test_utils_types.hpp	2021-06-08 02:16:47.000000000 +0800
-+++ /opt/build/portage/sci-libs/rocPRIM-4.3.0/work/rocPRIM-rocm-4.3.0/test/rocprim/test_utils_types.hpp	2021-09-30 22:30:33.012885698 +0800
-@@ -48,7 +48,7 @@
+diff --color -upr orig/test/extra/CMakeLists.txt rocPRIM-rocm-4.3.0/test/extra/CMakeLists.txt
+--- orig/test/extra/CMakeLists.txt	2021-11-13 20:32:11.369949253 +0800
++++ rocPRIM-rocm-4.3.0/test/extra/CMakeLists.txt	2021-11-13 20:33:19.665302364 +0800
+@@ -34,7 +34,7 @@ list(APPEND CMAKE_MODULE_PATH
+ 
+ # Use target ID syntax if supported for AMDGPU_TARGETS
+ if(TARGET_ID_SUPPORT)
+-  set(AMDGPU_TARGETS gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx1030 CACHE STRING "List of specific machine types for library to target")
++  set(AMDGPU_TARGETS gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx1030;gfx1031 CACHE STRING "List of specific machine types for library to target")
+ else()
+   set(AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target")
+ endif()
+diff --color -upr orig/test/rocprim/test_utils_types.hpp rocPRIM-rocm-4.3.0/test/rocprim/test_utils_types.hpp
+--- orig/test/rocprim/test_utils_types.hpp	2021-11-13 20:32:11.369949253 +0800
++++ rocPRIM-rocm-4.3.0/test/rocprim/test_utils_types.hpp	2021-11-13 20:32:38.929688200 +0800
+@@ -48,7 +48,7 @@ struct block_params
      static constexpr unsigned int block_size = BlockSize;
  };
  
-+#if (defined(__gfx1031__))
 -#if (defined(__gfx1030__))
++#if (defined(__gfx1030__) || defined(__gfx1031__))
      #define warp_param_type(type) \
          warp_params<type, 4U>, \
          warp_params<type, 8U>, \
---- /opt/origin/portage/sci-libs/rocPRIM-4.3.0/work/rocPRIM-rocm-4.3.0/test/rocprim/test_warp_sort.cpp	2021-06-08 02:16:47.000000000 +0800
-+++ /opt/build/portage/sci-libs/rocPRIM-4.3.0/work/rocPRIM-rocm-4.3.0/test/rocprim/test_warp_sort.cpp	2021-09-30 22:30:38.372784556 +0800
-@@ -34,7 +34,7 @@
+diff --color -upr orig/test/rocprim/test_warp_sort.cpp rocPRIM-rocm-4.3.0/test/rocprim/test_warp_sort.cpp
+--- orig/test/rocprim/test_warp_sort.cpp	2021-11-13 20:32:11.369949253 +0800
++++ rocPRIM-rocm-4.3.0/test/rocprim/test_warp_sort.cpp	2021-11-13 20:33:04.557445458 +0800
+@@ -34,7 +34,7 @@ public:
      using params = Params;
  };
  
-+#if (defined(__gfx1031__))
 -#if (defined(__gfx1030__))
++#if (defined(__gfx1030__) || defined(__gfx1031__))
      #define warp_sort_param_type(type) \
          warp_params<type, 2U>, \
          warp_params<type, 4U>, \
