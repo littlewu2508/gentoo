@@ -1,0 +1,18 @@
+diff --color -upr orig/CMakeLists.txt rocThrust-rocm-4.3.0/CMakeLists.txt
+--- orig/CMakeLists.txt	2021-11-14 12:14:27.802967413 +0800
++++ rocThrust-rocm-4.3.0/CMakeLists.txt	2021-11-14 12:14:56.883570127 +0800
+@@ -55,12 +55,12 @@ endif()
+ #Set the AMDGPU_TARGETS with backward compatiblity
+ if(COMMAND rocm_check_target_ids)
+    rocm_check_target_ids(DEFAULT_AMDGPU_TARGETS
+-       TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx1030"
++       TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx1030;gfx1031"
+    )
+ else()
+     # Use target ID syntax if supported for AMDGPU_TARGETS
+     if(TARGET_ID_SUPPORT)
+-        set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx1030")
++        set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx1030;gfx1031")
+     else()
+         set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900;gfx906;gfx908")
+     endif()
