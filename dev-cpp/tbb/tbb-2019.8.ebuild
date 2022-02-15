@@ -19,7 +19,7 @@ IUSE="debug examples"
 
 DEPEND=""
 RDEPEND="${DEPEND}"
-S="${WORKDIR}/${PN}-${MY_PV}"
+S="${WORKDIR}/oneTBB-${MY_PV}"
 
 DOCS=( CHANGES README README.md doc/Release_Notes.txt )
 
