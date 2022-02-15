@@ -4,7 +4,6 @@
 EAPI=7
 
 # ninja does not work due to fortran
-CMAKE_MAKEFILE_GENERATOR=emake
 FORTRAN_NEEDED="fortran"
 PYTHON_COMPAT=( python3_{8,9} )
 
@@ -12,7 +11,9 @@ inherit cmake cuda elisp-common fortran-2 prefix python-single-r1 toolchain-func
 
 DESCRIPTION="C++ data analysis framework and interpreter from CERN"
 HOMEPAGE="https://root.cern"
-SRC_URI="https://root.cern/download/${PN}_v${PV}.source.tar.gz"
+CLAD_V="0.9"
+SRC_URI="https://root.cern/download/${PN}_v${PV}.source.tar.gz
+		https://github.com/vgvassilev/clad/archive/refs/tags/v${CLAD_V}.tar.gz -> clad-${CLAD_V}.tar.gz"
 
 IUSE="+X aqua +asimage c++11 c++14 +c++17 cuda cudnn +davix debug emacs
 	+examples fits fftw fortran +gdml graphviz +gsl http libcxx +minuit
@@ -119,6 +120,7 @@ RDEPEND="${CDEPEND}"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-6.12.06_cling-runtime-sysroot.patch
+	"${FILESDIR}"/fetch-clad.patch
 )
 
 pkg_setup() {
@@ -136,7 +138,7 @@ src_prepare() {
 
 	cmake_src_prepare
 
-	sed -i "/CLING_BUILD_PLUGINS/d" interpreter/CMakeLists.txt || die
+	sed -i -e "s,@CLAD@,clad-${CLAD_V}," interpreter/cling/tools/plugins/clad/CMakeLists.txt || die
 
 	# CSS should use local images
 	sed -i -e 's,http://.*/,,' etc/html/ROOT.css || die "html sed failed"
@@ -203,7 +205,7 @@ src_configure() {
 		-Dasimage=$(usex asimage)
 		-Dccache=OFF # use ccache via portage
 		-Dcefweb=OFF
-		-Dclad=OFF
+		-Dclad=ON
 		-Dcocoa=$(usex aqua)
 		-Dcuda=$(usex cuda)
 		-Dcudnn=$(usex cudnn)

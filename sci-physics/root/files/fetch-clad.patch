@@ -1,0 +1,15 @@
+Index: root-6.24.06/interpreter/cling/tools/plugins/clad/CMakeLists.txt
+===================================================================
+--- root-6.24.06.orig/interpreter/cling/tools/plugins/clad/CMakeLists.txt
++++ root-6.24.06/interpreter/cling/tools/plugins/clad/CMakeLists.txt
+@@ -50,9 +50,7 @@ endif()
+ 
+ ExternalProject_Add(
+   clad
+-  GIT_REPOSITORY https://github.com/vgvassilev/clad.git
+-  GIT_TAG v0.7
+-  UPDATE_COMMAND ""
++  SOURCE_DIR ${CMAKE_SOURCE_DIR}/../@CLAD@
+   CMAKE_ARGS -G ${CMAKE_GENERATOR}
+              -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+              -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
