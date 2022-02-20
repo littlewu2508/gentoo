@@ -1,0 +1,27 @@
+License is installed at /usr/share/doc/rocm-cmaken
+which is not needed and violates FHS/Gentoo policy
+===================================================================
+--- rocm-cmake-rocm-5.0.1.orig/share/rocm/cmake/ROCMCreatePackage.cmake
++++ rocm-cmake-rocm-5.0.1/share/rocm/cmake/ROCMCreatePackage.cmake
+@@ -262,21 +262,6 @@ macro(rocm_setup_license HEADER_ONLY)
+             message(STATUS "rocm-cmake: Set license file to ${CPACK_RESOURCE_FILE_LICENSE}.")
+         endif()
+     endif()
+-
+-    if(CPACK_RESOURCE_FILE_LICENSE)
+-        if(ROCM_USE_DEV_COMPONENT AND ${HEADER_ONLY})
+-            install(
+-                FILES ${CPACK_RESOURCE_FILE_LICENSE}
+-                DESTINATION share/doc/${_rocm_cpack_package_name}
+-                COMPONENT devel
+-            )
+-        else()
+-            install(
+-                FILES ${CPACK_RESOURCE_FILE_LICENSE}
+-                DESTINATION share/doc/${_rocm_cpack_package_name}
+-            )
+-        endif()
+-    endif()
+ endmacro()
+ 
+ macro(rocm_set_comp_cpackvar HEADER_ONLY components)
