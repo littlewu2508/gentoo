@@ -4,6 +4,7 @@
 EAPI=7
 
 # ninja does not work due to fortran
+CMAKE_MAKEFILE_GENERATOR=emake
 FORTRAN_NEEDED="fortran"
 PYTHON_COMPAT=( python3_{8,9} )
 
@@ -172,7 +173,7 @@ src_configure() {
 		-Dfail-on-missing=ON
 		-Dgnuinstall=OFF
 		-Dshared=ON
-		-Dsoversion=ON
+		-Dsoversion=OFF
 		-Dbuiltin_llvm=ON
 		-Dbuiltin_clang=ON
 		-Dbuiltin_cling=ON
@@ -266,6 +267,7 @@ src_configure() {
 		-Dunuran=$(usex unuran)
 		-During=$(usex uring)
 		-Dvc=$(usex vc)
+		-Dtbb=$(usex tbb)
 		-Dvdt=OFF
 		-Dveccore=OFF
 		-Dvecgeom=OFF
