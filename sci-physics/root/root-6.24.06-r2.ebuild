@@ -45,7 +45,7 @@ CDEPEND="
 	app-arch/zstd
 	app-arch/xz-utils
 	fortran? ( dev-lang/cfortran )
-	dev-cpp/nlohmann_json
+	=dev-cpp/nlohmann_json-3.9.1
 	dev-libs/libpcre:3
 	dev-libs/xxhash
 	media-fonts/dejavu
@@ -173,7 +173,7 @@ src_configure() {
 		-Dfail-on-missing=ON
 		-Dgnuinstall=OFF
 		-Dshared=ON
-		-Dsoversion=OFF
+		-Dsoversion=ON
 		-Dbuiltin_llvm=ON
 		-Dbuiltin_clang=ON
 		-Dbuiltin_cling=ON
@@ -251,7 +251,7 @@ src_configure() {
 		-Drootbench=OFF
 		-Droottest=OFF
 		-Drpath=OFF
-		-Druntime_cxxmodules=OFF
+		-Druntime_cxxmodules=ON
 		-Dshadowpw=$(usex shadow)
 		-Dspectrum=ON
 		-Dsqlite=$(usex sqlite)
