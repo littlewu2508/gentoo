@@ -3,16 +3,17 @@
 
 EAPI=7
 
-PYTHON_COMPAT=( python3_{6..9} )
+PYTHON_COMPAT=( python3_{8,10} )
 
-inherit cmake prefix python-any-r1
+inherit cmake multiprocessing prefix python-any-r1
 
 DESCRIPTION="AMD's library for BLAS on ROCm"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/rocBLAS"
 SRC_URI="https://github.com/ROCmSoftwarePlatform/rocBLAS/archive/rocm-${PV}.tar.gz -> rocm-${P}.tar.gz
-	https://github.com/ROCmSoftwarePlatform/Tensile/archive/rocm-${PV}.tar.gz -> rocm-Tensile-${PV}.tar.gz"
+	https://github.com/ROCmSoftwarePlatform/Tensile/archive/rocm-${PV}.tar.gz -> rocm-Tensile-${PV}.tar.gz
+	rocBLAS-4.3.0-Tensile-asm_full-navi22.tar.gz"
 
-LICENSE="MIT"
+LICENSE="BSD"
 KEYWORDS="~amd64"
 IUSE="benchmark test"
 SLOT="0/$(ver_cut 1-2)"
@@ -53,7 +54,10 @@ src_prepare() {
 
 	pushd "${WORKDIR}"/Tensile-rocm-${PV} || die
 	eapply "${FILESDIR}/Tensile-4.3.0-output-commands.patch"
+	sed -e "/Number of parallel jobs to launch/s:default=-1:default=$(makeopts_jobs):" -i Tensile/TensileCreateLibrary.py || die
+	eapply "${FILESDIR}/rocBLAS-Tensile-1031.patch"
 	popd || die
+	cp -a "${WORKDIR}/asm_full/" library/src/blas3/Tensile/Logic/ || die
 
 	# Fit for Gentoo FHS rule
 	sed -e "/PREFIX rocblas/d" \
@@ -64,7 +68,7 @@ src_prepare() {
 		-e "/rocm_install_symlink_subdir( rocblas )/d" -i library/src/CMakeLists.txt || die
 
 	# Use setup.py to install Tensile rather than pip
-	sed -r -e "/pip install/s:([^ \"\(]*python) -m pip install ([^ \"\)]*):\1 setup.py install --single-version-externally-managed --root / WORKING_DIRECTORY \2:g" -i cmake/virtualenv.cmake
+	sed -r -e "/pip install/s:([^ \"\(]*PYTHON_EXENAME}) -m pip install ([^ \"\)]*):\1 setup.py install --single-version-externally-managed --root / WORKING_DIRECTORY \2:g" -i cmake/virtualenv.cmake
 
 	sed -e "s:,-rpath=.*\":\":" -i clients/CMakeLists.txt || die
 
@@ -86,8 +90,8 @@ src_configure() {
 		-DTensile_LIBRARY_FORMAT="msgpack"
 		-DTensile_CODE_OBJECT_VERSION="V3"
 		-DTensile_TEST_LOCAL_PATH="${WORKDIR}/Tensile-rocm-${PV}"
+		# -DTensile_ROOT="${BUILD_DIR}"/virtualenv
 		-DBUILD_WITH_TENSILE=ON
-		-DBUILD_WITH_TENSILE_HOST=ON
 		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
 		-DCMAKE_INSTALL_INCLUDEDIR="include/rocblas"
 		-DCMAKE_SKIP_RPATH=TRUE
@@ -96,7 +100,6 @@ src_configure() {
 		-DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 		-DBUILD_CLIENTS_BENCHMARKS=$(usex benchmark ON OFF)
 		${AMDGPU_TARGETS+-DAMDGPU_TARGETS="${AMDGPU_TARGETS}"}
-		-D__skip_rocmclang="ON" ## fix cmake-3.21 configuration issue caused by officialy support programming language "HIP"
 	)
 
 	CXX="hipcc" cmake_src_configure
@@ -119,12 +122,12 @@ check_rw_permission() {
 
 src_test() {
 	# check permissions on /dev/kfd and /dev/dri/render*
-	check_rw_permission /dev/kfd
-	check_rw_permission /dev/dri/render*
+	# check_rw_permission /dev/kfd
+	# check_rw_permission /dev/dri/render*
 	addwrite /dev/kfd
 	addwrite /dev/dri/
 	cd "${BUILD_DIR}/clients/staging" || die
-	ROCBLAS_TENSILE_LIBPATH="${BUILD_DIR}/Tensile/library" ./rocblas-test
+	LD_LIBRARY_PATH="${BUILD_DIR}/clients:${BUILD_DIR}/library/src" ROCBLAS_TENSILE_LIBPATH="${BUILD_DIR}/Tensile/library" ./rocblas-test
 }
 
 src_install() {
