@@ -11,7 +11,7 @@ DESCRIPTION="AMD's library for BLAS on ROCm"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/rocBLAS"
 SRC_URI="https://github.com/ROCmSoftwarePlatform/rocBLAS/archive/rocm-${PV}.tar.gz -> rocm-${P}.tar.gz
 	https://github.com/ROCmSoftwarePlatform/Tensile/archive/rocm-${PV}.tar.gz -> rocm-Tensile-${PV}.tar.gz
-	rocBLAS-4.3.0-Tensile-asm_full-navi22.tar.gz"
+	rocBLAS-${PV}-Tensile-asm_full-navi22.tar.gz"
 
 LICENSE="BSD"
 KEYWORDS="~amd64"
@@ -20,7 +20,6 @@ SLOT="0/$(ver_cut 1-2)"
 
 BDEPEND="
 	dev-util/rocm-cmake
-	!dev-util/Tensile
 	$(python_gen_any_dep '
 		dev-python/msgpack[${PYTHON_USEDEP}]
 		dev-python/pyyaml[${PYTHON_USEDEP}]
@@ -47,6 +46,7 @@ S="${WORKDIR}"/${PN}-rocm-${PV}
 
 PATCHES=("${FILESDIR}"/${PN}-4.3.0-fix-glibc-2.32-and-above.patch
 	"${FILESDIR}"/${PN}-5.0.1-change-default-Tensile-library-dir.patch
+	"${FILESDIR}"/${PN}-5.0.1-cpp_lib_filesystem.patch
 	)
 
 src_prepare() {
@@ -127,7 +127,7 @@ src_test() {
 	addwrite /dev/kfd
 	addwrite /dev/dri/
 	cd "${BUILD_DIR}/clients/staging" || die
-	LD_LIBRARY_PATH="${BUILD_DIR}/clients:${BUILD_DIR}/library/src" ROCBLAS_TENSILE_LIBPATH="${BUILD_DIR}/Tensile/library" ./rocblas-test
+	ROCBLAS_TEST_TIMEOUT=3600 LD_LIBRARY_PATH="${BUILD_DIR}/clients:${BUILD_DIR}/library/src" ROCBLAS_TENSILE_LIBPATH="${BUILD_DIR}/Tensile/library" ./rocblas-test || die
 }
 
 src_install() {
