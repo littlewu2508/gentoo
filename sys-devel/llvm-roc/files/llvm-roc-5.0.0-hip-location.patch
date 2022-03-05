@@ -5,8 +5,10 @@ It is not necessary to check HIP runtime each time.
 Author: Benda Xu <heroxbd@gentoo.org>
 Author: Yiyang Wu <xgreenlandforwyy@gmail.com>
 
---- llvm-project-rocm-5.0.0.orig/clang/lib/Driver/ToolChains/AMDGPU.cpp
-+++ llvm-project-rocm-5.0.0/clang/lib/Driver/ToolChains/AMDGPU.cpp
+Index: llvm-project-rocm-5.0.1/clang/lib/Driver/ToolChains/AMDGPU.cpp
+===================================================================
+--- llvm-project-rocm-5.0.1.orig/clang/lib/Driver/ToolChains/AMDGPU.cpp
++++ llvm-project-rocm-5.0.1/clang/lib/Driver/ToolChains/AMDGPU.cpp
 @@ -169,139 +169,8 @@ bool RocmInstallationDetector::parseHIPV
  /// cached and populated only once.
  const SmallVectorImpl<RocmInstallationDetector::Candidate> &
@@ -149,6 +151,15 @@ Author: Yiyang Wu <xgreenlandforwyy@gmail.com>
  }
  
  RocmInstallationDetector::RocmInstallationDetector(
+@@ -410,7 +279,7 @@ void RocmInstallationDetector::detectDev
+     // - ${ROCM_ROOT}/lib/bitcode/*
+     // so try to detect these layouts.
+     static constexpr std::array<const char *, 2> SubDirsList[] = {
+-        {"amdgcn", "bitcode"},
++        {"lib/amdgcn", "bitcode"},
+         {"lib", ""},
+         {"lib", "bitcode"},
+     };
 @@ -433,42 +302,7 @@ void RocmInstallationDetector::detectDev
  }
  
