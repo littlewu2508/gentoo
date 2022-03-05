@@ -1,0 +1,22 @@
+diff --color -upr ROCm-CompilerSupport-rocm-5.0.1/lib/comgr/src/comgr-env.cpp orig/lib/comgr/src/comgr-env.cpp
+--- ROCm-CompilerSupport-rocm-5.0.1/lib/comgr/src/comgr-env.cpp	2022-03-05 21:33:06.549072458 +0800
++++ orig/lib/comgr/src/comgr-env.cpp	2022-03-05 21:24:12.053062536 +0800
+@@ -153,7 +153,7 @@ public:
+ 
+   virtual SmallString<128> getHIPPathImpl() {
+     SmallString<128> HIPPath = getROCmPath();
+-    sys::path::append(HIPPath, "");
++    sys::path::append(HIPPath, "hip");
+ 
+     return HIPPath;
+   }
+@@ -247,9 +247,6 @@ InstallationDetector *getDetectorImpl()
+   if (EnvROCMPath) {
+     ROCmInstallPath = EnvROCMPath;
+   }
+-  else {
+-	ROCmInstallPath = "@GENTOO_PORTAGE_EPREFIX@/usr";
+-  }
+ 
+   InstallationDetector *Detector;
+   if (ROCmInstallPath == "") {

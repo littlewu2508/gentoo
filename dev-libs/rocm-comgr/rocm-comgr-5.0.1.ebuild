@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit cmake
+inherit cmake prefix
 
 if [[ ${PV} == *9999 ]] ; then
 	EGIT_REPO_URI="https://github.com/RadeonOpenCompute/ROCm-CompilerSupport/"
@@ -17,6 +17,7 @@ fi
 
 PATCHES=(
 	"${FILESDIR}/${PN}-4.5.2-dependencies.patch"
+	"${FILESDIR}"/${PN}-4.3.0_strip-usr-include.patch
 )
 
 DESCRIPTION="Radeon Open Compute Code Object Manager"
@@ -31,6 +32,7 @@ DEPEND="${RDEPEND}"
 CMAKE_BUILD_TYPE=Release
 
 src_prepare() {
+	eprefixify lib/comgr/src/comgr-env.cpp
 	cmake_src_prepare
 }
 
