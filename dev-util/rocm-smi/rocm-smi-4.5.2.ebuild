@@ -7,22 +7,29 @@ PYTHON_COMPAT=( python3_{8..10} )
 
 inherit cmake multilib prefix python-r1 python-utils-r1
 
-DESCRIPTION="ROCm SMI LIB"
+DESCRIPTION="ROCm System Management Interface Library"
 HOMEPAGE="https://github.com/RadeonOpenCompute/rocm_smi_lib"
-SRC_URI="https://github.com/RadeonOpenCompute/${PN}/archive/refs/tags/rocm-${PV}.tar.gz -> rocm_smi_lib-${PV}.tar.gz"
+
+if [[ ${PV} == *9999 ]] ; then
+	inherit git-r3
+	EGIT_REPO_URI="https://github.com/RadeonOpenCompute/rocm_smi_lib"
+	EGIT_BRANCH="master"
+else
+	SRC_URI="https://github.com/RadeonOpenCompute/rocm_smi_lib/archive/rocm-${PV}.tar.gz -> rocm-smi-${PV}.tar.gz"
+	KEYWORDS="~amd64"
+	S="${WORKDIR}/rocm_smi_lib-rocm-${PV}"
+fi
 
 LICENSE="NCSA-AMD"
-SLOT="0"
-KEYWORDS="~amd64 ~x86"
+SLOT="0/$(ver_cut 1-2)"
+IUSE=""
+REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
 DEPEND=""
-RDEPEND="${DEPEND}"
+RDEPEND="${PYTHON_DEPS}"
 BDEPEND=""
 
-S="${WORKDIR}/rocm_smi_lib-rocm-${PV}"
-
 src_prepare() {
-	eapply "${FILESDIR}/5.0.1-bindings.patch"
 	sed -e "/DESTINATION/s,\${OAM_NAME}/lib,$(get_libdir)," \
 		-e "/DESTINATION/s,oam/include/oam,include/oam," -i oam/CMakeLists.txt || die
 	sed -e "/link DESTINATION/,+1d" \
@@ -30,8 +37,8 @@ src_prepare() {
 		-e "/bindings_link/,+3d" \
 		-e "/rsmiBindings.py/,+1d" \
 		-e "/DESTINATION/s,rocm_smi/include/rocm_smi,include/rocm_smi," -i rocm_smi/CMakeLists.txt || die
-		sed -e "/LICENSE.txt/d" -e "s,\${ROCM_SMI}/lib/cmake,$(get_libdir)/cmake,g" -i CMakeLists.txt || die
-	eprefixify python_smi_tools/rsmiBindings.py
+	sed -e "/LICENSE.txt/d" -e "s,\${ROCM_SMI}/lib/cmake,$(get_libdir)/cmake,g" -i CMakeLists.txt || die
+	sed -e "/^path_librocm = /c\path_librocm = '${EPREFIX}/usr/lib64/librocm_smi64.so'" -i python_smi_tools/rsmiBindings.py || die
 	cmake_src_prepare
 }
 
