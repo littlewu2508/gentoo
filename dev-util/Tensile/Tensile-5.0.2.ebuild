@@ -17,9 +17,6 @@ LICENSE="MIT"
 KEYWORDS="~amd64"
 SLOT="0/$(ver_cut 1-2)"
 
-# Not compatible with recent versions of pytest
-RESTRICT="test"
-
 RDEPEND="${PYTHON_DEPS}
 	dev-python/pyyaml[${PYTHON_USEDEP}]
 	dev-python/msgpack[${PYTHON_USEDEP}]
@@ -28,6 +25,8 @@ RDEPEND="${PYTHON_DEPS}
 DEPEND="${RDEPEND}
 	dev-util/hip:${SLOT}
 "
+
+BDEPEND="test? ( dev-python/filelock )"
 
 PATCHES=( "${FILESDIR}"/${PN}-4.3.0-output-commands.patch
 		  "${FILESDIR}"/${PN}-5.0.2-gfx1031.patch
@@ -38,6 +37,8 @@ PATCHES=( "${FILESDIR}"/${PN}-4.3.0-output-commands.patch
 	  )
 
 CMAKE_USE_DIR="${WORKDIR}/Source"
+
+distutils_enable_tests pytest
 
 src_prepare() {
 	distutils-r1_src_prepare
@@ -65,6 +66,17 @@ src_prepare() {
 	popd || die
 
 	sed -e "/package_data/d" -e "/data_files/d" -i setup.py || die
+}
+
+python_test() {
+	cd "${T}" || die
+	epytest "${S}"/${PN}/Tests --builddir test_build
+}
+
+src_test() {
+	einfo ${T}
+	DISTUTILS_ARGS=( --builddir ${T} )
+	ROCM_PATH="${EPREFIX}/usr" distutils-r1_src_test
 }
 
 python_install() {
