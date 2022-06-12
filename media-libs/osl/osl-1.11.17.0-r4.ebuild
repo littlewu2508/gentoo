@@ -6,11 +6,11 @@ EAPI=7
 PYTHON_COMPAT=( python3_{8,9,10} )
 
 # check this on updates
-LLVM_MAX_SLOT=14
+# LLVM_MAX_SLOT=14
 
 CMAKE_REMOVE_MODULES_LIST=()
 
-inherit cmake llvm toolchain-funcs python-single-r1
+inherit cmake toolchain-funcs python-single-r1
 
 DESCRIPTION="Advanced shading language for production GI renderers"
 HOMEPAGE="http://opensource.imageworks.com/?p=osl https://github.com/imageworks/OpenShadingLanguage"
@@ -37,7 +37,6 @@ RDEPEND="
 	>=media-libs/openexr-3:0=
 	>=dev-libs/imath-3.1.4-r2:=
 	>=media-libs/openimageio-2.3.12.0:=
-	<sys-devel/clang-$((${LLVM_MAX_SLOT} + 1)):=
 	sys-libs/zlib
 	partio? ( media-libs/partio )
 	python? (
@@ -68,13 +67,8 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-1.11.17.0-llvm14.patch
 )
 
-llvm_check_deps() {
-	has_version -r "sys-devel/clang:${LLVM_SLOT}"
-}
-
 pkg_setup() {
 	use python && python-single-r1_pkg_setup
-	llvm_pkg_setup
 }
 
 src_configure() {
@@ -96,7 +90,7 @@ src_configure() {
 		-DINSTALL_DOCS=$(usex doc)
 		-DUSE_CCACHE=OFF
 		-DLLVM_STATIC=OFF
-		-DLLVM_ROOT="$(get_llvm_prefix ${LLVM_MAX_SLOT})"
+		-DLLVM_ROOT="${EPREFIX}/usr/lib/llvm/roc"
 		# Breaks build for now: bug #827949
 		#-DOSL_BUILD_TESTS=$(usex test)
 		-DOSL_SHADER_INSTALL_DIR="${EPREFIX}/usr/include/${PN^^}/shaders"

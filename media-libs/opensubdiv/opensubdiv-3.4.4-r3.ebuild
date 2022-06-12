@@ -3,8 +3,6 @@
 
 EAPI=8
 
-CMAKE_MAKEFILE_GENERATOR=emake
-
 inherit cmake cuda toolchain-funcs
 
 MY_PV="$(ver_rs "1-3" '_')"
