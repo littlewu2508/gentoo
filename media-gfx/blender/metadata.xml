@@ -76,6 +76,9 @@
 		<flag name="pugixml">
 			Enable PugiXML support (Used for OpenImageIO, Grease Pencil SVG export)
 		</flag>
+		<flag name="rocm">
+			Build cycles renderer with ROCm support.
+		</flag>
 		<flag name="tbb">
 			Use threading building blocks library from <pkg>dev-cpp/tbb</pkg>.
 		</flag>

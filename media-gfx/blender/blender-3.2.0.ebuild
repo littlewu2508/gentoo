@@ -28,7 +28,7 @@ IUSE="+bullet +dds +fluid +openexr +tbb \
 	alembic collada +color-management cuda +cycles \
 	debug doc +embree +ffmpeg +fftw +gmp headless jack jemalloc jpeg2k \
 	man +nanovdb ndof nls openal +oidn +openimageio +openmp +opensubdiv \
-	+openvdb +osl +pdf +potrace +pugixml pulseaudio sdl +sndfile test +tiff valgrind"
+	+openvdb +osl +pdf +potrace +pugixml pulseaudio rocm sdl +sndfile test +tiff valgrind"
 RESTRICT="!test? ( test )"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
@@ -38,6 +38,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	fluid? ( tbb )
 	openvdb? ( tbb )
 	osl? ( cycles )
+	rocm? ( cycles )
 	test? ( color-management )"
 
 # Library versions for official builds can be found in the blender source directory in:
@@ -98,6 +99,7 @@ RDEPEND="${PYTHON_DEPS}
 	potrace? ( media-gfx/potrace )
 	pugixml? ( dev-libs/pugixml )
 	pulseaudio? ( media-sound/pulseaudio )
+	rocm? ( >=dev-util/hip-5.1.3 )
 	sdl? ( media-libs/libsdl2[sound,joystick] )
 	sndfile? ( media-libs/libsndfile )
 	tbb? ( dev-cpp/tbb:= )
@@ -193,6 +195,11 @@ src_prepare() {
 	mv release/freedesktop/icons/symbolic/apps/blender-symbolic.svg release/freedesktop/icons/symbolic/apps/blender-${BV}-symbolic.svg || die
 	mv release/freedesktop/blender.desktop release/freedesktop/blender-${BV}.desktop || die
 
+	if use rocm; then
+		local libhip_path=$(ldconfig -p | grep "libamdhip64.so$" | awk '{print $NF}')
+		sed -e "s|/opt/rocm/hip/lib/libamdhip64.so|${libhip_path}|" -i extern/hipew/src/hipew.c || die
+	fi
+
 	if use test; then
 		# Without this the tests will try to use /usr/bin/blender and /usr/share/blender/ to run the tests.
 		sed -e "s|string(REPLACE.*|set(TEST_INSTALL_DIR ${ED}/usr/)|g" -i tests/CMakeLists.txt || die
@@ -217,6 +224,8 @@ src_configure() {
 		-DWITH_CXX_GUARDEDALLOC=$(usex debug)
 		-DWITH_CYCLES=$(usex cycles)
 		-DWITH_CYCLES_DEVICE_CUDA=$(usex cuda TRUE FALSE)
+		-DWITH_CYCLES_DEVICE_HIP=$(usex rocm TRUE FALSE)
+		-DWITH_CYCLES_HIP_BINARIES=$(usex rocm TRUE FALSE)
 		-DWITH_CYCLES_EMBREE=$(usex embree)
 		-DWITH_CYCLES_OSL=$(usex osl)
 		-DWITH_CYCLES_STANDALONE=OFF
