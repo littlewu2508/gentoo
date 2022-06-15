@@ -5,7 +5,7 @@ EAPI=8
 
 PYTHON_COMPAT=( python3_{8..11} )
 
-inherit meson-multilib python-any-r1 linux-info
+inherit llvm meson-multilib python-any-r1 linux-info
 
 MY_P="${P/_/-}"
 
@@ -100,6 +100,79 @@ done
 RDEPEND="${RDEPEND}
 	video_cards_radeonsi? ( ${LIBDRM_DEPSTRING}[video_cards_amdgpu] )
 "
+
+# Please keep the LLVM dependency block separate. Since LLVM is slotted,
+# we need to *really* make sure we're not pulling one than more slot
+# simultaneously.
+#
+# How to use it:
+# 1. List all the working slots (with min versions) in ||, newest first.
+# 2. Update the := to specify *max* version, e.g. < 10.
+# 3. Specify LLVM_MAX_SLOT, e.g. 9.
+LLVM_MAX_SLOT="14"
+LLVM_DEPSTR="
+	|| (
+		sys-devel/llvm:14[${MULTILIB_USEDEP}]
+		sys-devel/llvm:13[${MULTILIB_USEDEP}]
+		sys-devel/llvm:12[${MULTILIB_USEDEP}]
+	)
+	<sys-devel/llvm-$((LLVM_MAX_SLOT + 1)):=[${MULTILIB_USEDEP}]
+"
+LLVM_DEPSTR_AMDGPU=${LLVM_DEPSTR//]/,llvm_targets_AMDGPU(-)]}
+CLANG_DEPSTR=${LLVM_DEPSTR//llvm/clang}
+CLANG_DEPSTR_AMDGPU=${CLANG_DEPSTR//]/,llvm_targets_AMDGPU(-)]}
+RDEPEND="${RDEPEND}
+	llvm? (
+		opencl? (
+			video_cards_r600? (
+				${CLANG_DEPSTR_AMDGPU}
+			)
+			!video_cards_r600? (
+				video_cards_radeonsi? (
+					${CLANG_DEPSTR_AMDGPU}
+				)
+			)
+			!video_cards_r600? (
+				!video_cards_radeonsi? (
+					video_cards_radeon? (
+						${CLANG_DEPSTR_AMDGPU}
+					)
+				)
+			)
+			!video_cards_r600? (
+				!video_cards_radeon? (
+					!video_cards_radeonsi? (
+						${CLANG_DEPSTR}
+					)
+				)
+			)
+		)
+		!opencl? (
+			video_cards_r600? (
+				${LLVM_DEPSTR_AMDGPU}
+			)
+			!video_cards_r600? (
+				video_cards_radeonsi? (
+					${LLVM_DEPSTR_AMDGPU}
+				)
+			)
+			!video_cards_r600? (
+				!video_cards_radeonsi? (
+					video_cards_radeon? (
+						${LLVM_DEPSTR_AMDGPU}
+					)
+				)
+			)
+			!video_cards_r600? (
+				!video_cards_radeon? (
+					!video_cards_radeonsi? (
+						${LLVM_DEPSTR}
+					)
+				)
+			)
+		)
+	)
+"
 unset {LLVM,CLANG}_DEPSTR{,_AMDGPU}
 
 DEPEND="${RDEPEND}
@@ -142,6 +215,10 @@ llvm_check_deps() {
 		flags+=",llvm_targets_AMDGPU(-)"
 	fi
 
+	if use opencl; then
+		has_version "sys-devel/clang:${LLVM_SLOT}[${flags}]" || return 1
+	fi
+	has_version "sys-devel/llvm:${LLVM_SLOT}[${flags}]"
 }
 
 pkg_pretend() {
@@ -208,6 +285,10 @@ python_check_deps() {
 
 pkg_setup() {
 	# warning message for bug 459306
+	if use llvm && has_version sys-devel/llvm[!debug=]; then
+		ewarn "Mismatch between debug USE flags in media-libs/mesa and sys-devel/llvm"
+		ewarn "detected! This can cause problems. For details, see bug 459306."
+	fi
 
 	if use video_cards_intel ||
 	   use video_cards_radeonsi; then
@@ -223,6 +304,9 @@ pkg_setup() {
 		linux-info_pkg_setup
 	fi
 
+	if use llvm; then
+		llvm_pkg_setup
+	fi
 	python-any-r1_pkg_setup
 }
 
@@ -338,7 +422,6 @@ multilib_src_configure() {
 		-Degl=enabled
 		-Dgbm=enabled
 		-Dglvnd=true
-		-Dcpp_rtti=false
 		$(meson_feature gles1)
 		$(meson_feature gles2)
 		$(meson_feature llvm)
@@ -353,7 +436,6 @@ multilib_src_configure() {
 		-Dvulkan-drivers=$(driver_list "${VULKAN_DRIVERS[*]}")
 		--buildtype $(usex debug debug plain)
 		-Db_ndebug=$(usex debug false true)
-		--native-file "${FILESDIR}/custom-llvm.ini"
 	)
 	meson_src_configure
 }
