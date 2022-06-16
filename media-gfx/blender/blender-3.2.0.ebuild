@@ -91,7 +91,7 @@ RDEPEND="${PYTHON_DEPS}
 	)
 	opensubdiv? ( >=media-libs/opensubdiv-3.4.0[cuda=] )
 	openvdb? (
-		>=media-gfx/openvdb-9.0.0:=[nanovdb?]
+		>=media-gfx/openvdb-9.1.0:=[nanovdb?]
 		dev-libs/c-blosc:=
 	)
 	osl? ( >=media-libs/osl-1.11.16.0-r3:= )
