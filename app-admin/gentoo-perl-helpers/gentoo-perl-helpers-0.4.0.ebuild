@@ -3,6 +3,8 @@
 
 EAPI=6
 
+inherit prefix
+
 DESCRIPTION="Introspection and Upgrade Assistance tools for Gentoo Perl"
 HOMEPAGE="https://github.com/gentoo-perl/gentoo-perl-helpers"
 SRC_URI="
@@ -35,6 +37,7 @@ src_prepare() {
 		   "${S}/bin/gentoo-perl"			\
 		   "${S}/lib/core-functions.sh"		\
 		   || die "Can't patch bin/gentoo-perl"
+		hprefixify libexec/*
 	default
 }
 src_compile() { :; }
