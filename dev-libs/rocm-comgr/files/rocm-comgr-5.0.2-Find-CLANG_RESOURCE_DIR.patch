@@ -9,10 +9,10 @@ Signed-off-by: Yiyang Wu <xgreenlandforwyy@gmail.com>
  lib/comgr/cmake/opencl_pch.cmake | 24 +++---------------------
  1 file changed, 3 insertions(+), 21 deletions(-)
 
-diff --git a/lib/comgr/cmake/opencl_pch.cmake b/lib/comgr/cmake/opencl_pch.cmake
-index 95311fc..e635f24 100644
---- a/cmake/opencl_pch.cmake
-+++ b/cmake/opencl_pch.cmake
+Index: comgr/cmake/opencl_pch.cmake
+===================================================================
+--- comgr.orig/cmake/opencl_pch.cmake
++++ comgr/cmake/opencl_pch.cmake
 @@ -1,26 +1,8 @@
  if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
    find_package(Clang REQUIRED CONFIG)
@@ -43,6 +43,29 @@ index 95311fc..e635f24 100644
  endif()
  
  # Macro to create and install a custom target for generating PCH for given
--- 
-2.35.1
-
+Index: comgr/src/comgr-compiler.cpp
+===================================================================
+--- comgr.orig/src/comgr-compiler.cpp
++++ comgr/src/comgr-compiler.cpp
+@@ -42,6 +42,7 @@
+ #include "lld/Common/Driver.h"
+ #include "clang/Basic/Version.h"
+ #include "clang/CodeGen/CodeGenAction.h"
++#include "clang/Config/config.h"
+ #include "clang/Driver/Compilation.h"
+ #include "clang/Driver/DriverDiagnostic.h"
+ #include "clang/Driver/Job.h"
+@@ -988,11 +989,8 @@ amd_comgr_status_t AMDGPUCompiler::addCo
+   HIPIncludePath = (Twine(env::getHIPPath()) + "/include").str();
+   // HIP headers depend on hsa.h which is in ROCM_DIR/include.
+   ROCMIncludePath = (Twine(env::getROCMPath()) + "/include").str();
+-  ClangIncludePath =
+-      (Twine(env::getLLVMPath()) + "/lib/clang/" + CLANG_VERSION_STRING).str();
+-  ClangIncludePath2 = (Twine(env::getLLVMPath()) + "/lib/clang/" +
+-                       CLANG_VERSION_STRING + "/include")
+-                          .str();
++  ClangIncludePath = (Twine(env::getLLVMPath()) + "/bin/" + CLANG_RESOURCE_DIR).str();
++  ClangIncludePath2 = (Twine(env::getLLVMPath()) + "/bin/" + CLANG_RESOURCE_DIR + "/include").str();
+ 
+   Args.push_back("-x");
+ 
