@@ -24,13 +24,13 @@ IUSE="debug profile"
 
 DEPEND="
 	>=dev-util/rocminfo-5
-	>=sys-devel/clang-14.0.5-r1:${LLVM_MAX_SLOT}=
+	sys-devel/clang:${LLVM_MAX_SLOT}=
 	dev-libs/rocm-comgr:${SLOT}
 	virtual/opengl
 "
-# sys-devel/clang-runtime:${LLVM_MAX_SLOT}
 RDEPEND="${DEPEND}
 	dev-perl/URI-Encode
+	sys-devel/clang-runtime:${LLVM_MAX_SLOT}=
 	>=dev-libs/roct-thunk-interface-5"
 
 PATCHES=(
@@ -38,6 +38,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-4.2.0-config-cmake-in.patch"
 	"${FILESDIR}/${PN}-5.0.1-hip_vector_types.patch"
 	"${FILESDIR}/${PN}-4.2.0-cancel-hcc-header-removal.patch"
+	"${FILESDIR}/${PN}-5.0.2-set-build-id.patch"
 )
 
 S="${WORKDIR}/hipamd-rocm-${PV}"
@@ -72,11 +73,14 @@ src_prepare() {
 		-e "/CPACK_RESOURCE_FILE_LICENSE/d" -i packaging/CMakeLists.txt || die
 
 	cd ${HIP_S} || die
-	eapply "${FILESDIR}/${PN}-5.1.3-gentoo-path.patch"
+	eapply "${FILESDIR}/${PN}-5.1.3-clang-include-path.patch"
+	eapply "${FILESDIR}/${PN}-5.1.3-rocm-path.patch"
 	local CLANG_RESOURCE_DIR=$("${LLVM_PREFIX}/bin/clang" -print-resource-dir)
 	# Setting HSA_PATH to "/usr" results in setting "-isystem /usr/include"
 	# which makes "stdlib.h" not found when using "#include_next" in header files;
 	sed -e "/FLAGS .= \" -isystem \$HSA_PATH/d" \
+		-e "/HIP.*FLAGS.*isystem.*HIP_INCLUDE_PATH/d" \
+		-e "s:\$ENV{'DEVICE_LIB_PATH'}:'/usr/lib/amdgcn/bitcode':" \
 		-e "/rpath/s,--rpath=[^ ]*,," \
 		-e "s,\$HIP_CLANG_PATH/../lib/clang/\$HIP_CLANG_VERSION/,${CLANG_RESOURCE_DIR}/,g" \
 		-i bin/hipcc.pl || die
