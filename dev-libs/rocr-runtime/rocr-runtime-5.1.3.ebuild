@@ -3,7 +3,9 @@
 
 EAPI=8
 
-inherit cmake
+inherit cmake llvm
+
+LLVM_MAX_SLOT=14
 
 if [[ ${PV} == *9999 ]] ; then
 	EGIT_REPO_URI="https://github.com/RadeonOpenCompute/ROCR-Runtime/"
@@ -37,7 +39,7 @@ CMAKE_BUILD_TYPE=Release
 
 src_prepare() {
 	# ... otherwise system llvm/clang is used ...
-	sed -e "/find_package(Clang REQUIRED HINTS /s:\${CMAKE_INSTALL_PREFIX}/llvm \${CMAKE_PREFIX_PATH}/llvm PATHS /opt/rocm/llvm:${EPREFIX}/usr/lib/llvm/roc:" -i image/blit_src/CMakeLists.txt || die
+	sed -e "/find_package(Clang REQUIRED HINTS /s:\${CMAKE_INSTALL_PREFIX}/llvm \${CMAKE_PREFIX_PATH}/llvm PATHS /opt/rocm/llvm:$(get_llvm_prefix ${LLVM_MAX_SLOT}):" -i image/blit_src/CMakeLists.txt || die
 
 	# Gentoo installs "*.bc" to "/usr/lib" instead of a "[path]/bitcode" directory ...
 	sed -e "s:/opt/rocm/amdgcn/bitcode:${EPREFIX}/usr/lib/amdgcn/bitcode:" -i image/blit_src/CMakeLists.txt || die
