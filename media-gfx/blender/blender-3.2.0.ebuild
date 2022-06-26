@@ -125,8 +125,6 @@ BDEPEND="
 	nls? ( sys-devel/gettext )
 "
 
-PATCHES=( "${FILESDIR}"/${PN}-3.2.0-enable-hip-on-old-device.patch )
-
 blender_check_requirements() {
 	[[ ${MERGE_TYPE} != binary ]] && use openmp && tc-check-openmp
 
