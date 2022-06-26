@@ -1,0 +1,66 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -444,7 +444,7 @@
+ if(NOT APPLE)
+   option(WITH_CYCLES_DEVICE_HIP        "Enable Cycles AMD HIP support" ON)
+   option(WITH_CYCLES_HIP_BINARIES      "Build Cycles AMD HIP binaries" OFF)
+-  set(CYCLES_HIP_BINARIES_ARCH gfx1010 gfx1011 gfx1012 gfx1030 gfx1031 gfx1032 gfx1034 gfx1035 CACHE STRING "AMD HIP architectures to build binaries for")
++  set(CYCLES_HIP_BINARIES_ARCH gfx900 gfx906 gfx90c gfx902 gfx1010 gfx1011 gfx1012 gfx1030 gfx1031 gfx1032 gfx1034 gfx1035 CACHE STRING "AMD HIP architectures to build binaries for")
+   mark_as_advanced(WITH_CYCLES_DEVICE_HIP)
+   mark_as_advanced(CYCLES_HIP_BINARIES_ARCH)
+ endif()
+diff --git a/intern/cycles/blender/addon/properties.py b/intern/cycles/blender/addon/properties.py
+--- a/intern/cycles/blender/addon/properties.py
++++ b/intern/cycles/blender/addon/properties.py
+@@ -1545,10 +1545,10 @@
+             elif device_type == 'HIP':
+                 import sys
+                 if sys.platform[:3] == "win":
+-                    col.label(text="Requires discrete AMD GPU with RDNA architecture", icon='BLANK1')
++                    col.label(text="Requires AMD GPU with Vega or RDNA architecture", icon='BLANK1')
+                     col.label(text="and AMD Radeon Pro 21.Q4 driver or newer", icon='BLANK1')
+                 elif sys.platform.startswith("linux"):
+-                    col.label(text="Requires discrete AMD GPU with RDNA architecture", icon='BLANK1')
++                    col.label(text="Requires AMD GPU with Vega or RDNA architecture", icon='BLANK1')
+                     col.label(text="and AMD driver version 22.10 or newer", icon='BLANK1')
+             elif device_type == 'METAL':
+                 col.label(text="Requires Apple Silicon with macOS 12.2 or newer", icon='BLANK1')
+diff --git a/intern/cycles/device/hip/util.h b/intern/cycles/device/hip/util.h
+--- a/intern/cycles/device/hip/util.h
++++ b/intern/cycles/device/hip/util.h
+@@ -51,7 +51,7 @@
+   hipDeviceGetAttribute(&major, hipDeviceAttributeComputeCapabilityMajor, hipDevId);
+   hipDeviceGetAttribute(&minor, hipDeviceAttributeComputeCapabilityMinor, hipDevId);
+ 
+-  return (major > 10) || (major == 10 && minor >= 1);
++  return (major >= 9);
+ }
+ 
+ CCL_NAMESPACE_END
+diff --git a/intern/cycles/kernel/device/hip/compat.h b/intern/cycles/kernel/device/hip/compat.h
+--- a/intern/cycles/kernel/device/hip/compat.h
++++ b/intern/cycles/kernel/device/hip/compat.h
+@@ -62,7 +62,7 @@
+ #define ccl_gpu_block_idx_x (blockIdx.x)
+ #define ccl_gpu_grid_dim_x (gridDim.x)
+ #define ccl_gpu_warp_size (warpSize)
+-#define ccl_gpu_thread_mask(thread_warp) uint(0xFFFFFFFF >> (ccl_gpu_warp_size - thread_warp))
++#define ccl_gpu_thread_mask(thread_warp) uint64_t((1ull << thread_warp) - 1)
+ 
+ #define ccl_gpu_global_id_x() (ccl_gpu_block_idx_x * ccl_gpu_block_dim_x + ccl_gpu_thread_idx_x)
+ #define ccl_gpu_global_size_x() (ccl_gpu_grid_dim_x * ccl_gpu_block_dim_x)
+diff --git a/intern/cycles/util/math.h b/intern/cycles/util/math.h
+--- a/intern/cycles/util/math.h
++++ b/intern/cycles/util/math.h
+@@ -786,6 +786,9 @@
+   return i & 1;
+ }
+ #  endif
++#elif defined(__KERNEL_HIP__)
++/* Use popcll to support 64-bit wave for pre-RDNA AMD GPUs */
++#  define popcount(x) __popcll(x)
+ #elif !defined(__KERNEL_METAL__)
+ #  define popcount(x) __popc(x)
+ #endif
+
