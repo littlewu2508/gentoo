@@ -30,7 +30,7 @@ DEPEND="
 "
 RDEPEND="${DEPEND}
 	dev-perl/URI-Encode
-	sys-devel/clang-runtime:${LLVM_MAX_SLOT}=
+	sys-devel/clang-runtime
 	>=dev-libs/roct-thunk-interface-5"
 
 PATCHES=(
@@ -60,6 +60,7 @@ src_prepare() {
 
 	# correctly find HIP_CLANG_INCLUDE_PATH using cmake
 	local LLVM_PREFIX="$(get_llvm_prefix "${LLVM_MAX_SLOT}")"
+	local CLANG_RESOURCE_DIR=$("${LLVM_PREFIX}/bin/clang" -print-resource-dir)
 	sed -e "/set(HIP_CLANG_ROOT/s:\"\${ROCM_PATH}/llvm\":${LLVM_PREFIX}:" -i hip-config.cmake.in || die
 
 	# correct libs and cmake install dir
@@ -72,10 +73,9 @@ src_prepare() {
 		-e "/\(cmake\|samples\)/s,DESTINATION \.,DESTINATION share,g" \
 		-e "/CPACK_RESOURCE_FILE_LICENSE/d" -i packaging/CMakeLists.txt || die
 
-	cd ${HIP_S} || die
+	pushd ${HIP_S} || die
 	eapply "${FILESDIR}/${PN}-5.1.3-clang-include-path.patch"
 	eapply "${FILESDIR}/${PN}-5.1.3-rocm-path.patch"
-	local CLANG_RESOURCE_DIR=$("${LLVM_PREFIX}/bin/clang" -print-resource-dir)
 	# Setting HSA_PATH to "/usr" results in setting "-isystem /usr/include"
 	# which makes "stdlib.h" not found when using "#include_next" in header files;
 	sed -e "/FLAGS .= \" -isystem \$HSA_PATH/d" \
@@ -98,6 +98,10 @@ src_prepare() {
 		-e "s,@HIP_VERSION_PATCH@,$(ver_cut 3)," \
 		-e "s,@CLANG_INCLUDE_PATH@,${CLANG_RESOURCE_DIR}/include," \
 		-e "s,@CLANG_PATH@,${LLVM_PREFIX}/bin," -i bin/hipvars.pm || die
+
+	sed -e "/HIP_CLANG_INCLUDE_SEARCH_PATHS/s,\${_IMPORT_PREFIX}.*/include,${CLANG_RESOURCE_DIR}/include," -i hip-lang-config.cmake.in || die
+	popd || die
+	sed -e "/HIP_CLANG_INCLUDE_SEARCH_PATHS/s,\${HIP_CLANG_ROOT}.*/include,${CLANG_RESOURCE_DIR}/include," -i hip-config.cmake.in || die
 }
 
 src_configure() {
