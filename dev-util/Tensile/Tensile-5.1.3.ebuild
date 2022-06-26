@@ -26,7 +26,7 @@ RDEPEND="${PYTHON_DEPS}
 	dev-python/pyyaml[${PYTHON_USEDEP}]
 	dev-python/msgpack[${PYTHON_USEDEP}]
 	>=dev-util/rocm-smi-4.3.0
-	>=sys-devel/clang-14.0.5-r1:${LLVM_MAX_SLOT}=
+	sys-devel/clang:${LLVM_MAX_SLOT}=
 "
 DEPEND="${RDEPEND}
 	dev-util/hip:${SLOT}
