@@ -13,7 +13,7 @@ SRC_URI="https://github.com/ROCm-Developer-Tools/hipamd/archive/rocm-${PV}.tar.g
 	https://github.com/ROCm-Developer-Tools/ROCclr/archive/rocm-${PV}.tar.gz -> rocclr-${PV}.tar.gz
 	https://github.com/RadeonOpenCompute/ROCm-OpenCL-Runtime/archive/rocm-${PV}.tar.gz -> rocm-opencl-runtime-${PV}.tar.gz
 	profile? ( https://github.com/ROCm-Developer-Tools/roctracer/archive/refs/tags/rocm-${PV}.tar.gz -> rocm-tracer-${PV}.tar.gz
-			https://github.com/ROCm-Developer-Tools/hipamd/files/8311148/hip_prof_str_diff.gz -> ${PV}-update-header.patch.gz
+			https://github.com/ROCm-Developer-Tools/hipamd/files/8991181/hip_prof_str_diff.gz -> ${P}-update-header.patch.gz
 	)"
 
 KEYWORDS="~amd64"
@@ -39,6 +39,8 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.0.1-hip_vector_types.patch"
 	"${FILESDIR}/${PN}-4.2.0-cancel-hcc-header-removal.patch"
 	"${FILESDIR}/${PN}-5.0.2-set-build-id.patch"
+	"${FILESDIR}/${PN}-5.1.3-fix-hip_prof_gen.patch"
+	"${FILESDIR}/0001-SWDEV-316128-HIP-surface-API-support.patch"
 )
 
 S="${WORKDIR}/hipamd-rocm-${PV}"
@@ -49,6 +51,7 @@ RTC_S="${WORKDIR}"/roctracer-rocm-${PV}
 
 src_prepare() {
 	cmake_src_prepare
+	use profile && eapply "${WORKDIR}/${P}-update-header.patch"
 
 	eapply_user
 
