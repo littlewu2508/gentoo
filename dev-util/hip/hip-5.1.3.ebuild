@@ -2,7 +2,10 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
-inherit cmake llvm prefix
+
+PYTHON_COMPAT=( python3_{8..11} )
+
+inherit cmake llvm prefix python-any-r1
 
 LLVM_MAX_SLOT=14
 
@@ -32,6 +35,10 @@ RDEPEND="${DEPEND}
 	dev-perl/URI-Encode
 	sys-devel/clang-runtime:=
 	>=dev-libs/roct-thunk-interface-5"
+BDEPEND="profile? ( $(python_gen_any_dep '
+	dev-python/CppHeaderParser[${PYTHON_USEDEP}]
+	') )
+"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-5.0.1-DisableTest.patch"
@@ -42,6 +49,12 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.1.3-fix-hip_prof_gen.patch"
 	"${FILESDIR}/0001-SWDEV-316128-HIP-surface-API-support.patch"
 )
+
+python_check_deps() {
+	if use profile; then
+		has_version "dev-python/CppHeaderParser[${PYTHON_USEDEP}]"
+	fi
+}
 
 S="${WORKDIR}/hipamd-rocm-${PV}"
 HIP_S="${WORKDIR}"/HIP-rocm-${PV}
