@@ -1,4 +1,4 @@
-Index: HIP-rocm-5.1.3/bin/hipcc.pl
+pass HIP_CLANG_INCLUDE_PATH which is determined by clang -print-resource-dir
 ===================================================================
 --- HIP-rocm-5.1.3.orig/bin/hipcc.pl
 +++ HIP-rocm-5.1.3/bin/hipcc.pl
