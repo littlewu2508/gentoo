@@ -92,11 +92,13 @@ src_prepare() {
 	pushd ${HIP_S} || die
 	eapply "${FILESDIR}/${PN}-5.1.3-clang-include-path.patch"
 	eapply "${FILESDIR}/${PN}-5.1.3-rocm-path.patch"
+	eapply "${FILESDIR}/${PN}-5.0.2-correct-ldflag.patch"
 	# Setting HSA_PATH to "/usr" results in setting "-isystem /usr/include"
 	# which makes "stdlib.h" not found when using "#include_next" in header files;
 	sed -e "/FLAGS .= \" -isystem \$HSA_PATH/d" \
 		-e "/HIP.*FLAGS.*isystem.*HIP_INCLUDE_PATH/d" \
 		-e "s:\$ENV{'DEVICE_LIB_PATH'}:'/usr/lib/amdgcn/bitcode':" \
+		-e "s:\$ENV{'HIP_LIB_PATH'}:'/usr/$(get_libdir)':" \
 		-e "/rpath/s,--rpath=[^ ]*,," \
 		-e "s,\$HIP_CLANG_PATH/../lib/clang/\$HIP_CLANG_VERSION/,${CLANG_RESOURCE_DIR}/,g" \
 		-i bin/hipcc.pl || die
