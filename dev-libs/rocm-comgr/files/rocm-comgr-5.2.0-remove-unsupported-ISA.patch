@@ -1,0 +1,40 @@
+Index: comgr/src/comgr-isa-metadata.def
+===================================================================
+--- comgr.orig/src/comgr-isa-metadata.def
++++ comgr/src/comgr-isa-metadata.def
+@@ -79,6 +79,5 @@ HANDLE_ISA("amdgcn-amd-amdhsa-", "gfx103
+ HANDLE_ISA("amdgcn-amd-amdhsa-", "gfx1033",  false, false, EF_AMDGPU_MACH_AMDGCN_GFX1033, true, 65536,  32,  4,   40, 1024,  106, 800, 106,    8, 256, 256)
+ HANDLE_ISA("amdgcn-amd-amdhsa-", "gfx1034",  false, false, EF_AMDGPU_MACH_AMDGCN_GFX1034, true, 65536,  32,  4,   40, 1024,  106, 800, 106,    8, 256, 256)
+ HANDLE_ISA("amdgcn-amd-amdhsa-", "gfx1035",  false, false, EF_AMDGPU_MACH_AMDGCN_GFX1035, true, 65536,  32,  4,   40, 1024,  106, 800, 106,    8, 256, 256)
+-HANDLE_ISA("amdgcn-amd-amdhsa-", "gfx1036",  false, false, EF_AMDGPU_MACH_AMDGCN_GFX1036, true, 65536,  32,  4,   40, 1024,  106, 800, 106,    8, 256, 256)
+ 
+ #undef HANDLE_ISA
+Index: comgr/test/get_data_isa_name_test.c
+===================================================================
+--- comgr.orig/test/get_data_isa_name_test.c
++++ comgr/test/get_data_isa_name_test.c
+@@ -94,7 +94,6 @@ static isa_features_t IsaFeatures[] = {
+   {"amdgcn-amd-amdhsa--gfx1033", false,     false,     none,       false,     none},
+   {"amdgcn-amd-amdhsa--gfx1034", false,     false,     none,       false,     none},
+   {"amdgcn-amd-amdhsa--gfx1035", false,     false,     none,       false,     none},
+-  {"amdgcn-amd-amdhsa--gfx1036", false,     false,     none,       false,     none},
+ };
+ 
+ static size_t IsaFeaturesSize = sizeof(IsaFeatures) / sizeof(IsaFeatures[0]);
+Index: comgr/test/compile_device_libs_test.c
+===================================================================
+--- comgr.orig/test/compile_device_libs_test.c
++++ comgr/test/compile_device_libs_test.c
+@@ -47,10 +47,10 @@ int main(int argc, char *argv[]) {
+       DataSetLinked, DataSetAsm, DataSetReloc, DataSetExec;
+   amd_comgr_action_info_t DataAction;
+   amd_comgr_status_t Status;
+-  const char *CodeGenOptions[] = {"-mllvm", "-amdgpu-early-inline-all", "-mcode-object-version=5"};
++  const char *CodeGenOptions[] = {"-mllvm", "-amdgpu-early-inline-all", "-mcode-object-version=4"};
+   size_t CodeGenOptionsCount =
+       sizeof(CodeGenOptions) / sizeof(CodeGenOptions[0]);
+-  const char *DevLibsOptions[] = {"finite_only", "unsafe_math", "code_object_v5"};
++  const char *DevLibsOptions[] = {"finite_only", "unsafe_math", "code_object_v4"};
+   size_t DevLibsOptionsCount =
+       sizeof(DevLibsOptions) / sizeof(DevLibsOptions[0]);
+ 
