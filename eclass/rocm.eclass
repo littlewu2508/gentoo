@@ -55,7 +55,13 @@ esac
 # which controls what GPU target to be compiled
 
 
-
+# @FUNCTION: rocm_set_globals
+# @DESCRIPTION:
+# Set global variables.  This must be called after setting AMDGPU_*
+# variables used by the eclass.
+rocm_set_globals() {
+	IUSE+="${ALL_AMDGPU_TARGETS[@]/#/amdgpu_targets_}"
+}
 
 _ROCM_ECLASS=1
 fi
