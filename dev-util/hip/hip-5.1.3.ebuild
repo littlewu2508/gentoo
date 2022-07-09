@@ -26,6 +26,7 @@ SLOT="0/$(ver_cut 1-2)"
 IUSE="debug profile"
 
 DEPEND="
+	<sys-devel/gcc-12:*
 	>=dev-util/rocminfo-5
 	sys-devel/clang:${LLVM_MAX_SLOT}=
 	dev-libs/rocm-comgr:${SLOT}
