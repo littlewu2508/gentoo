@@ -6,7 +6,7 @@ EAPI=8
 DOCS_BUILDER="doxygen"
 DOCS_DIR="docs"
 DOCS_DEPEND="media-gfx/graphviz"
-inherit cmake docs prefix
+inherit cmake docs prefix rocm
 
 DESCRIPTION="AMD's library for BLAS on ROCm"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/rocBLAS"
@@ -19,6 +19,8 @@ KEYWORDS="~amd64"
 SLOT="0/$(ver_cut 1-2)"
 IUSE="benchmark test"
 RESTRICT="!test? ( test )"
+
+rocm_set_globals
 
 BDEPEND="
 	dev-util/rocm-cmake:${SLOT}

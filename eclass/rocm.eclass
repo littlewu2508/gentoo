@@ -27,7 +27,7 @@ esac
 
 inherit cmake llvm
 
-# @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
+# @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
 # @OUTPUT_VARIABLE
 # @DESCRIPTION:
 # The list of USE flags corresponding to all AMDGPU targets in this ROCm
@@ -35,16 +35,42 @@ inherit cmake llvm
 
 case ${PV} in
 	4*)
-		ALL_AMDGPU_TARGETS=(
-			gfx803 gfx900 gfx906 gfx908 gfx90a gfx90a 
-			gfx1010 gfx1011 gfx1012 gfx1030
+		OFFICIAL_AMDGPU_TARGETS=(
+			gfx906 gfx908
+		)
+		;;
+	5*)
+		OFFICIAL_AMDGPU_TARGETS=(
+			gfx906 gfx908 gfx90a gfx1030
 		)
 		;;
 	*)
+		die "Unknown ROCm major version! Please update rocm.eclass before bumping to new ebuilds"
+		;;
+esac
+
+# @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
+# @OUTPUT_VARIABLE
+# @DESCRIPTION:
+# The list of USE flags corresponding to all AMDGPU targets in this ROCm
+# version.  The value depends on ${PV}.
+# Architectures and devices map: https://www.coelacanth-dream.com/posts/2019/12/30/did-rid-product-matome-p2
+
+case ${PV} in
+	4*)
+		ALL_AMDGPU_TARGETS=(
+			gfx803 gfx900 gfx906 gfx908
+			gfx1010 gfx1011 gfx1012 gfx1030
+		)
+		;;
+	5*)
 		ALL_AMDGPU_TARGETS=(
 			gfx803 gfx900 gfx906 gfx908 gfx90a gfx90a 
 			gfx1010 gfx1011 gfx1012 gfx1030 gfx1031
 		)
+		;;
+	*)
+		die "Unknown ROCm major version! Please update rocm.eclass before bumping to new ebuilds"
 		;;
 esac
 
@@ -60,7 +86,13 @@ esac
 # Set global variables.  This must be called after setting AMDGPU_*
 # variables used by the eclass.
 rocm_set_globals() {
-	IUSE+="${ALL_AMDGPU_TARGETS[@]/#/amdgpu_targets_}"
+	for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
+		if [[ " ${OFFICIAL_AMDGPU_TARGETS[*]} " =~ " ${gpu_target} " ]]; then
+			IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
+		else
+			IUSE+=" ${gpu_target/#/amdgpu_targets_}"
+		fi
+	done	
 }
 
 _ROCM_ECLASS=1
