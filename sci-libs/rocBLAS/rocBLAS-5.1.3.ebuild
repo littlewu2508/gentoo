@@ -84,7 +84,7 @@ src_configure() {
 		-DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 		-DBUILD_CLIENTS_BENCHMARKS=$(usex benchmark ON OFF)
 		-DTensile_CPU_THREADS=$(makeopts_jobs)
-		${AMDGPU_TARGETS+-DAMDGPU_TARGETS="${AMDGPU_TARGETS}"}
+		-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
 	)
 
 	CXX="hipcc" cmake_src_configure

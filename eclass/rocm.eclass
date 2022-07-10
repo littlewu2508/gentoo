@@ -65,7 +65,7 @@ case ${PV} in
 		;;
 	5*)
 		ALL_AMDGPU_TARGETS=(
-			gfx803 gfx900 gfx906 gfx908 gfx90a gfx90a 
+			gfx803 gfx900 gfx906 gfx908 gfx90a
 			gfx1010 gfx1011 gfx1012 gfx1030 gfx1031
 		)
 		;;
@@ -74,25 +74,42 @@ case ${PV} in
 		;;
 esac
 
-# @ECLASS_VARIABLE: AMDGPU_TARGET_FLAGS
-# @OUTPUT_VARIABLE
-# @DESCRIPTION:
-# The varuble passed to cmake by -DAMDGPU_TARGETS=${AMDGPU_TARGET_FLAGS}
-# which controls what GPU target to be compiled
+REQUIRED_USE+=" || ("
+for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
+	if [[ " ${OFFICIAL_AMDGPU_TARGETS[*]} " =~ " ${gpu_target} " ]]; then
+		IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
+	else
+		IUSE+=" ${gpu_target/#/amdgpu_targets_}"
+	fi
+	REQUIRED_USE+=" ${gpu_target/#/amdgpu_targets_}"
+done
+REQUIRED_USE+=" ) "
 
 
-# @FUNCTION: rocm_set_globals
+# @FUNCTION: get_amdgpu_flags
 # @DESCRIPTION:
-# Set global variables.  This must be called after setting AMDGPU_*
-# variables used by the eclass.
-rocm_set_globals() {
+# Convert specified use flag of amdgpu_targets to compilation flags 
+# Append target feature to gpu arch. See https://llvm.org/docs/AMDGPUUsage.html#id67
+
+get_amdgpu_flags() {
+	local AMDGPU_TARGET_FLAGS
 	for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
-		if [[ " ${OFFICIAL_AMDGPU_TARGETS[*]} " =~ " ${gpu_target} " ]]; then
-			IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
-		else
-			IUSE+=" ${gpu_target/#/amdgpu_targets_}"
+		local target_feature=
+		if use amdgpu_targets_${gpu_target}; then
+			case ${gpu_target} in
+				gfx906|gfx908)
+					target_feature=:xnack-
+					;;
+				gfx90a)
+					target_feature=:xnack+
+					;;
+				*)
+					;;
+			esac
+			AMDGPU_TARGET_FLAGS+="${gpu_target}${target_feature};"
 		fi
-	done	
+	done
+	echo ${AMDGPU_TARGET_FLAGS}
 }
 
 _ROCM_ECLASS=1
