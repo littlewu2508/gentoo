@@ -20,8 +20,6 @@ SLOT="0/$(ver_cut 1-2)"
 IUSE="benchmark test"
 RESTRICT="!test? ( test )"
 
-rocm_set_globals
-
 BDEPEND="
 	dev-util/rocm-cmake:${SLOT}
 	dev-util/Tensile:${SLOT}
@@ -85,6 +83,7 @@ src_configure() {
 		-DBUILD_CLIENTS_SAMPLES=OFF
 		-DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 		-DBUILD_CLIENTS_BENCHMARKS=$(usex benchmark ON OFF)
+		-DTensile_CPU_THREADS=$(makeopts_jobs)
 		${AMDGPU_TARGETS+-DAMDGPU_TARGETS="${AMDGPU_TARGETS}"}
 	)
 
