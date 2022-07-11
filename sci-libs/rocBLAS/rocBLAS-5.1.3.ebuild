@@ -63,11 +63,6 @@ src_prepare() {
 }
 
 src_configure() {
-	# allow acces to hardware
-	addpredict /dev/kfd
-	addpredict /dev/dri/
-	addpredict /dev/random
-
 	local mycmakeargs=(
 		-DTensile_LOGIC="asm_full"
 		-DTensile_COMPILER="hipcc"
@@ -76,21 +71,15 @@ src_configure() {
 		-DTensile_TEST_LOCAL_PATH="${EPREFIX}/usr/share/Tensile"
 		-DTensile_ROOT="${EPREFIX}/usr/share/Tensile"
 		-DBUILD_WITH_TENSILE=ON
-		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
 		-DCMAKE_INSTALL_INCLUDEDIR="include/rocblas"
-		-DCMAKE_SKIP_RPATH=TRUE
 		-DBUILD_TESTING=OFF
 		-DBUILD_CLIENTS_SAMPLES=OFF
 		-DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 		-DBUILD_CLIENTS_BENCHMARKS=$(usex benchmark ON OFF)
 		-DTensile_CPU_THREADS=$(makeopts_jobs)
-		-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
 	)
 
-	CXX="hipcc" cmake_src_configure
-
-	# do not rerun cmake and the build process in src_install
-	sed -e '/RERUN/,+1d' -i "${BUILD_DIR}"/build.ninja || die
+	rocm_src_configure
 }
 
 src_compile() {
@@ -98,29 +87,9 @@ src_compile() {
 	cmake_src_compile
 }
 
-check_rw_permission() {
-	local cmd="[ -r $1 ] && [ -w $1 ]"
-	local error=0 user
-	if has sandbox ${FEATURES}; then
-		user="portage"
-		su portage -c "${cmd}" || error=1
-	else
-		user="$(whoami)"
-		bash -c "${cmd}" || error=1
-	fi
-	if [[ "${error}" == 1 ]]; then
-		die "${user} do not have read and write permissions on $1! \n Make sure ${user} is in render group and check the permissions."
-	fi
-}
-
 src_test() {
-	# check permissions on /dev/kfd and /dev/dri/render*
-	check_rw_permission /dev/kfd
-	check_rw_permission /dev/dri/render*
-	addwrite /dev/kfd
-	addwrite /dev/dri/
-	cd "${BUILD_DIR}/clients/staging" || die
-	ROCBLAS_TEST_TIMEOUT=3600 LD_LIBRARY_PATH="${BUILD_DIR}/clients:${BUILD_DIR}/library/src" ROCBLAS_TENSILE_LIBPATH="${BUILD_DIR}/Tensile/library" ./rocblas-test || die "Tests failed"
+	_cmake_check_build_dir # determine BUILD_DIR
+	ROCBLAS_TEST_TIMEOUT=3600 ROCBLAS_TENSILE_LIBPATH="${BUILD_DIR}/Tensile/library" rocm_src_test
 }
 
 src_install() {
