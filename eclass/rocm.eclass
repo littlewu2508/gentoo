@@ -117,18 +117,8 @@ get_amdgpu_flags() {
 # check read and write permissions on specific files.
 # allow using wildcard, for example check_rw_permission /dev/dri/render*
 check_rw_permission() {
-	local cmd="[ -r $1 ] && [ -w $1 ]"
-	local error=0 user
-	if has sandbox ${FEATURES}; then
-		user="${PORTAGE_USERNAME}"
-		su portage -c "${cmd}" || error=1
-	else
-		user="$(whoami)"
-		bash -c "${cmd}" || error=1
-	fi
-	if [[ "${error}" == 1 ]]; then
-		die "${user} do not have read or write permissions on $1! \n Make sure ${user} is in render group and check the permissions."
-	fi
+	[ -r "$1" ] && [ -w "$1" ] || die \
+		"${PORTAGE_USERNAME} do not have read or write permissions on $1! \n Make sure ${PORTAGE_USERNAME} is in render group and check the permissions."
 }
 
 
@@ -165,11 +155,12 @@ rocm_src_configure() {
 rocm_src_test() {
 	_cmake_check_build_dir # determine BUILD_DIR
 
+	addwrite /dev/kfd
+	addwrite /dev/dri/
+
 	# check permissions on /dev/kfd and /dev/dri/render*
 	check_rw_permission /dev/kfd
 	check_rw_permission /dev/dri/render*
-	addwrite /dev/kfd
-	addwrite /dev/dri/
 
 	if grep -q 'build test:' "${BUILD_DIR}"/build.ninja; then
 		einfo "Testing using ninja test"
