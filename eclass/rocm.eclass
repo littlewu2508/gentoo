@@ -25,7 +25,7 @@ case ${EAPI} in
 	*) die "${ECLASS}: EAPI ${EAPI} unsupported."
 esac
 
-inherit cmake llvm
+inherit cmake llvm edo
 
 # @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
 # @OUTPUT_VARIABLE
@@ -90,7 +90,6 @@ REQUIRED_USE+=" ) "
 # @DESCRIPTION:
 # Convert specified use flag of amdgpu_targets to compilation flags 
 # Append target feature to gpu arch. See https://llvm.org/docs/AMDGPUUsage.html#id67
-
 get_amdgpu_flags() {
 	local AMDGPU_TARGET_FLAGS
 	for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
@@ -110,6 +109,79 @@ get_amdgpu_flags() {
 		fi
 	done
 	echo ${AMDGPU_TARGET_FLAGS}
+}
+
+
+# @FUNCTION: check_rw_permission
+# @DESCRIPTION:
+# check read and write permissions on specific files.
+# allow using wildcard, for example check_rw_permission /dev/dri/render*
+check_rw_permission() {
+	local cmd="[ -r $1 ] && [ -w $1 ]"
+	local error=0 user
+	if has sandbox ${FEATURES}; then
+		user="${PORTAGE_USERNAME}"
+		su portage -c "${cmd}" || error=1
+	else
+		user="$(whoami)"
+		bash -c "${cmd}" || error=1
+	fi
+	if [[ "${error}" == 1 ]]; then
+		die "${user} do not have read or write permissions on $1! \n Make sure ${user} is in render group and check the permissions."
+	fi
+}
+
+
+# == phase functions ==
+
+# @FUNCTION: rocm_src_configure
+# @DESCRIPTION:
+# configure rocm packages, and setting common cmake arguments
+rocm_src_configure() {
+	# allow acces to hardware
+	addpredict /dev/kfd
+	addpredict /dev/dri/
+	addpredict /dev/random
+
+	mycmakeargs+=(
+		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
+		-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
+		-DCMAKE_SKIP_RPATH=TRUE
+	)
+
+	CXX="hipcc" cmake_src_configure
+
+	# do not rerun cmake and the build process in src_install
+	sed -e '/RERUN/,+1d' -i "${BUILD_DIR}"/build.ninja || die
+}
+
+# @FUNCTION: rocm_src_test
+# @DESCRIPTION:
+# Test whether valid GPU device is present. If so, find how to, and execute test.
+# ROCm packages can have to test mechanism:
+# 1. cmake_src_test. Usually we set MAKEOPTS="-j1" to make sure only one test on GPU at a time
+# 2. one single gtest binary called "${PN,,}"-test.
+# 3. Some package like rocFFT have alternative test like rocfft-selftest
+rocm_src_test() {
+	_cmake_check_build_dir # determine BUILD_DIR
+
+	# check permissions on /dev/kfd and /dev/dri/render*
+	check_rw_permission /dev/kfd
+	check_rw_permission /dev/dri/render*
+	addwrite /dev/kfd
+	addwrite /dev/dri/
+
+	if grep -q 'build test:' "${BUILD_DIR}"/build.ninja; then
+		einfo "Testing using ninja test"
+		MAKEOPTS="-j1" cmake_src_test
+	elif [ -x "${BUILD_DIR}"/clients/staging/${PN,,}-*test ]; then
+		cd "${BUILD_DIR}/clients/staging" || die "Test directory not found!"
+		for test_program in "${PN,,}-*test"; do
+			LD_LIBRARY_PATH="${BUILD_DIR}/clients":"${BUILD_DIR}/library":"${BUILD_DIR}/library/src":"${BUILD_DIR}/library/src/device" edob ./${test_program}
+		done
+	else
+		die "Cannot find test program to execute!"
+	fi
 }
 
 _ROCM_ECLASS=1
