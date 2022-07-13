@@ -63,6 +63,8 @@ src_prepare() {
 }
 
 src_configure() {
+	addpredict /dev/random
+
 	local mycmakeargs=(
 		-DTensile_LOGIC="asm_full"
 		-DTensile_COMPILER="hipcc"

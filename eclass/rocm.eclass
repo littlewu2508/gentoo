@@ -131,7 +131,6 @@ rocm_src_configure() {
 	# allow acces to hardware
 	addpredict /dev/kfd
 	addpredict /dev/dri/
-	addpredict /dev/random
 
 	mycmakeargs+=(
 		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
