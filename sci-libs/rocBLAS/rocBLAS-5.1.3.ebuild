@@ -90,7 +90,6 @@ src_compile() {
 }
 
 src_test() {
-	_cmake_check_build_dir # determine BUILD_DIR
 	ROCBLAS_TEST_TIMEOUT=3600 ROCBLAS_TENSILE_LIBPATH="${BUILD_DIR}/Tensile/library" rocm_src_test
 }
 
