@@ -152,6 +152,8 @@ rocm_src_configure() {
 # 2. one single gtest binary called "${PN,,}"-test.
 # 3. Some package like rocFFT have alternative test like rocfft-selftest
 rocm_src_test() {
+	_cmake_check_build_dir # determine BUILD_DIR
+
 	addwrite /dev/kfd
 	addwrite /dev/dri/
 
