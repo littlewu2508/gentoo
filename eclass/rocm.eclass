@@ -27,28 +27,6 @@ esac
 
 inherit cmake llvm edo
 
-# @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
-# @OUTPUT_VARIABLE
-# @DESCRIPTION:
-# The list of USE flags corresponding to all AMDGPU targets in this ROCm
-# version.  The value depends on ${PV}.
-
-case ${PV} in
-	4*)
-		OFFICIAL_AMDGPU_TARGETS=(
-			gfx906 gfx908
-		)
-		;;
-	5*)
-		OFFICIAL_AMDGPU_TARGETS=(
-			gfx906 gfx908 gfx90a gfx1030
-		)
-		;;
-	*)
-		die "Unknown ROCm major version! Please update rocm.eclass before bumping to new ebuilds"
-		;;
-esac
-
 # @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
 # @OUTPUT_VARIABLE
 # @DESCRIPTION:
@@ -56,35 +34,71 @@ esac
 # version.  The value depends on ${PV}.
 # Architectures and devices map: https://www.coelacanth-dream.com/posts/2019/12/30/did-rid-product-matome-p2
 
-case ${PV} in
-	4*)
-		ALL_AMDGPU_TARGETS=(
-			gfx803 gfx900 gfx906 gfx908
-			gfx1010 gfx1011 gfx1012 gfx1030
-		)
-		;;
-	5*)
-		ALL_AMDGPU_TARGETS=(
-			gfx803 gfx900 gfx906 gfx908 gfx90a
-			gfx1010 gfx1011 gfx1012 gfx1030 gfx1031
-		)
-		;;
-	*)
-		die "Unknown ROCm major version! Please update rocm.eclass before bumping to new ebuilds"
-		;;
-esac
+# @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
+# @OUTPUT_VARIABLE
+# @DESCRIPTION:
+# The list of USE flags corresponding to all AMDGPU targets in this ROCm
+# version.  The value depends on ${PV}.
 
-REQUIRED_USE+=" || ("
-for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
-	if [[ " ${OFFICIAL_AMDGPU_TARGETS[*]} " =~ " ${gpu_target} " ]]; then
-		IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
-	else
-		IUSE+=" ${gpu_target/#/amdgpu_targets_}"
-	fi
-	REQUIRED_USE+=" ${gpu_target/#/amdgpu_targets_}"
-done
-REQUIRED_USE+=" ) "
+# @ECLASS_VARIABLE: ROCM_USEDEP
+# @OUTPUT_VARIABLE
+# @DESCRIPTION:
+# This is an eclass-generated USE-dependency string which can be used to
+# depend on another ROCm package being built for the same AMDGPU architecture.
+#
+# The generate USE-flag list is compatible with packages using rocm.eclass.
+#
+# Example use:
+# @CODE
+# DEPEND="sci-libs/rocBLAS[${ROCM_USEDEP}]"
+# @CODE
 
+# @FUNCTION: _rocm_set_globals
+# @DESCRIPTION:
+# Set global variables used by the eclass.
+_rocm_set_globals() {
+	case ${PV} in
+		4*)
+			ALL_AMDGPU_TARGETS=(
+				gfx803 gfx900 gfx906 gfx908
+				gfx1010 gfx1011 gfx1012 gfx1030
+			)
+			OFFICIAL_AMDGPU_TARGETS=(
+				gfx906 gfx908
+			)
+			;;
+		5*)
+			ALL_AMDGPU_TARGETS=(
+				gfx803 gfx900 gfx906 gfx908 gfx90a
+				gfx1010 gfx1011 gfx1012 gfx1030 gfx1031
+			)
+			OFFICIAL_AMDGPU_TARGETS=(
+				gfx906 gfx908 gfx90a gfx1030
+			)
+			;;
+		*)
+			die "Unknown ROCm major version! Please update rocm.eclass before bumping to new ebuilds"
+			;;
+	esac
+
+	REQUIRED_USE+=" || ("
+	for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
+		if [[ " ${OFFICIAL_AMDGPU_TARGETS[*]} " =~ " ${gpu_target} " ]]; then
+			IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
+		else
+			IUSE+=" ${gpu_target/#/amdgpu_targets_}"
+		fi
+		REQUIRED_USE+=" ${gpu_target/#/amdgpu_targets_}"
+	done
+	REQUIRED_USE+=" ) "
+
+	local flags=( "${ALL_AMDGPU_TARGETS[@]/#/amdgpu_targets_}" )
+	local optflags=${flags[@]/%/(-)?}
+	ROCM_USEDEP=${optflags// /,}
+	# einfo "${ROCM_USEDEP}"
+}
+_rocm_set_globals
+unset -f _rocm_set_globals
 
 # @FUNCTION: get_amdgpu_flags
 # @DESCRIPTION:
@@ -168,7 +182,7 @@ rocm_src_test() {
 		cd "${BUILD_DIR}/clients/staging" || die "Test directory not found!"
 		for test_program in "${PN,,}-"*test; do
 			if [ -x ${test_program} ]; then
-				LD_LIBRARY_PATH="${BUILD_DIR}/clients":"${BUILD_DIR}/library":"${BUILD_DIR}/library/src":"${BUILD_DIR}/library/src/device" edob ./${test_program}
+				LD_LIBRARY_PATH="${BUILD_DIR}/clients":"${BUILD_DIR}/src":"${BUILD_DIR}/library":"${BUILD_DIR}/library/src":"${BUILD_DIR}/library/src/device" edob ./${test_program}
 			else
 				die "The test program ${test_program} does not exist or cannot be excuted!"
 			fi
