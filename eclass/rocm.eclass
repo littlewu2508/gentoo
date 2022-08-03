@@ -178,17 +178,26 @@ rocm_src_test() {
 	if grep -q 'build test:' "${BUILD_DIR}"/build.ninja; then
 		einfo "Testing using ninja test"
 		MAKEOPTS="-j1" cmake_src_test
-	elif [ -d "${BUILD_DIR}"/clients/staging ]; then
+	elif [[ -d "${BUILD_DIR}"/clients/staging ]]; then
 		cd "${BUILD_DIR}/clients/staging" || die "Test directory not found!"
 		for test_program in "${PN,,}-"*test; do
-			if [ -x ${test_program} ]; then
+			if [[ -x ${test_program} ]]; then
 				LD_LIBRARY_PATH="${BUILD_DIR}/clients":"${BUILD_DIR}/src":"${BUILD_DIR}/library":"${BUILD_DIR}/library/src":"${BUILD_DIR}/library/src/device" edob ./${test_program}
 			else
 				die "The test program ${test_program} does not exist or cannot be excuted!"
 			fi
 		done
+	elif [[ ! -z "${ROCM_TESTS}" ]]; then
+		for test_program in "${ROCM_TESTS}"; do
+			cd "${BUILD_DIR}" || die
+			if [[ -x ${test_program} ]]; then
+			edob ./${test_program}
+			else
+				die "The test program ${test_program} does not exist or cannot be excuted!"
+			fi
+		done
 	else
-		die "There is no cmake tests, nor ${BUILD_DIR}/clients/staging where test program might be located."
+		die "There is no cmake tests, no \${ROCM_TESTS} executable provided, nor ${BUILD_DIR}/clients/staging where test program might be located."
 	fi
 }
 
