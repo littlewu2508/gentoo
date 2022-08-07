@@ -12,4 +12,7 @@
   <upstream>
     <remote-id type="github">ROCm-Developer-Tools/rocprofiler</remote-id>
   </upstream>
+  <use>
+    <flag name="aqlprofile">Enable loading the proprietary AQL Profile</flag>
+  </use>
 </pkgmetadata>

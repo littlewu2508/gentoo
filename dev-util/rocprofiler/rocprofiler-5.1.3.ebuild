@@ -15,9 +15,11 @@ S="${WORKDIR}/${PN}-rocm-${PV}"
 LICENSE="MIT"
 SLOT="0/$(ver_cut 1-2)"
 KEYWORDS="~amd64"
+IUSE="aqlprofile"
 
 RDEPEND="dev-libs/rocr-runtime:${SLOT}
-	dev-util/roctracer:${SLOT}
+	dev-util/roctracer:${SLOT}[aqlprofile?]
+	aqlprofile? ( dev-libs/hsa-amd-aqlprofile )
 	"
 DEPEND="${RDEPEND}"
 BDEPEND="
@@ -55,5 +57,8 @@ src_configure() {
 		-DUSE_PROF_API=1
 	)
 
+	if use aqlprofile; then
+		export CMAKE_LD_AQLPROFILE=On
+	fi
 	cmake_src_configure
 }
