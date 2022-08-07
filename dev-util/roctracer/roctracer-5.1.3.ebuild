@@ -17,9 +17,11 @@ S="${WORKDIR}/roctracer-rocm-${PV}"
 LICENSE="MIT"
 SLOT="0/$(ver_cut 1-2)"
 KEYWORDS="~amd64"
+IUSE="aqlprofile"
 
 RDEPEND="dev-libs/rocr-runtime:${SLOT}
-	dev-util/hip:${SLOT}"
+	dev-util/hip:${SLOT}
+	aqlprofile? ( dev-libs/hsa-amd-aqlprofile )"
 DEPEND="${RDEPEND}"
 BDEPEND="
 	$(python_gen_any_dep '
@@ -33,6 +35,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-4.3.0-glibc-2.34.patch
 	"${FILESDIR}"/${PN}-5.0.2-Werror.patch
 	"${FILESDIR}"/${PN}-5.0.2-headers.patch
+	"${FILESDIR}"/${PN}-4.3.0-no-aqlprofile.patch
 	"${FILESDIR}"/${PN}-5.0.2-strip-license.patch
 )
 
@@ -73,5 +76,8 @@ src_configure() {
 		-DCMAKE_PREFIX_PATH="${EPREFIX}/usr/include/hsa"
 	)
 
+	if use aqlprofile; then
+		export CMAKE_LD_AQLPROFILE=On
+	fi
 	cmake_src_configure
 }
