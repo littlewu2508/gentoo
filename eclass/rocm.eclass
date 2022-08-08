@@ -26,6 +26,7 @@
 # SRC_URI="https://github.com/ROCmSoftwarePlatform/${PN}/archive/rocm-${PV}.tar.gz -> ${P}.tar.gz"
 # SLOT="0/$(ver_cut 1-2)"
 # IUSE="test"
+# REQUIRED_USE="${ROCM_REQUIRED_USE}"
 # RESTRICT="!test? ( test )"
 #  
 # RDEPEND="
@@ -62,18 +63,37 @@ esac
 inherit cmake edo
 
 
+# @ECLASS_VARIABLE: ROCM_VERSION
+# @DEFAULT_UNSET
+# @DESCRIPTION:
+# The ROCm version of current package. Default is ${PV}, but for other packages
+# that depend on ROCm libraries, this can be set to match the version of
+# required ROCm libraries.
+
 # @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
 # @OUTPUT_VARIABLE
 # @DESCRIPTION:
 # The list of USE flags corresponding to all AMDGPU targets in this ROCm
-# version.  The value depends on ${PV}.
-# Architectures and devices map: https://www.coelacanth-dream.com/posts/2019/12/30/did-rid-product-matome-p2
+# version. The value depends on ${PV}. Architectures and devices map:
+# https://www.coelacanth-dream.com/posts/2019/12/30/did-rid-product-matome-p2
 
 # @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
 # @OUTPUT_VARIABLE
 # @DESCRIPTION:
-# The list of USE flags corresponding to all AMDGPU targets in this ROCm
-# version.  The value depends on ${PV}.
+# The list of USE flags corresponding to all officlially supported AMDGPU
+# targets in this ROCm version, documented at
+# https://docs.amd.com/bundle/ROCm-Installation-Guide-v${PV}/page/Prerequisite_Actions.html.
+# USE flag of these architectures will be default on. Depends on ${PV}.
+
+# @ECLASS_VARIABLE: ROCM_REQUIRED_USE
+# @OUTPUT_VARIABLE
+# @DESCRIPTION:
+# Requires at least one AMDGPU target to be compiled.
+# Example use for ROCm libraies:
+# REQUIRED_USE="${ROCM_REQUIRED_USE}"
+# Example use for packages thar depend on ROCm libraries
+# IUSE="rocm"
+# REQUIRED_USE="rocm? ( ${ROCM_REQUIRED_USE} )"
 
 # @ECLASS_VARIABLE: ROCM_USEDEP
 # @OUTPUT_VARIABLE
@@ -81,7 +101,7 @@ inherit cmake edo
 # This is an eclass-generated USE-dependency string which can be used to
 # depend on another ROCm package being built for the same AMDGPU architecture.
 #
-# The generate USE-flag list is compatible with packages using rocm.eclass.
+# The generated USE-flag list is compatible with packages using rocm.eclass.
 #
 # Example use:
 # @CODE
@@ -91,9 +111,9 @@ inherit cmake edo
 # @FUNCTION: _rocm_set_globals
 # @DESCRIPTION:
 # Set global variables used by the eclass: ALL_AMDGPU_TARGETS,
-# OFFICIAL_AMDGPU_TARGETS, REQUIRED_USE, and ROCM_USEDEP
+# OFFICIAL_AMDGPU_TARGETS, ROCM_REQUIRED_USE, and ROCM_USEDEP
 _rocm_set_globals() {
-	case ${PV} in
+	case ${ROCM_VERSION:-${PV}} in
 		4*)
 			ALL_AMDGPU_TARGETS=(
 				gfx803 gfx900 gfx906 gfx908
@@ -117,16 +137,16 @@ _rocm_set_globals() {
 			;;
 	esac
 
-	REQUIRED_USE+=" || ("
+	ROCM_REQUIRED_USE+=" || ("
 	for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
 		if [[ " ${OFFICIAL_AMDGPU_TARGETS[*]} " =~ " ${gpu_target} " ]]; then
 			IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
 		else
 			IUSE+=" ${gpu_target/#/amdgpu_targets_}"
 		fi
-		REQUIRED_USE+=" ${gpu_target/#/amdgpu_targets_}"
+		ROCM_REQUIRED_USE+=" ${gpu_target/#/amdgpu_targets_}"
 	done
-	REQUIRED_USE+=" ) "
+	ROCM_REQUIRED_USE+=" ) "
 
 	local flags=( "${ALL_AMDGPU_TARGETS[@]/#/amdgpu_targets_}" )
 	local optflags=${flags[@]/%/(-)?}
@@ -138,8 +158,9 @@ unset -f _rocm_set_globals
 
 # @FUNCTION: get_amdgpu_flags
 # @DESCRIPTION:
-# Convert specified use flag of amdgpu_targets to compilation flags 
-# Append target feature to gpu arch. See https://llvm.org/docs/AMDGPUUsage.html#target-features
+# Convert specified use flag of amdgpu_targets to compilation flags.
+# Append default target feature to gpu arch. See
+# https://llvm.org/docs/AMDGPUUsage.html#target-features
 get_amdgpu_flags() {
 	local AMDGPU_TARGET_FLAGS
 	for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
@@ -193,9 +214,10 @@ rocm_src_configure() {
 # @DESCRIPTION:
 # Test whether valid GPU device is present. If so, find how to, and execute test.
 # ROCm packages can have to test mechanism:
-# 1. cmake_src_test. Usually we set MAKEOPTS="-j1" to make sure only one test on GPU at a time
-# 2. one single gtest binary called "${PN,,}"-test.
-# 3. Some package like rocFFT have alternative test like rocfft-selftest
+# 1. cmake_src_test. Set MAKEOPTS="-j1" to make sure only one test on GPU at a time;
+# 2. one single gtest binary called "${PN,,}"-test;
+# 3. Some package like rocFFT have alternative test like rocfft-selftest;
+# 4. Custome testing binaries like dev-libs/rccl. Use ${ROCM_TESTS} to specify.
 rocm_src_test() {
 	addwrite /dev/kfd
 	addwrite /dev/dri/
