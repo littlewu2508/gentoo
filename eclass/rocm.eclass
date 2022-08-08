@@ -49,7 +49,7 @@
 # 
 # # Example for packages depend on ROCm libraries -- a package depend on
 # # rocBLAS, and use comma seperated ${HCC_AMDGPU_TARGET} to determine GPU
-# # architrecture to compile. Requires ROCm version >5.
+# # architecture to compile. Requires ROCm version >5.
 # ROCM_VERSION=5
 # inherit rocm
 # IUSE="rocm"
@@ -107,9 +107,9 @@ inherit edo
 # @OUTPUT_VARIABLE
 # @DESCRIPTION:
 # Requires at least one AMDGPU target to be compiled.
-# Example use for ROCm libraies:
+# Example use for ROCm libraries:
 # REQUIRED_USE="${ROCM_REQUIRED_USE}"
-# Example use for packages thar depend on ROCm libraries
+# Example use for packages that depend on ROCm libraries
 # IUSE="rocm"
 # REQUIRED_USE="rocm? ( ${ROCM_REQUIRED_USE} )"
 
@@ -177,7 +177,7 @@ unset -f _rocm_set_globals
 # @FUNCTION: get_amdgpu_flags
 # @DESCRIPTION:
 # Convert specified use flag of amdgpu_targets to compilation flags.
-# Append default target feature to gpu arch. See
+# Append default target feature to GPU arch. See
 # https://llvm.org/docs/AMDGPUUsage.html#target-features
 get_amdgpu_flags() {
 	local AMDGPU_TARGET_FLAGS
