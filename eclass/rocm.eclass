@@ -6,8 +6,8 @@
 # Gentoo Science Project <sci@gentoo.org>
 # @AUTHOR:
 # Yiyang Wu <xgreenlandforwyy@gmail.com>
-# @SUPPORTED_EAPIS: 8
-# @BLURB: common functions for ROCm packages written in HIP
+# @SUPPORTED_EAPIS: 7 8
+# @BLURB: Common functions and variables for ROCm packages written in HIP
 # @DESCRIPTION:
 # ROCm packages such as sci-libs/<roc|hip>* can utilize functions in this eclass.
 # Currently, it handles the AMDGPU_TARGETS variable via USE_EXPAND, so user can
@@ -21,11 +21,18 @@
 if [[ ! ${_ROCM_ECLASS} ]]; then
 
 case ${EAPI} in
-	8) ;;
-	*) die "${ECLASS}: EAPI ${EAPI} unsupported."
+	0|1|2|3|4|5|6)
+		die "${ECLASS}: unsupported EAPI=${EAPI:-0} (too old)"
+		;;
+	7|8)
+		;;
+	*)
+		die "${ECLASS}: unsupported EAPI=${EAPI} (unknown)"
+		;;
 esac
 
-inherit cmake llvm edo
+inherit cmake edo
+
 
 # @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
 # @OUTPUT_VARIABLE
@@ -55,7 +62,8 @@ inherit cmake llvm edo
 
 # @FUNCTION: _rocm_set_globals
 # @DESCRIPTION:
-# Set global variables used by the eclass.
+# Set global variables used by the eclass: ALL_AMDGPU_TARGETS,
+# OFFICIAL_AMDGPU_TARGETS, REQUIRED_USE, and ROCM_USEDEP
 _rocm_set_globals() {
 	case ${PV} in
 		4*)
@@ -95,15 +103,15 @@ _rocm_set_globals() {
 	local flags=( "${ALL_AMDGPU_TARGETS[@]/#/amdgpu_targets_}" )
 	local optflags=${flags[@]/%/(-)?}
 	ROCM_USEDEP=${optflags// /,}
-	# einfo "${ROCM_USEDEP}"
 }
 _rocm_set_globals
 unset -f _rocm_set_globals
 
+
 # @FUNCTION: get_amdgpu_flags
 # @DESCRIPTION:
 # Convert specified use flag of amdgpu_targets to compilation flags 
-# Append target feature to gpu arch. See https://llvm.org/docs/AMDGPUUsage.html#id67
+# Append target feature to gpu arch. See https://llvm.org/docs/AMDGPUUsage.html#target-features
 get_amdgpu_flags() {
 	local AMDGPU_TARGET_FLAGS
 	for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
