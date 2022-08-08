@@ -15,8 +15,36 @@
 # among dependencies. It also specify CXX=hipcc, to let hipcc compile. Another
 # important function is src_test, which checks whether a valid KFD device exists
 # for testing, and then execute the test program.
+#
+# Most ROCm packages use cmake as build system, so this eclass does not export
+# phase functions which overwrites the phase functions in cmake.eclass. Ebuild
+# should explicitly call rocm_src_* in src_configure and src_test.
+# 
 # @EXAMPLE:
-# inherit rocm
+# # Example for ROCm packages in https://github.com/ROCmSoftwarePlatform
+# inherit cmake rocm
+# SRC_URI="https://github.com/ROCmSoftwarePlatform/${PN}/archive/rocm-${PV}.tar.gz -> ${P}.tar.gz"
+# SLOT="0/$(ver_cut 1-2)"
+# IUSE="test"
+# RESTRICT="!test? ( test )"
+#  
+# RDEPEND="
+#     dev-util/hip
+#     sci-libs/rocBLAS:${SLOT}[${ROCM_USEDEP}]
+# "
+# 
+# S=${WORKDIR}/${PN}-rocm-${PV}
+#  
+# src_configure() {
+#     local mycmakeargs=(
+#         -DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
+#     )
+#     rocm_src_configure
+# }
+# 
+# src_test() {
+#     rocm_src_test
+# }
 
 if [[ ! ${_ROCM_ECLASS} ]]; then
 
