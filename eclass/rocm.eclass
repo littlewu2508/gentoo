@@ -226,13 +226,15 @@ rocm_src_test() {
 	check_rw_permission /dev/kfd
 	check_rw_permission /dev/dri/render*
 
+	: ${LD_LIBRARY_PATH:="${BUILD_DIR}/clients:${BUILD_DIR}/src:${BUILD_DIR}/library:${BUILD_DIR}/library/src:${BUILD_DIR}/library/src/device"}
+	export LD_LIBRARY_PATH
 	if grep -q 'build test:' "${BUILD_DIR}"/build.ninja; then
 		MAKEOPTS="-j1" cmake_src_test
 	elif [[ -d "${BUILD_DIR}"/clients/staging ]]; then
 		cd "${BUILD_DIR}/clients/staging" || die "Test directory not found!"
 		for test_program in "${PN,,}-"*test; do
 			if [[ -x ${test_program} ]]; then
-				LD_LIBRARY_PATH="${BUILD_DIR}/clients":"${BUILD_DIR}/src":"${BUILD_DIR}/library":"${BUILD_DIR}/library/src":"${BUILD_DIR}/library/src/device" edob ./${test_program}
+					edob ./${test_program}
 			else
 				die "The test program ${test_program} does not exist or cannot be excuted!"
 			fi
