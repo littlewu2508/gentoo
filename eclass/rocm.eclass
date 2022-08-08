@@ -60,7 +60,7 @@ case ${EAPI} in
 		;;
 esac
 
-inherit cmake edo
+inherit edo
 
 
 # @ECLASS_VARIABLE: ROCM_VERSION
