@@ -161,7 +161,6 @@ get_amdgpu_flags() {
 	echo ${AMDGPU_TARGET_FLAGS}
 }
 
-
 # @FUNCTION: check_rw_permission
 # @DESCRIPTION:
 # check read and write permissions on specific files.
@@ -170,7 +169,6 @@ check_rw_permission() {
 	[ -r "$1" ] && [ -w "$1" ] || die \
 		"${PORTAGE_USERNAME} do not have read or write permissions on $1! \n Make sure ${PORTAGE_USERNAME} is in render group and check the permissions."
 }
-
 
 # == phase functions ==
 
@@ -189,9 +187,6 @@ rocm_src_configure() {
 	)
 
 	CXX="hipcc" cmake_src_configure
-
-	# do not rerun cmake and the build process in src_install
-	sed -e '/RERUN/,+1d' -i "${BUILD_DIR}"/build.ninja || die
 }
 
 # @FUNCTION: rocm_src_test
@@ -210,7 +205,6 @@ rocm_src_test() {
 	check_rw_permission /dev/dri/render*
 
 	if grep -q 'build test:' "${BUILD_DIR}"/build.ninja; then
-		einfo "Testing using ninja test"
 		MAKEOPTS="-j1" cmake_src_test
 	elif [[ -d "${BUILD_DIR}"/clients/staging ]]; then
 		cd "${BUILD_DIR}/clients/staging" || die "Test directory not found!"
