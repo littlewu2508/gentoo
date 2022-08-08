@@ -46,6 +46,24 @@
 # src_test() {
 #     rocm_src_test
 # }
+# 
+# # Example for packages depend on ROCm libraries -- a package depend on
+# # rocBLAS, and use comma seperated ${HCC_AMDGPU_TARGET} to determine GPU
+# # architrecture to compile. Requires ROCm version >5.
+# ROCM_VERSION=5
+# inherit rocm
+# IUSE="rocm"
+# REQUIRED_USE="rocm? ( ${ROCM_REQUIRED_USE} )"
+# DEPEND="rocm? ( >=dev-util/hip-${ROCM_VERSION}
+#     >=sci-libs/rocBLAS-${ROCM_VERSION}[${ROCM_USEDEP}] )"
+# ....
+# src_configure() {
+#     if use rocm; then
+#         local AMDGPU_FLAGS=$(get_amdgpu_flags)
+#         export HCC_AMDGPU_TARGET=${AMDGPU_FLAGS//;/,}
+#     fi
+#     default
+# }
 
 if [[ ! ${_ROCM_ECLASS} ]]; then
 
