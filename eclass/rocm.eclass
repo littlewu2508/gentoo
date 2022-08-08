@@ -83,20 +83,21 @@ inherit edo
 
 # @ECLASS_VARIABLE: ROCM_VERSION
 # @DEFAULT_UNSET
+# @PRE_INHERIT
 # @DESCRIPTION:
 # The ROCm version of current package. Default is ${PV}, but for other packages
 # that depend on ROCm libraries, this can be set to match the version of
 # required ROCm libraries.
 
 # @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
-# @OUTPUT_VARIABLE
+# @INTERNAL
 # @DESCRIPTION:
 # The list of USE flags corresponding to all AMDGPU targets in this ROCm
 # version. The value depends on ${PV}. Architectures and devices map:
 # https://www.coelacanth-dream.com/posts/2019/12/30/did-rid-product-matome-p2
 
 # @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
-# @OUTPUT_VARIABLE
+# @INTERNAL
 # @DESCRIPTION:
 # The list of USE flags corresponding to all officlially supported AMDGPU
 # targets in this ROCm version, documented at
@@ -175,6 +176,7 @@ unset -f _rocm_set_globals
 
 
 # @FUNCTION: get_amdgpu_flags
+# @USAGE: get_amdgpu_flags
 # @DESCRIPTION:
 # Convert specified use flag of amdgpu_targets to compilation flags.
 # Append default target feature to GPU arch. See
@@ -201,6 +203,7 @@ get_amdgpu_flags() {
 }
 
 # @FUNCTION: check_rw_permission
+# @USAGE: check_rw_permission <file>
 # @DESCRIPTION:
 # check read and write permissions on specific files.
 # allow using wildcard, for example check_rw_permission /dev/dri/render*
