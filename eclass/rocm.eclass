@@ -46,6 +46,24 @@
 # src_test() {
 #     rocm_src_test
 # }
+# 
+# # Example for packages depend on ROCm libraries -- a package depend on
+# # rocBLAS, and use comma seperated ${HCC_AMDGPU_TARGET} to determine GPU
+# # architecture to compile. Requires ROCm version >5.
+# ROCM_VERSION=5
+# inherit rocm
+# IUSE="rocm"
+# REQUIRED_USE="rocm? ( ${ROCM_REQUIRED_USE} )"
+# DEPEND="rocm? ( >=dev-util/hip-${ROCM_VERSION}
+#     >=sci-libs/rocBLAS-${ROCM_VERSION}[${ROCM_USEDEP}] )"
+# ....
+# src_configure() {
+#     if use rocm; then
+#         local AMDGPU_FLAGS=$(get_amdgpu_flags)
+#         export HCC_AMDGPU_TARGET=${AMDGPU_FLAGS//;/,}
+#     fi
+#     default
+# }
 
 if [[ ! ${_ROCM_ECLASS} ]]; then
 
@@ -60,25 +78,26 @@ case ${EAPI} in
 		;;
 esac
 
-inherit cmake edo
+inherit edo
 
 
 # @ECLASS_VARIABLE: ROCM_VERSION
 # @DEFAULT_UNSET
+# @PRE_INHERIT
 # @DESCRIPTION:
 # The ROCm version of current package. Default is ${PV}, but for other packages
 # that depend on ROCm libraries, this can be set to match the version of
 # required ROCm libraries.
 
 # @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
-# @OUTPUT_VARIABLE
+# @INTERNAL
 # @DESCRIPTION:
 # The list of USE flags corresponding to all AMDGPU targets in this ROCm
 # version. The value depends on ${PV}. Architectures and devices map:
 # https://www.coelacanth-dream.com/posts/2019/12/30/did-rid-product-matome-p2
 
 # @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
-# @OUTPUT_VARIABLE
+# @INTERNAL
 # @DESCRIPTION:
 # The list of USE flags corresponding to all officlially supported AMDGPU
 # targets in this ROCm version, documented at
@@ -89,9 +108,9 @@ inherit cmake edo
 # @OUTPUT_VARIABLE
 # @DESCRIPTION:
 # Requires at least one AMDGPU target to be compiled.
-# Example use for ROCm libraies:
+# Example use for ROCm libraries:
 # REQUIRED_USE="${ROCM_REQUIRED_USE}"
-# Example use for packages thar depend on ROCm libraries
+# Example use for packages that depend on ROCm libraries
 # IUSE="rocm"
 # REQUIRED_USE="rocm? ( ${ROCM_REQUIRED_USE} )"
 
@@ -157,9 +176,10 @@ unset -f _rocm_set_globals
 
 
 # @FUNCTION: get_amdgpu_flags
+# @USAGE: get_amdgpu_flags
 # @DESCRIPTION:
 # Convert specified use flag of amdgpu_targets to compilation flags.
-# Append default target feature to gpu arch. See
+# Append default target feature to GPU arch. See
 # https://llvm.org/docs/AMDGPUUsage.html#target-features
 get_amdgpu_flags() {
 	local AMDGPU_TARGET_FLAGS
@@ -183,11 +203,12 @@ get_amdgpu_flags() {
 }
 
 # @FUNCTION: check_rw_permission
+# @USAGE: check_rw_permission <file>
 # @DESCRIPTION:
 # check read and write permissions on specific files.
 # allow using wildcard, for example check_rw_permission /dev/dri/render*
 check_rw_permission() {
-	[ -r "$1" ] && [ -w "$1" ] || die \
+	[[ -r "$1" ]] && [[ -w "$1" ]] || die \
 		"${PORTAGE_USERNAME} do not have read or write permissions on $1! \n Make sure ${PORTAGE_USERNAME} is in render group and check the permissions."
 }
 
@@ -226,13 +247,15 @@ rocm_src_test() {
 	check_rw_permission /dev/kfd
 	check_rw_permission /dev/dri/render*
 
+	: ${LD_LIBRARY_PATH:="${BUILD_DIR}/clients:${BUILD_DIR}/src:${BUILD_DIR}/library:${BUILD_DIR}/library/src:${BUILD_DIR}/library/src/device"}
+	export LD_LIBRARY_PATH
 	if grep -q 'build test:' "${BUILD_DIR}"/build.ninja; then
 		MAKEOPTS="-j1" cmake_src_test
 	elif [[ -d "${BUILD_DIR}"/clients/staging ]]; then
 		cd "${BUILD_DIR}/clients/staging" || die "Test directory not found!"
 		for test_program in "${PN,,}-"*test; do
 			if [[ -x ${test_program} ]]; then
-				LD_LIBRARY_PATH="${BUILD_DIR}/clients":"${BUILD_DIR}/src":"${BUILD_DIR}/library":"${BUILD_DIR}/library/src":"${BUILD_DIR}/library/src/device" edob ./${test_program}
+					edob ./${test_program}
 			else
 				die "The test program ${test_program} does not exist or cannot be excuted!"
 			fi

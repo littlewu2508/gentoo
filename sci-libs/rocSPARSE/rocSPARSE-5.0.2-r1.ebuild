@@ -3,9 +3,9 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..11} )
+PYTHON_COMPAT=( python3_{8..10} )
 
-inherit cmake python-any-r1 toolchain-funcs rocm
+inherit cmake python-any-r1 toolchain-funcs
 
 DESCRIPTION="Basic Linear Algebra Subroutines for sparse computation"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/rocSPARSE"
@@ -41,11 +41,10 @@ https://sparse.tamu.edu/MM/Chevron/Chevron4.tar.gz -> ${PN}_Chevron4.tar.gz
 LICENSE="MIT"
 KEYWORDS="~amd64"
 IUSE="benchmark test"
-REQUIRED_USE="${ROCM_REQUIRED_USE}"
 SLOT="0/$(ver_cut 1-2)"
 
 RDEPEND="dev-util/hip
-	sci-libs/rocPRIM:${SLOT}[${ROCM_USEDEP}]"
+	sci-libs/rocPRIM:${SLOT}"
 DEPEND="${RDEPEND}"
 BDEPEND="test? (
 	dev-cpp/gtest
@@ -93,7 +92,7 @@ src_prepare() {
 		ebegin "$(tc-getCXX) deps/convert.cpp -o deps/convert"
 		$(tc-getCXX) deps/convert.cpp -o deps/convert
 		eend $?
-		find "${WORKDIR}" -maxdepth 2 -regextype egrep -regex ".*/(.*)/\1\.mtx" -print0 |
+		find "${WORKDIR}" -maxdepth 2 -regextype grep -E -regex ".*/(.*)/\1\.mtx" -print0 |
 			while IFS= read -r -d '' mtxfile; do
 				destination=${BUILD_DIR}/clients/matrices/$(basename -s '.mtx' ${mtxfile}).csr
 				ebegin "Converting ${mtxfile} to ${destination}"
@@ -104,18 +103,30 @@ src_prepare() {
 }
 
 src_configure() {
+	# Grant access to the device to omit a sandbox violation
+	addwrite /dev/kfd
+	addpredict /dev/dri/
+
+	# Compiler to use
+	export CXX=hipcc
+
 	local mycmakeargs=(
 		-DBUILD_CLIENTS_SAMPLES=OFF
 		-DCMAKE_INSTALL_INCLUDEDIR="include/rocsparse"
+		-DCMAKE_SKIP_RPATH="ON"
 		-DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 		-DBUILD_CLIENTS_BENCHMARKS=$(usex benchmark ON OFF)
+		${AMDGPU_TARGETS+-DAMDGPU_TARGETS="${AMDGPU_TARGETS}"}
 	)
 
-	rocm_src_configure
+	cmake_src_configure
 }
 
 src_test() {
-	rocm_src_test
+	addwrite /dev/kfd
+	addwrite /dev/dri/
+	cd "${BUILD_DIR}/clients/staging" || die
+	LD_LIBRARY_PATH="${BUILD_DIR}/library" ./rocsparse-test || die
 }
 
 src_install() {

@@ -5,38 +5,35 @@ EAPI=8
 
 inherit cmake rocm
 
-DESCRIPTION="HIP parallel primitives for developing performant GPU-accelerated code on ROCm"
-HOMEPAGE="https://github.com/ROCmSoftwarePlatform/rocPRIM"
-SRC_URI="https://github.com/ROCmSoftwarePlatform/rocPRIM/archive/rocm-${PV}.tar.gz -> rocPRIM-${PV}.tar.gz"
+DESCRIPTION="Wrapper of rocPRIM or CUB for GPU parallel primitives"
+HOMEPAGE="https://github.com/ROCmSoftwarePlatform/hipCUB"
+SRC_URI="https://github.com/ROCmSoftwarePlatform/hipCUB/archive/rocm-${PV}.tar.gz -> hipCUB-${PV}.tar.gz"
 
-LICENSE="MIT"
+LICENSE="BSD"
 KEYWORDS="~amd64"
 SLOT="0/$(ver_cut 1-2)"
 IUSE="benchmark test"
 REQUIRED_USE="${ROCM_REQUIRED_USE}"
-
-
-RDEPEND="dev-util/hip
-	benchmark? ( dev-cpp/benchmark )
-	test? ( dev-cpp/gtest )"
-BDEPEND="dev-util/rocm-cmake
-	>=dev-util/cmake-3.22"
-DEPEND="${RDEPEND}"
-
-S="${WORKDIR}/rocPRIM-rocm-${PV}"
-
 RESTRICT="!test? ( test )"
 
-src_prepare() {
-	# "hcc" is depcreated, new platform ist "rocclr"
-	sed -e "/HIP_PLATFORM STREQUAL/s,hcc,rocclr," -i cmake/VerifyCompiler.cmake || die
+RDEPEND="dev-util/hip
+	sci-libs/rocPRIM:${SLOT}[${ROCM_USEDEP}]
+	benchmark? ( dev-cpp/benchmark )
+	test? ( dev-cpp/gtest )
+"
+DEPEND="${RDEPEND}"
 
-	# Install according to FHS
-	sed -e "/PREFIX rocprim/d" \
-		-e "/INSTALL_INTERFACE/s,rocprim/include,include/rocprim," \
-		-e "/DESTINATION/s,rocprim/include,include," \
-		-e "/rocm_install_symlink_subdir(rocprim)/d" \
-		-i rocprim/CMakeLists.txt || die
+S="${WORKDIR}/hipCUB-rocm-${PV}"
+
+PATCHES="${FILESDIR}/${PN}-4.3.0-add-memory-header.patch"
+
+src_prepare() {
+	sed -e "/PREFIX hipcub/d" \
+		-e "/DESTINATION/s:hipcub/include/:include/:" \
+		-e "/rocm_install_symlink_subdir(hipcub)/d" \
+		-e "/<INSTALL_INTERFACE/s:hipcub/include/:include/hipcub/:" -i hipcub/CMakeLists.txt || die
+
+	sed	-e "s:\${ROCM_INSTALL_LIBDIR}:\${CMAKE_INSTALL_LIBDIR}:" -i cmake/ROCMExportTargetsHeaderOnly.cmake || die
 
 	# disable downloading googletest and googlebenchmark
 	sed  -r -e '/Downloading/{:a;N;/\n *\)$/!ba; d}' -i cmake/Dependencies.cmake || die
@@ -44,7 +41,6 @@ src_prepare() {
 	# remove GIT dependency
 	sed  -r -e '/find_package\(Git/{:a;N;/\nendif/!ba; d}' -i cmake/Dependencies.cmake || die
 
-	# install benchmark files
 	if use benchmark; then
 		sed -e "/get_filename_component/s,\${BENCHMARK_SOURCE},${PN}_\${BENCHMARK_SOURCE}," \
 			-e "/add_executable/a\  install(TARGETS \${BENCHMARK_TARGET})" -i benchmark/CMakeLists.txt || die

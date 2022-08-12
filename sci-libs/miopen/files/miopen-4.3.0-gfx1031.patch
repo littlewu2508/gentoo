@@ -1,0 +1,226 @@
+diff --color -upr orig/src/include/miopen/solver/implicitgemm_util.hpp MIOpen-rocm-4.3.0/src/include/miopen/solver/implicitgemm_util.hpp
+--- orig/src/include/miopen/solver/implicitgemm_util.hpp	2021-11-13 20:42:16.612218274 +0800
++++ MIOpen-rocm-4.3.0/src/include/miopen/solver/implicitgemm_util.hpp	2021-11-13 20:45:09.346993447 +0800
+@@ -747,7 +747,7 @@ static inline bool is_use_amd_buffer_loa
+ {
+ #if WORKAROUND_MIOPEN_ISSUE_557
+     const auto device_name = ctx.GetStream().GetDeviceName();
+-    return !StartsWith(device_name, "gfx1030");
++    return !StartsWith(device_name, "gfx1030") && !StartsWith(device_name, "gfx1031");
+ #else
+     return true;
+ #endif
+@@ -756,7 +756,7 @@ static inline bool is_use_amd_buffer_loa
+ static inline bool is_use_v_fmac_f32(const ConvolutionContext& ctx)
+ {
+     const auto device_name = ctx.GetStream().GetDeviceName();
+-    return StartsWith(device_name, "gfx1030");
++    return StartsWith(device_name, "gfx1030") || StartsWith(device_name, "gfx1031");
+ }
+ 
+ template <typename T>
+@@ -872,7 +872,8 @@ static inline bool IsComposableKernelSup
+            StartsWith(c.GetStream().GetDeviceName(), "gfx906") ||
+            StartsWith(c.GetStream().GetDeviceName(), "gfx908") ||
+            StartsWith(c.GetStream().GetDeviceName(), "gfx90a") ||
+-           StartsWith(c.GetStream().GetDeviceName(), "gfx1030");
++           StartsWith(c.GetStream().GetDeviceName(), "gfx1030")||
++           StartsWith(c.GetStream().GetDeviceName(), "gfx1031");
+ }
+ 
+ } // namespace solver
+diff --color -upr orig/src/kernels/batchnorm_functions.h MIOpen-rocm-4.3.0/src/kernels/batchnorm_functions.h
+--- orig/src/kernels/batchnorm_functions.h	2021-11-13 20:42:16.616218235 +0800
++++ MIOpen-rocm-4.3.0/src/kernels/batchnorm_functions.h	2021-11-13 20:46:58.502170560 +0800
+@@ -147,6 +147,10 @@
+ #define MIO_BN_GFX1030 0
+ #endif
+ 
++#ifndef MIO_BN_GFX1031
++#define MIO_BN_GFX1031 0
++#endif
++
+ #define UNUSED __attribute__((__unused__))
+ 
+ #if(MIO_BN_VARIANT != 4)
+diff --color -upr orig/src/kernels/MIOpenBatchNormActivBwdPerAct.cl MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormActivBwdPerAct.cl
+--- orig/src/kernels/MIOpenBatchNormActivBwdPerAct.cl	2021-11-13 20:42:16.616218235 +0800
++++ MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormActivBwdPerAct.cl	2021-11-14 12:36:15.196751411 +0800
+@@ -33,7 +33,7 @@
+ #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+ #endif
+ 
+-#if(MIO_BN_GFX1030 == 1 && __AMDGCN__)
++#if((MIO_BN_GFX1030 == 1 || MIO_BN_GFX1030 == 1) && __AMDGCN__)
+ #undef __AMDGCN__
+ #endif
+ 
+diff --color -upr orig/src/kernels/MIOpenBatchNormActivBwdSpatial.cl MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormActivBwdSpatial.cl
+--- orig/src/kernels/MIOpenBatchNormActivBwdSpatial.cl	2021-11-13 20:42:16.616218235 +0800
++++ MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormActivBwdSpatial.cl	2021-11-14 12:36:34.992566611 +0800
+@@ -31,7 +31,7 @@
+ #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+ #endif
+ 
+-#if(MIO_BN_GFX1030 == 1 && __AMDGCN__)
++#if((MIO_BN_GFX1030 == 1 || MIO_BN_GFX1031 == 1) && __AMDGCN__)
+ #undef __AMDGCN__
+ #endif
+ 
+diff --color -upr orig/src/kernels/MIOpenBatchNormActivFwdTrainSpatial.cl MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormActivFwdTrainSpatial.cl
+--- orig/src/kernels/MIOpenBatchNormActivFwdTrainSpatial.cl	2021-11-13 20:42:16.616218235 +0800
++++ MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormActivFwdTrainSpatial.cl	2021-11-14 12:36:58.540346780 +0800
+@@ -32,7 +32,7 @@
+ #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+ #endif
+ 
+-#if(MIO_BN_GFX1030 == 1 && __AMDGCN__)
++#if((MIO_BN_GFX1030 == 1 || MIO_BN_GFX1031 == 1) && __AMDGCN__)
+ #undef __AMDGCN__
+ #endif
+ 
+diff --color -upr orig/src/kernels/MIOpenBatchNormBwdSpatial.cl MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormBwdSpatial.cl
+--- orig/src/kernels/MIOpenBatchNormBwdSpatial.cl	2021-11-13 20:42:16.616218235 +0800
++++ MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormBwdSpatial.cl	2021-11-14 12:37:16.360180417 +0800
+@@ -32,7 +32,7 @@
+ #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+ #endif
+ 
+-#if(MIO_BN_GFX1030 == 1 && __AMDGCN__)
++#if((MIO_BN_GFX1030 == 1 || MIO_BN_GFX1031 == 1) && __AMDGCN__)
+ #undef __AMDGCN__
+ #endif
+ 
+diff --color -upr orig/src/kernels/MIOpenBatchNormFwdTrainSpatial.cl MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormFwdTrainSpatial.cl
+--- orig/src/kernels/MIOpenBatchNormFwdTrainSpatial.cl	2021-11-13 20:42:16.616218235 +0800
++++ MIOpen-rocm-4.3.0/src/kernels/MIOpenBatchNormFwdTrainSpatial.cl	2021-11-14 12:37:37.935978982 +0800
+@@ -32,7 +32,7 @@
+ #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+ #endif
+ 
+-#if(MIO_BN_GFX1030 == 1 && __AMDGCN__)
++#if((MIO_BN_GFX1030 == 1 || MIO_BN_GFX1031 == 1) && __AMDGCN__)
+ #undef __AMDGCN__
+ #endif
+ 
+diff --color -upr orig/src/md_graph.cpp MIOpen-rocm-4.3.0/src/md_graph.cpp
+--- orig/src/md_graph.cpp	2021-11-13 20:42:16.832216191 +0800
++++ MIOpen-rocm-4.3.0/src/md_graph.cpp	2021-11-14 12:38:29.519502215 +0800
+@@ -723,8 +723,8 @@ void FusionMDGraph::InitConv(FusionMDGra
+ 
+             add_v21_wino("gfx9", {"gfx900", "gfx906", "gfx908"}, 1);
+             add_v21_wino("gfx9", {"gfx900", "gfx906", "gfx908"}, 2);
+-            add_v21_wino("gfx10", {"gfx1011", "gfx1012", "gfx1030"}, 1);
+-            add_v21_wino("gfx10", {"gfx1011", "gfx1012", "gfx1030"}, 2);
++            add_v21_wino("gfx10", {"gfx1011", "gfx1012", "gfx1030", "gfx1031"}, 1);
++            add_v21_wino("gfx10", {"gfx1011", "gfx1012", "gfx1030", "gfx1031"}, 2);
+         }
+     }
+ 
+diff --color -upr orig/src/ocl/batchnormocl.cpp MIOpen-rocm-4.3.0/src/ocl/batchnormocl.cpp
+--- orig/src/ocl/batchnormocl.cpp	2021-11-13 20:42:16.832216191 +0800
++++ MIOpen-rocm-4.3.0/src/ocl/batchnormocl.cpp	2021-11-14 12:41:56.493616852 +0800
+@@ -292,7 +292,8 @@ void BatchNormForwardTraining(Handle& ha
+                         std::to_string(n) + " -DMIO_BN_GRP0=" + std::to_string(xlocalsize) +
+                         " -DMIO_BN_GRP1=" + std::to_string(ylocalsize) + " -DMIO_BN_GRP2=" +
+                         std::to_string(zlocalsize) + " -DMIO_BN_GFX1030=" +
+-                        ((handle.GetDeviceName() == "gfx1030") ? "1" : "0");
++                        ((handle.GetDeviceName() == "gfx1030") ? "1" : "0") + " -DMIO_BN_GFX1031=" +
++                        ((handle.GetDeviceName() == "gfx1031") ? "1" : "0");
+ 
+                 if(variant != 4)
+                 {
+@@ -441,7 +442,8 @@ void BatchNormForwardTraining(Handle& ha
+                     std::to_string(ldsgcn) + " -DMIO_BN_VARIANT=" + std::to_string(variant) +
+                     " -DMIO_BN_GRP0=" + std::to_string(xlocalsize) + " -DMIO_BN_GRP1=" +
+                     std::to_string(ylocalsize) + " -DMIO_BN_GRP2=" + std::to_string(zlocalsize) +
+-                    " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0");
++                    " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0") +
++					" -DMIO_BN_GFX1031=" + ((handle.GetDeviceName() == "gfx1031") ? "1" : "0");
+ 
+                 MIOPEN_LOG_I2(kernel_name << ":: " << parms);
+ 
+@@ -561,7 +563,8 @@ void BatchNormForwardTraining(Handle& ha
+                 std::to_string(xlocalsize) + " -DMIO_BN_GRP1=" + std::to_string(ylocalsize) +
+                 " -DMIO_BN_GRP2=" + std::to_string(zlocalsize) + " -DMIO_BN_NCHW=" +
+                 std::to_string(in_nchw) + " -DMIO_BN_GFX1030=" +
+-                ((handle.GetDeviceName() == "gfx1030") ? "1" : "0");
++                ((handle.GetDeviceName() == "gfx1030") ? "1" : "0") + " -DMIO_BN_GFX1031=" +
++				((handle.GetDeviceName() == "gfx1031") ? "1" : "0");
+ 
+             std::string program_name = "MIOpenBatchNormFwdTrainPerAct.cl";
+             std::string kernel_name  = "MIOpenBatchNormFwdTrainPerActivation";
+@@ -757,7 +760,8 @@ void BatchNormForwardInference(Handle& h
+                 " -DMIOPEN_USE_FPMIX=" + std::to_string(static_cast<int>(bfpmixparm)) +
+                 " -DMIO_BN_GRP0=" + std::to_string(xlocalsize) + " -DMIO_BN_GRP1=" +
+                 std::to_string(ylocalsize) + " -DMIO_BN_GRP2=" + std::to_string(zlocalsize) +
+-                " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0");
++                " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0") +
++				" -DMIO_BN_GFX1031=" + ((handle.GetDeviceName() == "gfx1031") ? "1" : "0");
+ 
+             std::vector<size_t> vld;
+             std::vector<size_t> vgd;
+@@ -1112,7 +1116,8 @@ void BatchNormBackward(Handle& handle,
+                         " -DMIO_BN_GRP0=" + std::to_string(xlocalsize) + " -DMIO_BN_GRP1=" +
+                         std::to_string(ylocalsize) + " -DMIO_BN_GRP2=" +
+                         std::to_string(zlocalsize) + " -DMIO_BN_GFX1030=" +
+-                        ((handle.GetDeviceName() == "gfx1030") ? "1" : "0");
++                        ((handle.GetDeviceName() == "gfx1030") ? "1" : "0") + " -DMIO_BN_GFX1031=" +
++                        ((handle.GetDeviceName() == "gfx1031") ? "1" : "0");
+                 }
+ 
+                 MIOPEN_LOG_I2(kernel_name << ":: " << algo_name);
+@@ -1227,7 +1232,8 @@ void BatchNormBackward(Handle& handle,
+                     std::to_string(ldsgcn) + " -DMIO_BN_VARIANT=" + std::to_string(variant) +
+                     " -DMIO_BN_GRP0=" + std::to_string(xlocalsize) + " -DMIO_BN_GRP1=" +
+                     std::to_string(ylocalsize) + " -DMIO_BN_GRP2=" + std::to_string(zlocalsize) +
+-                    " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0");
++                    " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0") +
++					" -DMIO_BN_GFX1031=" + ((handle.GetDeviceName() == "gfx1031") ? "1" : "0");
+ 
+                 MIOPEN_LOG_I2(kernel_name << ":: " << parms);
+ 
+@@ -1335,7 +1341,8 @@ void BatchNormBackward(Handle& handle,
+                 std::to_string(int(std::ceil(float(ygridsize) / ylocalsize))) + " -DMIO_BN_GRP0=" +
+                 std::to_string(xlocalsize) + " -DMIO_BN_GRP1=" + std::to_string(ylocalsize) +
+                 " -DMIO_BN_GRP2=" + std::to_string(zlocalsize) + " -DMIO_BN_GFX1030=" +
+-                ((handle.GetDeviceName() == "gfx1030") ? "1" : "0");
++                ((handle.GetDeviceName() == "gfx1030") ? "1" : "0") + " -DMIO_BN_GFX1031=" +
++				((handle.GetDeviceName() == "gfx1031") ? "1" : "0");
+ 
+             if(useSaved)
+             {
+diff --color -upr orig/src/ocl/fusionopbiasbnactivocl.cpp MIOpen-rocm-4.3.0/src/ocl/fusionopbiasbnactivocl.cpp
+--- orig/src/ocl/fusionopbiasbnactivocl.cpp	2021-11-13 20:42:16.836216153 +0800
++++ MIOpen-rocm-4.3.0/src/ocl/fusionopbiasbnactivocl.cpp	2021-11-14 12:42:41.893201246 +0800
+@@ -388,7 +388,8 @@ miopenStatus_t BatchNormBwdTrainFusionOp
+            std::to_string(ldsnogcn) + " -DMIO_BN_LDSGCN_SIZE=" + std::to_string(ldsgcn) +
+            " -DMIO_BN_USESAVED=" + std::to_string(static_cast<int>(true)) + " -DMIO_BN_VARIANT=" +
+            std::to_string(variant) + " -DMIO_BN_CBA_WRITE_INTERMEDIATE=" + std::to_string(0) +
+-           " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0");
++           " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0") +
++		   " -DMIO_BN_GFX1031=" + ((handle.GetDeviceName() == "gfx1031") ? "1" : "0");
+ 
+     compile_config += add;
+     MIOPEN_LOG_I2(add);
+@@ -599,7 +600,8 @@ miopenStatus_t BatchNormFwdTrainFusionOp
+            " -DMIOPEN_READ_UNIT=" + std::to_string(read_unit) + " -DMIOPEN_READ_TYPE=" + READ_TYPE +
+            " -DMIO_SAVE_MEAN_VARIANCE=" + (saveBatchStats ? "1" : "0") + " -DMIO_RUNNING_RESULT=" +
+            ((savePopStats) ? "1" : "0") + " -DMIO_BN_VARIANT=" + std::to_string(variant) +
+-           " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0");
++           " -DMIO_BN_GFX1030=" + ((handle.GetDeviceName() == "gfx1030") ? "1" : "0") +
++		   " -DMIO_BN_GFX1031=" + ((handle.GetDeviceName() == "gfx1031") ? "1" : "0");
+ 
+     compile_config += add;
+     MIOPEN_LOG_I2(add);
+diff --color -upr orig/src/target_properties.cpp MIOpen-rocm-4.3.0/src/target_properties.cpp
+--- orig/src/target_properties.cpp	2021-11-13 20:42:16.836216153 +0800
++++ MIOpen-rocm-4.3.0/src/target_properties.cpp	2021-11-14 12:43:19.204859224 +0800
+@@ -52,6 +52,7 @@ static std::string GetDeviceNameFromMap(
+         {"Vega10", "gfx900"},
+         {"gfx901", "gfx900"},
+         {"10.3.0 Sienna_Cichlid 18", "gfx1030"},
++        {"10.3.1 Navi_flounder 18", "gfx1031"},
+     };
+ 
+     const char* const p_asciz = miopen::GetStringEnv(MIOPEN_DEBUG_ENFORCE_DEVICE{});
