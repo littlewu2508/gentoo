@@ -81,12 +81,14 @@ src_prepare() {
 
 	# correct libs and cmake install dir
 	sed -e "/LIB_INSTALL_DIR/s:PREFIX}/lib:PREFIX}/$(get_libdir):" \
-		-e "/${HIP_COMMON_DIR}\/cmake DESTINATION/s: .): $(get_libdir)):" -i CMakeLists.txt || die
+		-e "/${HIP_COMMON_DIR}\/cmake DESTINATION/d" -i CMakeLists.txt || die
 	sed -e "/LIBRARY DESTINATION/s:lib:$(get_libdir):" -i src/CMakeLists.txt || die
 
 	sed -e "/\.hip/d" \
 		-e "s,DESTINATION lib,DESTINATION $(get_libdir),g" \
-		-e "/\(cmake\|samples\)/s,DESTINATION \.,DESTINATION share,g" \
+		-e "/samples/s,DESTINATION \.,DESTINATION share/hip,g" \
+		-e "/cmake DESTINATION/d" \
+		-e "/DESTINATION docs/s,docs,\${CMAKE_INSTALL_DOCDIR},g" \
 		-e "/CPACK_RESOURCE_FILE_LICENSE/d" -i packaging/CMakeLists.txt || die
 
 	pushd ${HIP_S} || die
@@ -158,4 +160,8 @@ src_install() {
 
 	# Don't install .hipInfo and .hipVersion to bin/lib
 	rm "${ED}/usr/lib/.hipInfo" "${ED}/usr/bin/.hipVersion" || die
+
+	# install FindHIP Module
+	insinto /usr/share/cmake/Modules
+	doins -r ${HIP_S}/cmake/*
 }
