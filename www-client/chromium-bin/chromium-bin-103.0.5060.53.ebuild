@@ -88,6 +88,9 @@ RDEPEND="
 	)
 	wayland? ( dev-libs/wayland )
 "
+BDEPEND="
+	prefix? ( dev-util/patchelf )
+"
 
 S=${WORKDIR}
 QA_PREBUILT="*"
@@ -142,6 +145,16 @@ src_unpack() {
 	:
 }
 
+patchelf_for_exe() {
+	local filetype=$(file -b ${1})
+	if [[ ${filetype} == *ELF*interpreter* ]]; then
+		einfo "${1}'s interpreter changed"
+		patchelf ${1} --set-interpreter ${2} || die
+	elif [[ ${filetype} == *script* ]]; then
+		hprefixify ${1}
+	fi
+}
+
 src_install() {
 	dodir /
 	cd "${ED}" || die
@@ -151,6 +164,17 @@ src_install() {
 
 	if ! use suid; then
 		rm "${CHROMIUM_BIN_HOME}/chrome-sandbox" || die
+	fi
+
+	# Adjust to EPREFIX
+	if use prefix; then
+		local interpreter=$(patchelf --print-interpreter ${EPREFIX}/bin/bash)
+		ebegin "Changing interpreter to ${interpreter} for Gentoo prefix at ${ED}/${CHROMIUM_BIN_HOME}"
+		find "${CHROMIUM_BIN_HOME}" -type f -print0 | \
+			while IFS= read -r -d '' filename; do
+				patchelf_for_exe ${filename} ${interpreter} \; || die
+			done
+		eend $?
 	fi
 
 	# Clean unneeded languages
