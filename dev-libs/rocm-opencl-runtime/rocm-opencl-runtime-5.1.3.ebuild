@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit cmake edo flag-o-matic prefix virtualx
+inherit cmake edo flag-o-matic prefix
 
 DESCRIPTION="Radeon Open Compute OpenCL Compatible Runtime"
 HOMEPAGE="https://github.com/RadeonOpenCompute/ROCm-OpenCL-Runtime"
@@ -24,6 +24,7 @@ RDEPEND=">=dev-libs/rocr-runtime-${PV}
 DEPEND="${RDEPEND}"
 BDEPEND=">=dev-util/rocm-cmake-${PV}
 	media-libs/glew
+	test? ( x11-apps/mesa-progs[X] )
 	"
 
 PATCHES=(
@@ -45,6 +46,8 @@ src_prepare() {
 	hprefixify amdocl/CMakeLists.txt
 
 	sed -e "s/DESTINATION lib/DESTINATION ${CMAKE_INSTALL_LIBDIR}/g" -i packaging/CMakeLists.txt || die
+	# remove trailing  or it won't work
+	sed -e "s///g" -i tests/ocltst/module/perf/oclperf.exclude || die
 
 	pushd ${S1} || die
 	# Bug #753377
@@ -63,7 +66,7 @@ src_configure() {
 		-DAMD_OPENCL_PATH="${S}"
 		-DROCM_PATH="${EPREFIX}/usr"
 		-DBUILD_TESTS=$(usex test ON OFF)
-		# -DEMU_ENV=$(usex test ON OFF)
+		-DEMU_ENV=ON
 		# -DCMAKE_STRIP=""
 	)
 	cmake_src_configure
@@ -79,12 +82,27 @@ src_install() {
 	doins tools/cltrace/libcltrace.so
 }
 
+check_rw_permission() {
+	[[ -r "$1" ]] && [[ -w "$1" ]] || die \
+		"${PORTAGE_USERNAME} do not have read or write permissions on $1! \n Make sure ${PORTAGE_USERNAME} is in render group and check the permissions."
+}
+
 src_test() {
 	addwrite /dev/kfd
 	addwrite /dev/dri/
+	check_rw_permission /dev/kfd
+	check_rw_permission /dev/dri/render*
 	pushd "${BUILD_DIR}"/tests/ocltst
 	export OCL_ICD_FILENAMES="${BUILD_DIR}"/amdocl/libamdocl64.so
-	virtx ./ocltst -m liboclgl.so -a ogl.exclude
-	virtx ./ocltst -m liboclruntime.so -a oclruntime.exclude
-	edob ./ocltst -m liboclperf.so -a oclperf.exclude
+	edob ./ocltst -m liboclperf.so -A oclperf.exclude
+	local instruction="Please start an X server using amdgpu driver on GPU device, and rerun the test using OCLGL_DISPLAY=\${DISPLAY} FEATURES=test emerge rocm-opencl-runtime."
+	if [[ -n ${OCLGL_DISPLAY+x} ]]; then
+		ebegin "Running oclgl test under DISPLAY ${OCLGL_DISPLAY}"
+		DISPLAY=${OCLGL_DISPLAY} glxinfo | grep "OpenGL vendor string: AMD" || die "This display does not have AMD OpenGL vendor! ${instruction}"
+		DISPLAY=${OCLGL_DISPLAY} ./ocltst -m liboclgl.so -A ogl.exclude
+		eend $? || die "oclgl test failed"
+	else
+		die "\${OCLGL_DISPLAY} not set. ${instruction}."
+	fi
+	edob ./ocltst -m liboclruntime.so -A oclruntime.exclude
 }
