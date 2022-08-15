@@ -19,7 +19,7 @@ REQUIRED_USE="${ROCM_REQUIRED_USE}"
 # sci-libs/rocBLAS:${SLOT}
 RDEPEND="dev-util/hip
 	sci-libs/rocBLAS:${SLOT}[${ROCM_USEDEP}]
-	<=dev-libs/libfmt-8
+	<dev-libs/libfmt-9
 	benchmark? ( virtual/blas )"
 DEPEND="${RDEPEND}"
 BDEPEND="test? ( dev-cpp/gtest
@@ -52,11 +52,12 @@ src_configure() {
 		-DBUILD_CLIENTS_BENCHMARKS=$(usex benchmark ON OFF)
 	)
 
-	rocm_src_configure
+	rocm-configure
 }
 
 src_test() {
-	rocm_src_test
+	cd "${BUILD_DIR}/clients/staging" || die
+	LD_LIBRARY_PATH="${BUILD_DIR}/library/src" rocm-test ${PN,,}-test
 }
 
 src_install() {
