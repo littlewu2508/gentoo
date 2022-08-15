@@ -19,7 +19,7 @@ REQUIRED_USE="${ROCM_REQUIRED_USE}"
 # sci-libs/rocBLAS:${SLOT}
 RDEPEND="dev-util/hip
 	sci-libs/rocBLAS:${SLOT}[${ROCM_USEDEP}]
-	<=dev-libs/libfmt-8
+	<dev-libs/libfmt-9
 	benchmark? ( virtual/blas )"
 DEPEND="${RDEPEND}"
 BDEPEND="test? ( dev-cpp/gtest
