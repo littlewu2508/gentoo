@@ -130,7 +130,7 @@ inherit edo
 # OFFICIAL_AMDGPU_TARGETS, ROCM_REQUIRED_USE, and ROCM_USEDEP
 _rocm_set_globals() {
 	case ${ROCM_VERSION:-${PV}} in
-		4*)
+		4.*)
 			ALL_AMDGPU_TARGETS=(
 				gfx803 gfx900 gfx906 gfx908
 				gfx1010 gfx1011 gfx1012 gfx1030
@@ -139,7 +139,7 @@ _rocm_set_globals() {
 				gfx906 gfx908
 			)
 			;;
-		5*)
+		5.*)
 			ALL_AMDGPU_TARGETS=(
 				gfx803 gfx900 gfx906 gfx908 gfx90a
 				gfx1010 gfx1011 gfx1012 gfx1030 gfx1031
