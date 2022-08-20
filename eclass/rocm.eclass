@@ -22,6 +22,7 @@
 #
 # @EXAMPLE:
 # # Example for ROCm packages in https://github.com/ROCmSoftwarePlatform
+# @CODE
 # inherit cmake rocm
 # SRC_URI="https://github.com/ROCmSoftwarePlatform/${PN}/archive/rocm-${PV}.tar.gz -> ${P}.tar.gz"
 # SLOT="0/$(ver_cut 1-2)"
@@ -46,10 +47,12 @@
 # src_test() {
 #     rocm_src_test
 # }
+# @CODE
 #
 # # Example for packages depend on ROCm libraries -- a package depend on
 # # rocBLAS, and use comma seperated ${HCC_AMDGPU_TARGET} to determine GPU
 # # architecture to compile. Requires ROCm version >5.
+# @CODE
 # ROCM_VERSION=5
 # inherit rocm
 # IUSE="rocm"
@@ -64,6 +67,7 @@
 #     fi
 #     default
 # }
+# @CODE
 
 if [[ ! ${_ROCM_ECLASS} ]]; then
 
@@ -106,10 +110,14 @@ inherit edo
 # @DESCRIPTION:
 # Requires at least one AMDGPU target to be compiled.
 # Example use for ROCm libraries:
+# @CODE
 # REQUIRED_USE="${ROCM_REQUIRED_USE}"
+# @CODE
 # Example use for packages that depend on ROCm libraries
+# @CODE
 # IUSE="rocm"
 # REQUIRED_USE="rocm? ( ${ROCM_REQUIRED_USE} )"
+# @CODE
 
 # @ECLASS_VARIABLE: ROCM_USEDEP
 # @OUTPUT_VARIABLE
