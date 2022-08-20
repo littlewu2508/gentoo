@@ -96,7 +96,7 @@ inherit edo
 # @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
 # @INTERNAL
 # @DESCRIPTION:
-# The list of USE flags corresponding to all officlially supported AMDGPU
+# The list of USE flags corresponding to all officially supported AMDGPU
 # targets in this ROCm version, documented at
 # https://docs.amd.com/bundle/ROCm-Installation-Guide-v${PV}/page/Prerequisite_Actions.html.
 # USE flag of these architectures will be default on. Depends on ${PV}.
