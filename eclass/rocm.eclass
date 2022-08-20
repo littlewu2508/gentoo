@@ -158,8 +158,8 @@ _rocm_set_globals() {
 	esac
 
 	ROCM_REQUIRED_USE+=" || ("
-	for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
-		if [[ " ${OFFICIAL_AMDGPU_TARGETS[*]} " =~ " ${gpu_target} " ]]; then
+	for gpu_target in "${ALL_AMDGPU_TARGETS[@]}"; do
+		if has ${gpu_target} "${OFFICIAL_AMDGPU_TARGETS[*]}"; then
 			IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
 		else
 			IUSE+=" ${gpu_target/#/amdgpu_targets_}"
@@ -184,7 +184,7 @@ unset -f _rocm_set_globals
 # https://llvm.org/docs/AMDGPUUsage.html#target-features
 get_amdgpu_flags() {
 	local AMDGPU_TARGET_FLAGS
-	for gpu_target in ${ALL_AMDGPU_TARGETS[@]}; do
+	for gpu_target in "${ALL_AMDGPU_TARGETS[@]}"; do
 		local target_feature=
 		if use amdgpu_targets_${gpu_target}; then
 			case ${gpu_target} in
@@ -209,7 +209,7 @@ get_amdgpu_flags() {
 # check read and write permissions on specific files.
 # allow using wildcard, for example check_rw_permission /dev/dri/render*
 check_rw_permission() {
-	[[ -r "$1" ]] && [[ -w "$1" ]] || die \
+	[[ -r $1 ]] && [[ -w $1 ]] || die \
 		"${PORTAGE_USERNAME} do not have read or write permissions on $1! \n Make sure ${PORTAGE_USERNAME} is in render group and check the permissions."
 }
 
@@ -252,7 +252,7 @@ rocm_src_test() {
 	export LD_LIBRARY_PATH
 	if grep -q 'build test:' "${BUILD_DIR}"/build.ninja; then
 		MAKEOPTS="-j1" cmake_src_test
-	elif [[ -d "${BUILD_DIR}"/clients/staging ]]; then
+	elif [[ -d ${BUILD_DIR}/clients/staging ]]; then
 		cd "${BUILD_DIR}/clients/staging" || die "Test directory not found!"
 		for test_program in "${PN,,}-"*test; do
 			if [[ -x ${test_program} ]]; then
@@ -261,7 +261,7 @@ rocm_src_test() {
 				die "The test program ${test_program} does not exist or cannot be excuted!"
 			fi
 		done
-	elif [[ ! -z "${ROCM_TESTS}" ]]; then
+	elif [[ -n ${ROCM_TESTS} ]]; then
 		for test_program in "${ROCM_TESTS}"; do
 			cd "${BUILD_DIR}" || die
 			if [[ -x ${test_program} ]]; then
