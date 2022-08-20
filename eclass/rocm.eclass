@@ -78,7 +78,6 @@ esac
 
 inherit edo
 
-
 # @ECLASS_VARIABLE: ROCM_VERSION
 # @DEFAULT_UNSET
 # @PRE_INHERIT
