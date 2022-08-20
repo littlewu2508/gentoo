@@ -263,7 +263,7 @@ rocm_src_test() {
 			fi
 		done
 	elif [[ -n ${ROCM_TESTS} ]]; then
-		for test_program in "${ROCM_TESTS}"; do
+		for test_program in ${ROCM_TESTS}; do
 			cd "${BUILD_DIR}" || die
 			if [[ -x ${test_program} ]]; then
 			edob ./${test_program}
