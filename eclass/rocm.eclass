@@ -9,12 +9,12 @@
 # @SUPPORTED_EAPIS: 7 8
 # @BLURB: Common functions and variables for ROCm packages written in HIP
 # @DESCRIPTION:
-# ROCm packages such as sci-libs/<roc|hip>* can utilize functions in this eclass.
-# Currently, it handles the AMDGPU_TARGETS variable via USE_EXPAND, so user can
-# use USE flag to control which GPU architecture to compile, and ensure coherence
-# among dependencies. It also specify CXX=hipcc, to let hipcc compile. Another
-# important function is src_test, which checks whether a valid KFD device exists
-# for testing, and then execute the test program.
+# ROCm packages such as sci-libs/<roc|hip>* can utilize functions in this
+# eclass.  Currently, it handles the AMDGPU_TARGETS variable via USE_EXPAND, so
+# user can use USE flag to control which GPU architecture to compile, and
+# ensure coherence among dependencies. It also specify CXX=hipcc, to let hipcc
+# compile. Another important function is src_test, which checks whether a valid
+# KFD device exists for testing, and then execute the test program.
 #
 # Most ROCm packages use cmake as build system, so this eclass does not export
 # phase functions which overwrites the phase functions in cmake.eclass. Ebuild
@@ -232,7 +232,7 @@ rocm_src_configure() {
 # @DESCRIPTION:
 # Test whether valid GPU device is present. If so, find how to, and execute test.
 # ROCm packages can have to test mechanism:
-# 1. cmake_src_test. Set MAKEOPTS="-j1" to make sure only one test on GPU at a time;
+# 1. cmake_src_test. MAKEOPTS="-j1" ensures only one test on GPU at a time;
 # 2. one single gtest binary called "${PN,,}"-test;
 # 3. Some package like rocFFT have alternative test like rocfft-selftest;
 # 4. Custome testing binaries like dev-libs/rccl. Use ${ROCM_TESTS} to specify.
