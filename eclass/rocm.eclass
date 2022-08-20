@@ -71,12 +71,9 @@
 
 if [[ ! ${_ROCM_ECLASS} ]]; then
 
-case "${EAPI:-0}" in
-	7|8)
-		;;
-	*)
-		die "Unsupported EAPI=${EAPI} for ${ECLASS}"
-		;;
+case ${EAPI} in
+	7|8) ;;
+	*) die "${ECLASS}: EAPI ${EAPI:-0} not supported" ;;
 esac
 
 inherit edo
