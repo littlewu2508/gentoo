@@ -241,12 +241,11 @@ rocm_src_configure() {
 # 3. Some package like rocFFT have alternative test like rocfft-selftest;
 # 4. Custome testing binaries like dev-libs/rccl. Use ${ROCM_TESTS} to specify.
 rocm_src_test() {
-	addwrite /dev/kfd
-	addwrite /dev/dri/
-
-	# check permissions on /dev/kfd and /dev/dri/render*
-	check_rw_permission /dev/kfd
-	check_rw_permission /dev/dri/render*
+	# grant and check permissions on /dev/kfd and /dev/dri/render*
+	for device in /dev/kfd /dev/dri/render*; do
+		addwrite ${device}
+		check_rw_permission ${device}
+	done
 
 	: ${LD_LIBRARY_PATH:="${BUILD_DIR}/clients:${BUILD_DIR}/src:${BUILD_DIR}/library:${BUILD_DIR}/library/src:${BUILD_DIR}/library/src/device"}
 	export LD_LIBRARY_PATH
