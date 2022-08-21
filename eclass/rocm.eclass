@@ -209,10 +209,8 @@ get_amdgpu_flags() {
 # check read and write permissions on specific files.
 # allow using wildcard, for example check_rw_permission /dev/dri/render*
 check_rw_permission() {
-	for target in $*; do
-		[[ -r $* ]] && [[ -w $* ]] || die \
-			"Portage do not have read or write permissions on $1! \n Make sure it is in render group and check the permissions."
-	done
+	[[ -r $1 ]] && [[ -w $1 ]] || die \
+		"${PORTAGE_USERNAME} do not have read or write permissions on $1! \n Make sure ${PORTAGE_USERNAME} is in render group and check the permissions."
 }
 
 # == phase functions ==
@@ -247,7 +245,8 @@ rocm_src_test() {
 	addwrite /dev/dri/
 
 	# check permissions on /dev/kfd and /dev/dri/render*
-	check_rw_permission /dev/kfd /dev/dri/render*
+	check_rw_permission /dev/kfd
+	check_rw_permission /dev/dri/render*
 
 	: ${LD_LIBRARY_PATH:="${BUILD_DIR}/clients:${BUILD_DIR}/src:${BUILD_DIR}/library:${BUILD_DIR}/library/src:${BUILD_DIR}/library/src/device"}
 	export LD_LIBRARY_PATH
