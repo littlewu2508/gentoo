@@ -23,8 +23,6 @@ RESTRICT="!test? ( test )"
 RDEPEND="
 	>=dev-util/hip-5.1.3
 	>=dev-db/sqlite-3.17
-	dev-libs/ocl-icd
-	dev-util/rocm-clang-ocl
 	sci-libs/rocBLAS:${SLOT}
 	>=dev-libs/boost-1.72
 "
@@ -42,6 +40,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-4.3.0-fix-interface-include-in-HIP_COMPILER_FLAGS.patch"
 	"${FILESDIR}/${PN}-4.3.0-enable-test.patch"
 	"${FILESDIR}/${PN}-5.1.3-gfx1031.patch"
+	"${FILESDIR}/${PN}-5.1.3-deprecate-clang-ocl.patch"
 	"${FILESDIR}/${PN}-5.1.3-no-strip.patch"
 )
 
