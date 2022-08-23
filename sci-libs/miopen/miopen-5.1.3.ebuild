@@ -3,7 +3,9 @@
 
 EAPI=8
 
-inherit cmake flag-o-matic
+inherit cmake flag-o-matic llvm rocm
+
+LLVM_MAX_SLOT=14
 
 DESCRIPTION="AMD's Machine Intelligence Library"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/MIOpen"
@@ -17,10 +19,10 @@ IUSE="debug test"
 RESTRICT="!test? ( test )"
 
 RDEPEND="
-	dev-util/hip
+	>=dev-util/hip-5.1.3
 	>=dev-db/sqlite-3.17
 	dev-libs/ocl-icd
-	dev-util/rocm-clang-ocl:${SLOT}
+	dev-util/rocm-clang-ocl
 	sci-libs/rocBLAS:${SLOT}
 	>=dev-libs/boost-1.72
 "
@@ -37,13 +39,13 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.0.2-strip-xnack-in-flags.patch"
 	"${FILESDIR}/${PN}-4.3.0-fix-interface-include-in-HIP_COMPILER_FLAGS.patch"
 	"${FILESDIR}/${PN}-4.3.0-enable-test.patch"
-	"${FILESDIR}/${PN}-5.0.2-no-strip.patch"
-	"${FILESDIR}/${PN}-5.0.2-gfx1031.patch"
+	"${FILESDIR}/${PN}-5.1.3-gfx1031.patch"
+	"${FILESDIR}/${PN}-5.1.3-no-strip.patch"
 )
 
 src_prepare() {
-	sed -e "s:/opt/rocm/llvm:""${EPREFIX}""/usr/lib/llvm/roc/ NO_DEFAULT_PATH:" \
-		-e "s:/opt/rocm/hip:""${EPREFIX}""/usr/lib/hip/ NO_DEFAULT_PATH:" \
+	sed -e "s:/opt/rocm/llvm:$(get_llvm_prefix ${LLVM_MAX_SLOT}) NO_DEFAULT_PATH:" \
+		-e "s:/opt/rocm/hip:$(hipconfig -p) NO_DEFAULT_PATH:" \
 		-e '/set( MIOPEN_INSTALL_DIR/s:miopen:${CMAKE_INSTALL_PREFIX}:' \
 		-e '/MIOPEN_TIDY_ERRORS ALL/d' \
 		-i CMakeLists.txt || die
@@ -65,17 +67,24 @@ src_configure() {
 		CMAKE_BUILD_TYPE="Debug"
 	fi
 
-	export CXX="${EPREFIX}/usr/lib/llvm/roc/bin/clang++"
-
 	local mycmakeargs=(
 		-DCMAKE_SKIP_RPATH=ON
 		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
 		-DMIOPEN_BACKEND=HIP
 		-DBoost_USE_STATIC_LIBS=OFF
+		-DMIOPEN_USE_MLIR=OFF
 		-DBUILD_TESTS=$(usex test ON OFF)
 		-DMIOPEN_TEST_ALL=$(usex test ON OFF)
 		${AMDGPU_TARGETS+-DAMDGPU_TARGETS="${AMDGPU_TARGETS}"}
 	)
 
-	cmake_src_configure
+	addpredict /dev/kfd
+	addpredict /dev/dri/
+	append-cxxflags "--rocm-path=$(hipconfig -R)"
+	append-cxxflags "--hip-device-lib-path=${EPREFIX}/usr/lib/amdgcn/bitcode"
+	CXX="$(get_llvm_prefix ${LLVM_MAX_SLOT})/bin/clang++" cmake_src_configure
+}
+
+src_test() {
+	LD_LIBRARY_PATH="${BUILD_DIR}"/lib rocm_src_test
 }
