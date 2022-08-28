@@ -159,7 +159,7 @@ _rocm_set_globals() {
 
 	ROCM_REQUIRED_USE+=" || ("
 	for gpu_target in "${ALL_AMDGPU_TARGETS[@]}"; do
-		if has "${gpu_target}" ${OFFICIAL_AMDGPU_TARGETS[*]}; then
+		if has "${gpu_target}" "${OFFICIAL_AMDGPU_TARGETS[@]}"; then
 			IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
 		else
 			IUSE+=" ${gpu_target/#/amdgpu_targets_}"
