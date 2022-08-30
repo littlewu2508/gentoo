@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+  <maintainer type="project">
+    <email>sci@gentoo.org</email>
+  </maintainer>
+  <maintainer type="person">
+    <email>gentoo@holzke.net</email>
+    <name>Wilfried Holzke</name>
+  </maintainer>
+  <maintainer type="person">
+    <email>xgreenlandforwyy@gmail.com</email>
+    <name>Yiyang Wu</name>
+  </maintainer>
+    <use>
+        <flag name="cuda">Use cuda as backend</flag>
+        <flag name="cudnn">Use cudnn to accelerate deep learning workloads such as convolution</flag>
+        <flag name="rocm">Use hip as backend instead of cuda</flag>
+    </use>
+</pkgmetadata>
