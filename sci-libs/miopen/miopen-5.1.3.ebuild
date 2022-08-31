@@ -23,13 +23,15 @@ RESTRICT="!test? ( test )"
 RDEPEND="
 	>=dev-util/hip-5.1.3
 	>=dev-db/sqlite-3.17
-	sci-libs/rocBLAS:${SLOT}
+	sci-libs/rocBLAS:${SLOT}[${ROCM_USEDEP}]
 	>=dev-libs/boost-1.72
 "
 
 DEPEND="${RDEPEND}"
 
-BDEPEND="dev-libs/half:0/1"
+BDEPEND="dev-libs/half:0/1
+	dev-util/rocm-cmake
+"
 
 S="${WORKDIR}/MIOpen-rocm-${PV}"
 
