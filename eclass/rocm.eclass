@@ -18,7 +18,7 @@
 #
 # Most ROCm packages use cmake as build system, so this eclass does not export
 # phase functions which overwrites the phase functions in cmake.eclass. Ebuild
-# should explicitly call rocm_src_* in src_configure and src_test.
+# should explicitly call rocm-{configure,test} in src_configure and src_test.
 #
 # @EXAMPLE:
 # # Example for ROCm packages in https://github.com/ROCmSoftwarePlatform
@@ -41,11 +41,11 @@
 #     local mycmakeargs=(
 #         -DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 #     )
-#     rocm_src_configure
+#     rocm-configure
 # }
 #
 # src_test() {
-#     rocm_src_test
+#     rocm-test
 # }
 # @CODE
 #
@@ -215,10 +215,10 @@ check_rw_permission() {
 
 # == phase functions ==
 
-# @FUNCTION: rocm_src_configure
+# @FUNCTION: rocm-configure
 # @DESCRIPTION:
 # configure rocm packages, and setting common cmake arguments
-rocm_src_configure() {
+rocm-configure() {
 	# allow acces to hardware
 	addpredict /dev/kfd
 	addpredict /dev/dri/
@@ -232,7 +232,7 @@ rocm_src_configure() {
 	CXX="hipcc" cmake_src_configure
 }
 
-# @FUNCTION: rocm_src_test
+# @FUNCTION: rocm-test
 # @DESCRIPTION:
 # Test whether valid GPU device is present. If so, find how to, and execute test.
 # ROCm packages can have to test mechanism:
@@ -240,7 +240,7 @@ rocm_src_configure() {
 # 2. one single gtest binary called "${PN,,}"-test;
 # 3. Some package like rocFFT have alternative test like rocfft-selftest;
 # 4. Custome testing binaries like dev-libs/rccl. Use ${ROCM_TESTS} to specify.
-rocm_src_test() {
+rocm-test() {
 	# grant and check permissions on /dev/kfd and /dev/dri/render*
 	for device in /dev/kfd /dev/dri/render*; do
 		addwrite ${device}
