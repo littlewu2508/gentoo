@@ -207,8 +207,11 @@ get_amdgpu_flags() {
 # @FUNCTION: check_rw_permission
 # @USAGE: check_rw_permission <file>
 # @DESCRIPTION:
-# check read and write permissions on specific files.
-# allow using wildcard, for example check_rw_permission /dev/dri/render*
+# check read and write permissions on a specific file, die if no permission.
+# @EXAMPLE:
+# @CODE
+# check_rw_permission /dev/kfd
+# CODE
 check_rw_permission() {
 	[[ -r $1 ]] && [[ -w $1 ]] || die \
 		"Portage do not have read or write permissions on $1! \n Make sure both are in render group and check the permissions."
