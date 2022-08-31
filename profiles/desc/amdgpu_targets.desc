@@ -1,7 +1,9 @@
 # Copyright 1999-2022 Gentoo Authors.
 # Distributed under the terms of the GNU General Public License v2
 
-# Copied from https://www.coelacanth-dream.com/posts/2019/12/30/did-rid-product-matome-p2/#fn:67
+# Referene：
+# GPU name and Architecture codename: https://github.com/GPUOpen-Tools/device_info/blob/master/DeviceInfo.cpp
+# See also: https://www.coelacanth-dream.com/posts/2019/12/30/did-rid-product-matome-p2/#fn:67
 
 gfx803 - Fiji GPU, codename fiji, including Radeon R9 Nano/Fury/FuryX, Radeon Pro Duo, FirePro S9300x2, Radeon Instinct MI8 
 gfx900 - Vega GPU, codename vega10, including Radeon Vega Frontier Edition, Radeon RX Vega 56/64, Radeon RX Vega 64 Liquid, Radeon Pro Vega 48/56/64/64X, Radeon Pro WX 8200/9100, Radeon Pro V320/V340/SSG, Radeon Instinct MI25
