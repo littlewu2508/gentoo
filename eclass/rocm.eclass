@@ -21,10 +21,13 @@
 # should explicitly call rocm-{configure,test} in src_configure and src_test.
 #
 # @EXAMPLE:
-# # Example for ROCm packages in https://github.com/ROCmSoftwarePlatform
 # @CODE
+# # Example ebuild for ROCm library in https://github.com/ROCmSoftwarePlatform
+# # whcih depends on rocBLAS
 # inherit cmake rocm
+# # ROCm libraries SRC_URI is usually in form of:
 # SRC_URI="https://github.com/ROCmSoftwarePlatform/${PN}/archive/rocm-${PV}.tar.gz -> ${P}.tar.gz"
+# S=${WORKDIR}/${PN}-rocm-${PV}
 # SLOT="0/$(ver_cut 1-2)"
 # IUSE="test"
 # REQUIRED_USE="${ROCM_REQUIRED_USE}"
@@ -34,8 +37,6 @@
 #     dev-util/hip
 #     sci-libs/rocBLAS:${SLOT}[${ROCM_USEDEP}]
 # "
-#
-# S=${WORKDIR}/${PN}-rocm-${PV}
 #
 # src_configure() {
 #     local mycmakeargs=(
@@ -53,7 +54,7 @@
 # # rocBLAS, and use comma seperated ${HCC_AMDGPU_TARGET} to determine GPU
 # # architecture to compile. Requires ROCm version >5.
 # @CODE
-# ROCM_VERSION=5
+# ROCM_VERSION=5.1
 # inherit rocm
 # IUSE="rocm"
 # REQUIRED_USE="rocm? ( ${ROCM_REQUIRED_USE} )"
