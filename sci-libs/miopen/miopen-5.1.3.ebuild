@@ -44,6 +44,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.1.3-gfx1031.patch"
 	"${FILESDIR}/${PN}-5.1.3-deprecate-clang-ocl.patch"
 	"${FILESDIR}/${PN}-5.1.3-no-strip.patch"
+	"${FILESDIR}/${PN}-5.1.3-include-array.patch"
 )
 
 src_prepare() {
