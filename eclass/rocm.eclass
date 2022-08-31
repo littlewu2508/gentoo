@@ -250,8 +250,8 @@ rocm-configure() {
 rocm-test() {
 	# grant and check permissions on /dev/kfd and /dev/dri/render*
 	for device in /dev/kfd /dev/dri/render*; do
-		addwrite ${device}
-		check_rw_permission ${device}
+		addwrite "${device}"
+		check_rw_permission "${device}"
 	done
 
 	: ${LD_LIBRARY_PATH:="${BUILD_DIR}/clients:${BUILD_DIR}/src:${BUILD_DIR}/library:${BUILD_DIR}/library/src:${BUILD_DIR}/library/src/device"}
