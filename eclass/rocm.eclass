@@ -232,7 +232,6 @@ rocm-configure() {
 	addpredict /dev/dri/
 
 	mycmakeargs+=(
-		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
 		-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
 		-DCMAKE_SKIP_RPATH=TRUE
 	)
