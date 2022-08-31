@@ -241,12 +241,27 @@ rocm-configure() {
 
 # @FUNCTION: rocm-test
 # @DESCRIPTION:
-# Test whether valid GPU device is present. If so, find how to, and execute test.
-# ROCm packages can have to test mechanism:
+# Test whether valid GPU device is present. If so, execute test.
+# @EXAMPLE:
+# ROCm packages can have two test scenarioes:
 # 1. cmake_src_test. MAKEOPTS="-j1" ensures only one test on GPU at a time;
-# 2. one single gtest binary called "${PN,,}"-test;
-# 3. Some package like rocFFT have alternative test like rocfft-selftest;
-# 4. Custome testing binaries like dev-libs/rccl. Use ${ROCM_TESTS} to specify.
+# @CODE
+# LD_LIBRARY_PATH=<path-to-lib> rocm-test --cmake
+# @CODE
+# 2. one gtest binary called "${PN,,}"-test in ${BUILD_DIR}/clients/staging;
+# @CODE
+# cd "${BUILD_DIR}"/clients/staging || die
+# LD_LIBRARY_PATH=<path-to-lib> rocm-test "${PN,,}"-test
+# @CODE
+# Some packages like rocFFT have two test binaries like rocfft-selftest;
+# packages like dev-libs/rccl have test binary with custom names.
+# @CODE
+# cd "${BUILD_DIR}"/clients/staging || die
+# export LD_LIBRARY_PATH=<path-to-lib>
+# cd <test-bin-location> || die
+# rocm-test <test-bin-1>
+# rocm-test <test-bin-2> 
+# @CODE
 rocm-test() {
 	# grant and check permissions on /dev/kfd and /dev/dri/render*
 	for device in /dev/kfd /dev/dri/render*; do
@@ -254,31 +269,15 @@ rocm-test() {
 		check_rw_permission "${device}"
 	done
 
-	: ${LD_LIBRARY_PATH:="${BUILD_DIR}/clients:${BUILD_DIR}/src:${BUILD_DIR}/library:${BUILD_DIR}/library/src:${BUILD_DIR}/library/src/device"}
-	export LD_LIBRARY_PATH
-	if grep -q 'build test:' "${BUILD_DIR}"/build.ninja; then
-		MAKEOPTS="-j1" cmake_src_test
-	elif [[ -d ${BUILD_DIR}/clients/staging ]]; then
-		cd "${BUILD_DIR}/clients/staging" || die "Test directory not found!"
-		for test_program in "${PN,,}-"*test; do
-			if [[ -x ${test_program} ]]; then
-					edob ./${test_program}
-			else
-				die "The test program ${test_program} does not exist or cannot be excuted!"
-			fi
-		done
-	elif [[ -n ${ROCM_TESTS} ]]; then
-		for test_program in ${ROCM_TESTS}; do
-			cd "${BUILD_DIR}" || die
-			if [[ -x ${test_program} ]]; then
-			edob ./${test_program}
-			else
-				die "The test program ${test_program} does not exist or cannot be excuted!"
-			fi
-		done
-	else
-		die "There is no cmake tests, no \${ROCM_TESTS} executable provided, nor ${BUILD_DIR}/clients/staging where test program might be located."
-	fi
+	case ${1} in
+		--cmake)
+			# Avoid multi jobs running that may cause GPU error or CPU overload
+			MAKEOPTS="-j1" cmake_src_test
+			;;
+		*)
+			edob ./${1}
+			;;
+	esac
 }
 
 _ROCM_ECLASS=1
