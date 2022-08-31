@@ -224,9 +224,10 @@ check_rw_permission() {
 
 # @FUNCTION: rocm-configure
 # @DESCRIPTION:
-# configure rocm packages, and setting common cmake arguments
+# configure rocm packages, and setting common cmake arguments. Only for ROCm
+# libraries in https://github.com/ROCmSoftwarePlatform using cmake.
 rocm-configure() {
-	# allow acces to hardware
+	# avoid sandbox violation
 	addpredict /dev/kfd
 	addpredict /dev/dri/
 
