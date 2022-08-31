@@ -213,8 +213,11 @@ get_amdgpu_flags() {
 # check_rw_permission /dev/kfd
 # CODE
 check_rw_permission() {
-	[[ -r $1 ]] && [[ -w $1 ]] || die \
-		"Portage do not have read or write permissions on $1! \n Make sure both are in render group and check the permissions."
+	if [[ ! -r $1 ]] || [[ ! -w $1 ]]; then 
+		eerror "Portage do not have read or write permissions on $1!"
+		eerror "Make sure both are in render group and check the permissions."
+		die "No permissions on $1"
+	fi
 }
 
 # == phase functions ==
