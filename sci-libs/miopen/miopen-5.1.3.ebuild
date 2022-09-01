@@ -7,8 +7,6 @@ ROCM_VERSION=${PV}
 
 inherit cmake flag-o-matic llvm rocm
 
-LLVM_MAX_SLOT=14
-
 DESCRIPTION="AMD's Machine Intelligence Library"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/MIOpen"
 SRC_URI="https://github.com/ROCmSoftwarePlatform/MIOpen/archive/rocm-${PV}.tar.gz -> MIOpen-${PV}.tar.gz"
@@ -21,7 +19,8 @@ IUSE="debug test"
 RESTRICT="!test? ( test )"
 
 RDEPEND="
-	>=dev-util/hip-5.1.3
+	dev-util/hip
+	>=dev-libs/rocm-comgr-5.1.3[llvm-roc]
 	>=dev-db/sqlite-3.17
 	sci-libs/rocBLAS:${SLOT}[${ROCM_USEDEP}]
 	>=dev-libs/boost-1.72
