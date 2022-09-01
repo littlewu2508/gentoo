@@ -8,4 +8,7 @@
     <upstream>
         <remote-id type="github">RadeonOpenCompute/ROCm-CompilerSupport</remote-id>
     </upstream>
+    <use>
+		<flag name="llvm-roc">Use AMD forked llvm/clang (sys-devel/llvm-roc) as compiler backend instead of vanilla sys-devel/clang</flag>
+    </use>
 </pkgmetadata>
