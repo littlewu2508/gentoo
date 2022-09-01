@@ -19,6 +19,7 @@ LICENSE="BSD"
 KEYWORDS="~amd64"
 SLOT="0/$(ver_cut 1-2)"
 IUSE="benchmark test"
+REQUIRED_USE="${ROCM_REQUIRED_USE}"
 RESTRICT="!test? ( test )"
 
 BDEPEND="
