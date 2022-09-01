@@ -15,11 +15,12 @@ LICENSE="Apache-2.0"
 KEYWORDS="~amd64"
 SLOT="0/$(ver_cut 1-2)"
 IUSE="benchmark test"
+REQUIRED_USE="${ROCM_REQUIRED_USE}"
 
 RESTRICT="!test? ( test )"
 
-RDEPEND="dev-util/hip:${SLOT}
-	sci-libs/rocPRIM:${SLOT}
+RDEPEND="dev-util/hip
+	sci-libs/rocPRIM:${SLOT}[${ROCM_USEDEP}]
 	test? ( dev-cpp/gtest )"
 DEPEND="${RDEPEND}"
 BDEPEND=">=dev-util/cmake-3.22"
