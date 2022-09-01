@@ -14,6 +14,7 @@ LICENSE="MIT"
 KEYWORDS="~amd64"
 SLOT="0/$(ver_cut 1-2)"
 IUSE="benchmark test"
+REQUIRED_USE="${ROCM_REQUIRED_USE}"
 
 RDEPEND="dev-util/hip
 	benchmark? ( dev-cpp/benchmark )
