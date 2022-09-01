@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{8..11} )
 
 inherit cmake python-any-r1 toolchain-funcs rocm
 
@@ -41,10 +41,11 @@ https://sparse.tamu.edu/MM/Chevron/Chevron4.tar.gz -> ${PN}_Chevron4.tar.gz
 LICENSE="MIT"
 KEYWORDS="~amd64"
 IUSE="benchmark test"
+REQUIRED_USE="${ROCM_REQUIRED_USE}"
 SLOT="0/$(ver_cut 1-2)"
 
 RDEPEND="dev-util/hip
-	sci-libs/rocPRIM:${SLOT}"
+	sci-libs/rocPRIM:${SLOT}[${ROCM_USEDEP}]"
 DEPEND="${RDEPEND}"
 BDEPEND="test? (
 	dev-cpp/gtest
