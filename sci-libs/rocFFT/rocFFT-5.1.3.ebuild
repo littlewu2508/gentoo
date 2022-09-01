@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{8..11} )
 ROCM_VERSION=${PV}
 
 inherit cmake check-reqs edo multiprocessing python-r1 rocm
@@ -42,7 +42,7 @@ BDEPEND="
 CHECKREQS_DISK_BUILD="7G"
 
 IUSE="benchmark perfscripts test"
-REQUIRED_USE="perfscripts? ( benchmark ) ${PYTHON_REQUIRED_USE}"
+REQUIRED_USE="perfscripts? ( benchmark ) ${PYTHON_REQUIRED_USE} ${ROCM_REQUIRED_USE}"
 
 RESTRICT="!test? ( test )"
 
@@ -107,6 +107,7 @@ src_configure() {
 		-DCMAKE_SKIP_RPATH=On
 		-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
 		-Wno-dev
+		-DCMAKE_INSTALL_INCLUDEDIR="include/rocFFT/"
 		-DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 		-DBUILD_CLIENTS_SELFTEST=$(usex test ON OFF)
 		-DPYTHON3_EXE=${EPYTHON}
