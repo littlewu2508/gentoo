@@ -48,6 +48,8 @@ PATCHES=(
 )
 
 src_prepare() {
+	cmake_src_prepare
+
 	sed -e "s:/opt/rocm/llvm:$(get_llvm_prefix ${LLVM_MAX_SLOT}) NO_DEFAULT_PATH:" \
 		-e "s:/opt/rocm/hip:$(hipconfig -p) NO_DEFAULT_PATH:" \
 		-e '/set( MIOPEN_INSTALL_DIR/s:miopen:${CMAKE_INSTALL_PREFIX}:' \
@@ -58,8 +60,6 @@ src_prepare() {
 	sed -e "/add_test/s:--build \${CMAKE_CURRENT_BINARY_DIR}:--build ${BUILD_DIR}:" -i test/CMakeLists.txt || die
 
 	sed -e "s:\${AMD_DEVICE_LIBS_PREFIX}/lib:${EPREFIX}/usr/lib/amdgcn/bitcode:" -i cmake/hip-config.cmake || die
-
-	cmake_src_prepare
 }
 
 src_configure() {
