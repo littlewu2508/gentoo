@@ -15,7 +15,7 @@
 # edit USE flag to control which GPU architecture to compile. Using
 # ${ROCM_USEDEP} can ensure coherence among dependencies. Ebuilds can call the
 # function get_amdgpu_flag to translate activated target to GPU compile flags,
-# passing it to configuration. Function check_amdgpu_device can help ebuild ensure
+# passing it to configuration. Function check_amdgpu can help ebuild ensure
 # read and write permissions to GPU device in src_test phase, throwing friendly
 # error message if unavailable.
 #
@@ -52,9 +52,9 @@
 # src_test() {
 #     # grant access to AMD GPU device
 #     for device in /dev/kfd /dev/dri/render*; do
-#         check_amdgpu_device "${device}"
 #         addwrite "${device}"
 #     done
+#     check_amdgpu
 #     # There can be two different test method for ROCm packages:
 #     cmake_src_test # for packages using cmake test
 #     <path-to-test-binary> # for packages using standalone test binary
@@ -213,17 +213,19 @@ get_amdgpu_flags() {
 	echo "${AMDGPU_TARGET_FLAGS}"
 }
 
-# @FUNCTION: check_amdgpu_device
-# @USAGE: check_amdgpu_device
+# @FUNCTION: check_amdgpu
+# @USAGE: check_amdgpu
 # @DESCRIPTION:
 # check read and write permissions on a specific file, die if no permission.
-check_amdgpu_device() {
-	if [[ ! -r $1 ]] || [[ ! -w $1 ]]; then
-		eerror "Cannot read or write $1!"
-		eerror "Make sure it is present and check the permissions."
-		ewarn "By default render group have access to it. Check if portage user is in render group."
-		die "$1 inaccessible"
-	fi
+check_amdgpu() {
+	for device in /dev/kfd /dev/dri/render*; do
+		if [[ ! -r ${device} ]] || [[ ! -w ${device} ]]; then
+			eerror "Cannot read or write ${device}!"
+			eerror "Make sure it is present and check the permission."
+			ewarn "By default render group have access to it. Check if portage user is in render group."
+			die "${device} inaccessible"
+		fi
+	done
 }
 
 _ROCM_ECLASS=1
