@@ -23,7 +23,7 @@
 # @EXAMPLE:
 # @CODE
 # # Example ebuild for ROCm library in https://github.com/ROCmSoftwarePlatform
-# # whcih depends on rocBLAS
+# # which uses cmake to build and test, and depends on rocBLAS:
 # inherit cmake rocm
 # # ROCm libraries SRC_URI is usually in form of:
 # SRC_URI="https://github.com/ROCmSoftwarePlatform/${PN}/archive/rocm-${PV}.tar.gz -> ${P}.tar.gz"
