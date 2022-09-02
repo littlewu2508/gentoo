@@ -11,13 +11,13 @@
 # @DESCRIPTION:
 # ROCm packages such as sci-libs/<roc|hip>*, and packages built on top of ROCm
 # libraries, can utilize variables and functions provided by this eclass.
-# Currently, it handles the AMDGPU_TARGETS variable via USE_EXPAND, so user can
+# It handles the AMDGPU_TARGETS variable via USE_EXPAND, so user can
 # edit USE flag to control which GPU architecture to compile. Using
 # ${ROCM_USEDEP} can ensure coherence among dependencies. Ebuilds can call the
 # function get_amdgpu_flag to translate activated target to GPU compile flags,
 # passing it to configuration. Function check_amdgpu can help ebuild ensure
 # read and write permissions to GPU device in src_test phase, throwing friendly
-# error message if permission denied.
+# error message if unavailable.
 #
 # @EXAMPLE:
 # @CODE
