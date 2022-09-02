@@ -91,7 +91,7 @@ case ${EAPI} in
 esac
 
 # @ECLASS_VARIABLE: ROCM_VERSION
-# @DEFAULT_UNSET
+# @REQUIRED
 # @PRE_INHERIT
 # @DESCRIPTION:
 # The ROCm version of current package. For ROCm libraries, it should be ${PV};
