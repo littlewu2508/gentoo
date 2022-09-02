@@ -52,8 +52,8 @@
 # src_test() {
 #     check_amdgpu
 #     # There can be two different test method for ROCm packages:
-#     cmake_src_test # for packages using cmake test
-#     <path-to-test-binary> # for packages using standalone test binary
+#     cmake_src_test # for packages using the cmake test
+#     <path-to-test-binary> # for packages using a standalone test binary
 # }
 # @CODE
 #
