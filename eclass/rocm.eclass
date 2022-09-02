@@ -50,10 +50,6 @@
 # }
 #
 # src_test() {
-#     # grant access to AMD GPU device
-#     for device in /dev/kfd /dev/dri/render*; do
-#         addwrite "${device}"
-#     done
 #     check_amdgpu
 #     # There can be two different test method for ROCm packages:
 #     cmake_src_test # for packages using cmake test
@@ -216,9 +212,10 @@ get_amdgpu_flags() {
 # @FUNCTION: check_amdgpu
 # @USAGE: check_amdgpu
 # @DESCRIPTION:
-# check read and write permissions on a specific file, die if no permission.
+# grant and check read-write permissions on AMDGPU devices, die if not available.
 check_amdgpu() {
 	for device in /dev/kfd /dev/dri/render*; do
+		addwrite ${device}
 		if [[ ! -r ${device} ]] || [[ ! -w ${device} ]]; then
 			eerror "Cannot read or write ${device}!"
 			eerror "Make sure it is present and check the permission."
