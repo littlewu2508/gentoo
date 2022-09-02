@@ -61,7 +61,7 @@
 # @CODE
 #
 # # Example for packages depend on ROCm libraries -- a package depend on
-# # rocBLAS, and use comma separated ${HCC_AMDGPU_TARGET} to determine GPU
+# # rocBLAS, and uses comma separated ${HCC_AMDGPU_TARGET} to determine GPU
 # # architecture to compile. Requires ROCm version >=5.1
 # @CODE
 # ROCM_VERSION=5.1
