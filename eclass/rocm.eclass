@@ -24,7 +24,7 @@
 # # Example ebuild for ROCm library in https://github.com/ROCmSoftwarePlatform
 # # which uses cmake to build and test, and depends on rocBLAS:
 # ROCM_VERSION=${PV}
-# inherit cmake edo rocm
+# inherit cmake rocm
 # # ROCm libraries SRC_URI is usually in form of:
 # SRC_URI="https://github.com/ROCmSoftwarePlatform/${PN}/archive/rocm-${PV}.tar.gz -> ${P}.tar.gz"
 # S=${WORKDIR}/${PN}-rocm-${PV}
