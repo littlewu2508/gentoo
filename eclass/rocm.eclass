@@ -9,16 +9,10 @@
 # @SUPPORTED_EAPIS: 7 8
 # @BLURB: Common functions and variables for ROCm packages written in HIP
 # @DESCRIPTION:
-# ROCm packages such as sci-libs/<roc|hip>* can utilize functions in this
-# eclass.  Currently, it handles the AMDGPU_TARGETS variable via USE_EXPAND, so
-# user can use USE flag to control which GPU architecture to compile, and
-# ensure coherence among dependencies. It also specify CXX=hipcc, to let hipcc
-# compile. Another important function is src_test, which checks whether a valid
-# KFD device exists for testing, and then execute the test program.
-#
-# Most ROCm packages use cmake as build system, so this eclass does not export
-# phase functions which overwrites the phase functions in cmake.eclass. Ebuild
-# should explicitly call rocm-{configure,test} in src_configure and src_test.
+# ROCm packages such as sci-libs/<roc|hip>* can utilize variables and functions
+# provided by this eclass.  Currently, it handles the AMDGPU_TARGETS variable
+# via USE_EXPAND, so user can use USE flag to control which GPU architecture to
+# compile, and ensure coherence among dependencies.
 #
 # @EXAMPLE:
 # @CODE
@@ -39,25 +33,31 @@
 # "
 #
 # src_configure() {
+#     # avoid sandbox violation
+#     addpredict /dev/kfd
+#     addpredict /dev/dri/
 #     local mycmakeargs=(
+#         -DAMDGPU_TARGETS="$(get_amdgpu_flags)"
 #         -DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 #     )
-#     rocm-configure
+#     CXX=hipcc cmake_src_configure
 # }
 #
 # src_test() {
-#     cd <path-to-test-dir> || die
-#     export LD_LIBRARY_PATH=<path-to-built-lib-dir>
-#     # for packages using standalone test binary
-#     rocm-test <test-binary>
-#     # for packages using cmake test, run
-#     rocm-test --cmake
+#     # grant and check permissions on /dev/kfd and /dev/dri/render*
+#     for device in /dev/kfd /dev/dri/render*; do
+#         addwrite "${device}"
+#         check_rw_permission "${device}"
+#     done
+#     # There can be two different test method for ROCm packages:
+#     cmake_src_test # for packages using cmake test
+#     <path-to-test-binary> # for packages using standalone test binary
 # }
 # @CODE
 #
 # # Example for packages depend on ROCm libraries -- a package depend on
 # # rocBLAS, and use comma seperated ${HCC_AMDGPU_TARGET} to determine GPU
-# # architecture to compile. Requires ROCm version >5.
+# # architecture to compile. Requires ROCm version >=5.1
 # @CODE
 # ROCM_VERSION=5.1
 # inherit rocm
@@ -223,72 +223,6 @@ check_rw_permission() {
 		eerror "Make sure both are in render group and check the permissions."
 		die "No permissions on $1"
 	fi
-}
-
-# == phase functions ==
-
-# @FUNCTION: rocm-configure
-# @DESCRIPTION:
-# configure rocm packages, and setting common cmake arguments. Only for ROCm
-# libraries in https://github.com/ROCmSoftwarePlatform using cmake.
-rocm-configure() {
-	# avoid sandbox violation
-	addpredict /dev/kfd
-	addpredict /dev/dri/
-
-	mycmakeargs+=(
-		-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
-		-DCMAKE_SKIP_RPATH=TRUE
-	)
-
-	CXX="hipcc" cmake_src_configure
-}
-
-# @FUNCTION: rocm-test
-# @DESCRIPTION:
-# Test whether valid GPU device is present. If so, execute test.
-# @EXAMPLE:
-# ROCm packages can have two test scenarioes:
-# 1. cmake_src_test. MAKEOPTS="-j1" ensures only one test on GPU at a time;
-# @CODE
-# LD_LIBRARY_PATH=<path-to-lib> rocm-test --cmake
-# @CODE
-# 2. one gtest binary called "${PN,,}"-test in ${BUILD_DIR}/clients/staging;
-# @CODE
-# cd "${BUILD_DIR}"/clients/staging || die
-# LD_LIBRARY_PATH=<path-to-lib> rocm-test "${PN,,}"-test
-# @CODE
-# Some packages like rocFFT have two test binaries like rocfft-selftest;
-# packages like dev-libs/rccl have test binary with custom names.
-# @CODE
-# cd "${BUILD_DIR}"/clients/staging || die
-# export LD_LIBRARY_PATH=<path-to-lib>
-# cd <test-bin-location> || die
-# rocm-test <test-bin-1>
-# rocm-test <test-bin-2> 
-# @CODE
-rocm-test() {
-	if [ $# -ne 1 ]; then
-		eerror "rocm-test must follow with one argument"
-		eerror "Usage: rocm-test <--cmake|path-to-test-binary>"
-		die "Invalid argument"
-	fi
-
-	# grant and check permissions on /dev/kfd and /dev/dri/render*
-	for device in /dev/kfd /dev/dri/render*; do
-		addwrite "${device}"
-		check_rw_permission "${device}"
-	done
-
-	case ${1} in
-		--cmake)
-			# Avoid multi jobs running that may cause GPU error or CPU overload
-			MAKEOPTS="-j1" cmake_src_test
-			;;
-		*)
-			edob ./${1}
-			;;
-	esac
 }
 
 _ROCM_ECLASS=1
