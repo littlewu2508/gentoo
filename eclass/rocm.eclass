@@ -70,7 +70,7 @@
 # REQUIRED_USE="rocm? ( ${ROCM_REQUIRED_USE} )"
 # DEPEND="rocm? ( >=dev-util/hip-${ROCM_VERSION}
 #     >=sci-libs/rocBLAS-${ROCM_VERSION}[${ROCM_USEDEP}] )"
-# ....
+#
 # src_configure() {
 #     if use rocm; then
 #         local AMDGPU_FLAGS=$(get_amdgpu_flags)
