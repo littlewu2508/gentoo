@@ -46,7 +46,12 @@
 # }
 #
 # src_test() {
-#     rocm-test
+#     cd <path-to-test-dir> || die
+#     export LD_LIBRARY_PATH=<path-to-built-lib-dir>
+#     # for packages using standalone test binary
+#     rocm-test <test-binary>
+#     # for packages using cmake test, run
+#     rocm-test --cmake
 # }
 # @CODE
 #
