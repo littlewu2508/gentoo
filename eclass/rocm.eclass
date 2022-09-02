@@ -14,7 +14,7 @@
 # Currently, it handles the AMDGPU_TARGETS variable via USE_EXPAND, so user can
 # edit USE flag to control which GPU architecture to compile. Using
 # ${ROCM_USEDEP} can ensure coherence among dependencies. Ebuilds can call the
-# funciton get_amdgpu_flag to translate activated target to GPU compile flags,
+# function get_amdgpu_flag to translate activated target to GPU compile flags,
 # passing it to configuration. Function check_amdgpu can help ebuild ensure
 # read and write permissions to GPU device in src_test phase, throwing friendly
 # error message if permission denied.
@@ -61,7 +61,7 @@
 # @CODE
 #
 # # Example for packages depend on ROCm libraries -- a package depend on
-# # rocBLAS, and use comma seperated ${HCC_AMDGPU_TARGET} to determine GPU
+# # rocBLAS, and use comma separated ${HCC_AMDGPU_TARGET} to determine GPU
 # # architecture to compile. Requires ROCm version >=5.1
 # @CODE
 # ROCM_VERSION=5.1
