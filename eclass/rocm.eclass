@@ -15,9 +15,9 @@
 # edit USE flag to control which GPU architecture to compile. Using
 # ${ROCM_USEDEP} can ensure coherence among dependencies. Ebuilds can call the
 # funciton get_amdgpu_flag to translate activated target to GPU compile flags,
-# passing it to configuration. Function check_rw_permission can help ebuild
-# ensure read and write permissions to GPU device in src_test phase, throwing
-# friendly error message if permission denied.
+# passing it to configuration. Function check_amdgpu can help ebuild ensure
+# read and write permissions to GPU device in src_test phase, throwing friendly
+# error message if permission denied.
 #
 # @EXAMPLE:
 # @CODE
@@ -49,11 +49,11 @@
 # }
 #
 # src_test() {
-#     # grant and check permissions on /dev/kfd and /dev/dri/render*
+#     # grant access to AMD GPU device
 #     for device in /dev/kfd /dev/dri/render*; do
 #         addwrite "${device}"
-#         check_rw_permission "${device}"
 #     done
+#     check_amdgpu
 #     # There can be two different test method for ROCm packages:
 #     cmake_src_test # for packages using cmake test
 #     <path-to-test-binary> # for packages using standalone test binary
@@ -214,20 +214,18 @@ get_amdgpu_flags() {
 	echo ${AMDGPU_TARGET_FLAGS}
 }
 
-# @FUNCTION: check_rw_permission
-# @USAGE: check_rw_permission <file>
+# @FUNCTION: check_amdgpu
+# @USAGE: check_amdgpu
 # @DESCRIPTION:
 # check read and write permissions on a specific file, die if no permission.
-# @EXAMPLE:
-# @CODE
-# check_rw_permission /dev/kfd
-# CODE
-check_rw_permission() {
-	if [[ ! -r $1 ]] || [[ ! -w $1 ]]; then 
-		eerror "Portage do not have read or write permissions on $1!"
-		eerror "Make sure both are in render group and check the permissions."
-		die "No permissions on $1"
-	fi
+check_amdgpu() {
+	for device in /dev/kfd /dev/dri/render*; do
+		if [[ ! -r ${device} ]] || [[ ! -w ${device} ]]; then 
+			eerror "Portage do not have read or write permissions on ${device}!"
+			eerror "Make sure both are in render group and check the permissions."
+			die "No permissions on ${device}"
+		fi
+	done
 }
 
 _ROCM_ECLASS=1
