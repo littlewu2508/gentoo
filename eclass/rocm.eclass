@@ -220,7 +220,7 @@ get_amdgpu_flags() {
 # check read and write permissions on a specific file, die if no permission.
 check_amdgpu() {
 	for device in /dev/kfd /dev/dri/render*; do
-		if [[ ! -r ${device} ]] || [[ ! -w ${device} ]]; then 
+		if [[ ! -r ${device} ]] || [[ ! -w ${device} ]]; then
 			eerror "Portage do not have read or write permissions on ${device}!"
 			eerror "Make sure both are in render group and check the permissions."
 			die "No permissions on ${device}"
