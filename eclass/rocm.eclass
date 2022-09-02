@@ -196,7 +196,7 @@ get_amdgpu_flags() {
 	local AMDGPU_TARGET_FLAGS
 	for gpu_target in "${ALL_AMDGPU_TARGETS[@]}"; do
 		local target_feature=
-		if use amdgpu_targets_${gpu_target}; then
+		if use amdgpu_targets_"${gpu_target}"; then
 			case ${gpu_target} in
 				gfx906|gfx908)
 					target_feature=:xnack-
@@ -210,7 +210,7 @@ get_amdgpu_flags() {
 			AMDGPU_TARGET_FLAGS+="${gpu_target}${target_feature};"
 		fi
 	done
-	echo ${AMDGPU_TARGET_FLAGS}
+	echo "${AMDGPU_TARGET_FLAGS}"
 }
 
 # @FUNCTION: check_amdgpu_device
