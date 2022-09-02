@@ -263,6 +263,12 @@ rocm-configure() {
 # rocm-test <test-bin-2> 
 # @CODE
 rocm-test() {
+	if [ $# -ne 1 ]; then
+		eerror "rocm-test must follow with one argument"
+		eerror "Usage: rocm-test <--cmake|path-to-test-binary>"
+		die "Invalid argument"
+	fi
+
 	# grant and check permissions on /dev/kfd and /dev/dri/render*
 	for device in /dev/kfd /dev/dri/render*; do
 		addwrite "${device}"
