@@ -75,6 +75,12 @@
 #     fi
 #     default
 # }
+# src_test() {
+#     if use rocm; then
+#         check_amdgpu
+#     fi
+#     default
+# }
 # @CODE
 
 if [[ ! ${_ROCM_ECLASS} ]]; then
