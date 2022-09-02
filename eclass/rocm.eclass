@@ -23,7 +23,8 @@
 # @CODE
 # # Example ebuild for ROCm library in https://github.com/ROCmSoftwarePlatform
 # # which uses cmake to build and test, and depends on rocBLAS:
-# inherit cmake rocm
+# ROCM_VERSION=${PV}
+# inherit cmake edo rocm
 # # ROCm libraries SRC_URI is usually in form of:
 # SRC_URI="https://github.com/ROCmSoftwarePlatform/${PN}/archive/rocm-${PV}.tar.gz -> ${P}.tar.gz"
 # S=${WORKDIR}/${PN}-rocm-${PV}
@@ -87,15 +88,13 @@ case ${EAPI} in
 	*) die "${ECLASS}: EAPI ${EAPI:-0} not supported" ;;
 esac
 
-inherit edo
-
 # @ECLASS_VARIABLE: ROCM_VERSION
 # @DEFAULT_UNSET
 # @PRE_INHERIT
 # @DESCRIPTION:
-# The ROCm version of current package. Default is ${PV}, but for other packages
-# that depend on ROCm libraries, this can be set to match the version of
-# required ROCm libraries.
+# The ROCm version of current package. For ROCm libraries, it should be ${PV};
+# for other packages that depend on ROCm libraries, this can be set to match
+# the version of required ROCm libraries.
 
 # @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
 # @INTERNAL
