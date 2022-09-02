@@ -101,7 +101,7 @@ esac
 # @DESCRIPTION:
 # The list of USE flags corresponding to all AMDGPU targets in this ROCm
 # version. The value depends on ${PV}. Architectures and devices map:
-# https://www.coelacanth-dream.com/posts/2019/12/30/did-rid-product-matome-p2
+# https://github.com/GPUOpen-Tools/device_info/blob/master/DeviceInfo.cpp
 
 # @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
 # @INTERNAL
