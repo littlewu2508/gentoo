@@ -100,7 +100,7 @@ esac
 # @INTERNAL
 # @DESCRIPTION:
 # The list of USE flags corresponding to all AMDGPU targets in this ROCm
-# version. The value depends on ${PV}. Architectures and devices map:
+# version. The value depends on ${ROCM_VERSION}. Architectures and devices map:
 # https://github.com/GPUOpen-Tools/device_info/blob/master/DeviceInfo.cpp
 
 # @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
@@ -108,8 +108,8 @@ esac
 # @DESCRIPTION:
 # The list of USE flags corresponding to all officially supported AMDGPU
 # targets in this ROCm version, documented at
-# https://docs.amd.com/bundle/ROCm-Installation-Guide-v${PV}/page/Prerequisite_Actions.html.
-# USE flag of these architectures will be default on. Depends on ${PV}.
+# https://docs.amd.com/bundle/ROCm-Installation-Guide-v${ROCM_VERSION}/page/Prerequisite_Actions.html.
+# USE flag of these architectures will be default on. Depends on ${ROCM_VERSION}.
 
 # @ECLASS_VARIABLE: ROCM_REQUIRED_USE
 # @OUTPUT_VARIABLE
