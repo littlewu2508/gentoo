@@ -20,9 +20,9 @@
 # error message if unavailable.
 #
 # @EXAMPLE:
+# Example ebuild for ROCm library in https://github.com/ROCmSoftwarePlatform
+# which uses cmake to build and test, and depends on rocBLAS:
 # @CODE
-# # Example ebuild for ROCm library in https://github.com/ROCmSoftwarePlatform
-# # which uses cmake to build and test, and depends on rocBLAS:
 # ROCM_VERSION=${PV}
 # inherit cmake rocm
 # # ROCm libraries SRC_URI is usually in form of:
@@ -57,9 +57,9 @@
 # }
 # @CODE
 #
-# # Example for packages depend on ROCm libraries -- a package depend on
-# # rocBLAS, and uses comma separated ${HCC_AMDGPU_TARGET} to determine GPU
-# # architecture to compile. Requires ROCm version >=5.1
+# Examples for packages depend on ROCm libraries -- a package which depends on
+# rocBLAS, uses comma separated ${HCC_AMDGPU_TARGET} to determine GPU
+# architectures, and requires ROCm version >=5.1
 # @CODE
 # ROCM_VERSION=5.1
 # inherit rocm
