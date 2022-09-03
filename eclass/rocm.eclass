@@ -76,9 +76,7 @@
 #     default
 # }
 # src_test() {
-#     if use rocm; then
-#         check_amdgpu
-#     fi
+#     use rocm && check_amdgpu
 #     default
 # }
 # @CODE
