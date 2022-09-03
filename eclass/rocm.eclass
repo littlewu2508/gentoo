@@ -51,9 +51,10 @@
 #
 # src_test() {
 #     check_amdgpu
-#     # There can be two different test method for ROCm packages:
+#     # export LD_LIBRARY_PATH=<path to built lib dir> if necessary
 #     cmake_src_test # for packages using the cmake test
-#     <path-to-test-binary> # for packages using a standalone test binary
+#     # For packages using a standalone test binary rather than cmake test,
+#     # just execute it (or using edob)
 # }
 # @CODE
 #
@@ -70,8 +71,8 @@
 #
 # src_configure() {
 #     if use rocm; then
-#         local AMDGPU_FLAGS=$(get_amdgpu_flags)
-#         export HCC_AMDGPU_TARGET=${AMDGPU_FLAGS//;/,}
+#         local amdgpu_flags=$(get_amdgpu_flags)
+#         export HCC_AMDGPU_TARGET=${amdgpu_flags//;/,}
 #     fi
 #     default
 # }
@@ -94,7 +95,7 @@ esac
 # @DESCRIPTION:
 # The ROCm version of current package. For ROCm libraries, it should be ${PV};
 # for other packages that depend on ROCm libraries, this can be set to match
-# the version of required ROCm libraries.
+# the version required for ROCm libraries.
 
 # @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
 # @INTERNAL
