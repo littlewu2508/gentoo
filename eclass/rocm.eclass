@@ -119,7 +119,7 @@ esac
 # @CODE
 # REQUIRED_USE="${ROCM_REQUIRED_USE}"
 # @CODE
-# Example use for packages that depend on ROCm libraries
+# Example use for packages that depend on ROCm libraries:
 # @CODE
 # IUSE="rocm"
 # REQUIRED_USE="rocm? ( ${ROCM_REQUIRED_USE} )"
@@ -216,10 +216,10 @@ get_amdgpu_flags() {
 check_amdgpu() {
 	for device in /dev/kfd /dev/dri/render*; do
 		addwrite ${device}
-		if [[ ! -r ${device} ]] || [[ ! -w ${device} ]]; then
+		if [[ ! -r ${device} || ! -w ${device} ]]; then
 			eerror "Cannot read or write ${device}!"
 			eerror "Make sure it is present and check the permission."
-			ewarn "By default render group have access to it. Check if portage user is in render group."
+			ewarn "By default render group have access to it. Check if ${USER} is in render group."
 			die "${device} inaccessible"
 		fi
 	done
