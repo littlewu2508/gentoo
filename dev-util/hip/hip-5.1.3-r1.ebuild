@@ -119,9 +119,7 @@ src_prepare() {
 
 	cp "$(prefixify_ro "${FILESDIR}"/hipvars-5.1.3.pm)" bin/hipvars.pm || die "failed to replace hipvars.pm"
 	sed -e "s,@HIP_BASE_VERSION_MAJOR@,$(ver_cut 1)," -e "s,@HIP_BASE_VERSION_MINOR@,$(ver_cut 2)," \
-		-e "s,@HIP_VERSION_PATCH@,$(ver_cut 3)," \
-		-e "s,@CLANG_INCLUDE_PATH@,${CLANG_RESOURCE_DIR}/include," \
-		-e "s,@CLANG_PATH@,${LLVM_PREFIX}/bin," -i bin/hipvars.pm || die
+		-e "s,@HIP_VERSION_PATCH@,$(ver_cut 3)," -i bin/hipvars.pm || die
 
 	sed -e "/HIP_CLANG_INCLUDE_SEARCH_PATHS/s,\${_IMPORT_PREFIX}.*/include,${CLANG_RESOURCE_DIR}/include," -i hip-lang-config.cmake.in || die
 	popd || die
