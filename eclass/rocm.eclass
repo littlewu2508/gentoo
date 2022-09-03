@@ -159,7 +159,6 @@ _rocm_set_globals() {
 	esac
 
 	local iuse_flags=( "${official_amdgpu_targets[@]/#/+amdgpu_targets_}" "${unofficial_amdgpu_targets[@]/#/amdgpu_targets_}" )
-	einfo "${iuse_flags[*]}"
 	IUSE="${iuse_flags[*]}"
 
 	local all_amdgpu_targets=( "${official_amdgpu_targets[@]}" "${unofficial_amdgpu_targets[@]}" )
