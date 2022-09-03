@@ -174,9 +174,9 @@ _rocm_set_globals() {
 			IUSE+=" ${gpu_target/#/amdgpu_targets_}"
 		fi
 	done
-	ROCM_REQUIRED_USE="|| ( ${flags[*]} )"
 
 	local flags=( "${ALL_AMDGPU_TARGETS[@]/#/amdgpu_targets_}" )
+	ROCM_REQUIRED_USE=" || ( ${flags[*]} )"
 	local optflags=${flags[@]/%/(-)?}
 	ROCM_USEDEP=${optflags// /,}
 }
