@@ -52,6 +52,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-4.2.0-add-functional-header.patch"
 	"${FILESDIR}/${PN}-5.1.3-unbundle-sqlite.patch"
 	"${FILESDIR}/${PN}-5.0.2-add-math-header.patch"
+	"${FILESDIR}/0001-Temporary-workaround-for-noinline-macro-on-gcc-12.patch"
 	"${FILESDIR}/${PN}-5.1.3-add-stdexcept-header.patch" )
 
 required_mem() {

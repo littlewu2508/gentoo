@@ -1,0 +1,137 @@
+From 974cb8576d6d23ee6d5b13e418341cb3a071dd6a Mon Sep 17 00:00:00 2001
+From: YiyangWu <xgreenlandforwyy@gmail.com>
+Date: Sat, 3 Sep 2022 21:51:49 +0800
+Subject: [PATCH] Temporary workaround for noinline macro on gcc-12
+
+Done by adjusting header include order (avoid define __noinline__ before
+including libstdc++), and surround affected headers with #undef and #def
+
+Closes: https://bugs.gentoo.org/857126
+
+Signed-off-by: YiyangWu <xgreenlandforwyy@gmail.com>
+---
+ clients/rider/dyna-rider.cpp      | 2 +-
+ clients/rider/rider.h             | 1 +
+ clients/selftest/test_complex.cpp | 2 ++
+ clients/tests/accuracy_test.h     | 2 ++
+ clients/tests/unit_test.cpp       | 2 +-
+ library/src/include/rtc.h         | 2 +-
+ library/src/include/tree_node.h   | 1 +
+ 7 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/clients/rider/dyna-rider.cpp b/clients/rider/dyna-rider.cpp
+index 60e58a3..1f9a9ed 100644
+--- a/clients/rider/dyna-rider.cpp
++++ b/clients/rider/dyna-rider.cpp
+@@ -23,7 +23,6 @@
+ // which produces fewer type 1 errors where one incorrectly rejects the null hypothesis.
+ 
+ #include <complex>
+-#include <hip/hip_runtime_api.h>
+ #include <iostream>
+ #include <math.h>
+ #include <vector>
+@@ -41,6 +40,7 @@
+ #include "../rocfft_params.h"
+ #include "rider.h"
+ #include "rocfft.h"
++#include <hip/hip_runtime_api.h>
+ 
+ #include <boost/program_options.hpp>
+ namespace po = boost::program_options;
+diff --git a/clients/rider/rider.h b/clients/rider/rider.h
+index 7963c2f..6fd5e25 100644
+--- a/clients/rider/rider.h
++++ b/clients/rider/rider.h
+@@ -22,6 +22,7 @@
+ #define RIDER_H
+ 
+ #include "rocfft.h"
++#undef __noinline__
+ #include <boost/program_options.hpp>
+ #include <hip/hip_runtime_api.h>
+ #include <vector>
+diff --git a/clients/selftest/test_complex.cpp b/clients/selftest/test_complex.cpp
+index de2e3fe..ef37803 100644
+--- a/clients/selftest/test_complex.cpp
++++ b/clients/selftest/test_complex.cpp
+@@ -22,8 +22,10 @@
+ 
+ #include "./basis_vector.h"
+ #include "rocfft.h"
++#undef __noinline__
+ #include <gtest/gtest.h>
+ #include <stdlib.h>
++#define __noinline__ __attribute__((noinline))
+ 
+ typedef float  complex_single[2];
+ typedef double complex_double[2];
+diff --git a/clients/tests/accuracy_test.h b/clients/tests/accuracy_test.h
+index 9e5d473..4ad6e5c 100644
+--- a/clients/tests/accuracy_test.h
++++ b/clients/tests/accuracy_test.h
+@@ -23,10 +23,12 @@
+ #ifndef ACCURACY_TEST
+ #define ACCURACY_TEST
+ 
++#undef __noinline__
+ #include <algorithm>
+ #include <future>
+ #include <iterator>
+ #include <vector>
++#define __noinline__ __attribute__((noinline))
+ 
+ #include "../../shared/gpubuf.h"
+ #include "../fft_params.h"
+diff --git a/clients/tests/unit_test.cpp b/clients/tests/unit_test.cpp
+index ab206a7..13b4c8c 100644
+--- a/clients/tests/unit_test.cpp
++++ b/clients/tests/unit_test.cpp
+@@ -18,6 +18,7 @@
+ // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ // THE SOFTWARE.
+ 
++#include <boost/scope_exit.hpp>
+ #include "rocfft.h"
+ 
+ #include "../../shared/environment.h"
+@@ -25,7 +26,6 @@
+ #include "hip/hip_runtime_api.h"
+ #include "hip/hip_vector_types.h"
+ #include "private.h"
+-#include <boost/scope_exit.hpp>
+ #include <condition_variable>
+ #include <fstream>
+ #include <gtest/gtest.h>
+diff --git a/library/src/include/rtc.h b/library/src/include/rtc.h
+index ab7985a..52e8b66 100644
+--- a/library/src/include/rtc.h
++++ b/library/src/include/rtc.h
+@@ -21,11 +21,11 @@
+ #ifndef ROCFFT_RTC_H
+ #define ROCFFT_RTC_H
+ 
++#include <future>
+ #include "rocfft.h"
+ #include <hip/hip_runtime.h>
+ #include <hip/hiprtc.h>
+ 
+-#include <future>
+ #include <memory>
+ #include <mutex>
+ #include <string>
+diff --git a/library/src/include/tree_node.h b/library/src/include/tree_node.h
+index 6000f4e..8d9e55e 100644
+--- a/library/src/include/tree_node.h
++++ b/library/src/include/tree_node.h
+@@ -23,6 +23,7 @@
+ 
+ #define GENERIC_BUF_ASSIGMENT 1
+ 
++#undef __noinline__
+ #include <cstring>
+ #include <functional>
+ #include <iostream>
+-- 
+2.34.1
+
