@@ -97,21 +97,6 @@ esac
 # for other packages that depend on ROCm libraries, this can be set to match
 # the version required for ROCm libraries.
 
-# @ECLASS_VARIABLE: ALL_AMDGPU_TARGETS
-# @INTERNAL
-# @DESCRIPTION:
-# The list of USE flags corresponding to all AMDGPU targets in this ROCm
-# version. The value depends on ${ROCM_VERSION}. Architectures and devices map:
-# https://github.com/GPUOpen-Tools/device_info/blob/master/DeviceInfo.cpp
-
-# @ECLASS_VARIABLE: OFFICIAL_AMDGPU_TARGETS
-# @INTERNAL
-# @DESCRIPTION:
-# The list of USE flags corresponding to all officially supported AMDGPU
-# targets in this ROCm version, documented at
-# https://docs.amd.com/bundle/ROCm-Installation-Guide-v${ROCM_VERSION}/page/Prerequisite_Actions.html.
-# USE flag of these architectures will be default on. Depends on ${ROCM_VERSION}.
-
 # @ECLASS_VARIABLE: ROCM_REQUIRED_USE
 # @OUTPUT_VARIABLE
 # @DESCRIPTION:
@@ -141,25 +126,30 @@ esac
 
 # @FUNCTION: _rocm_set_globals
 # @DESCRIPTION:
-# Set global variables used by the eclass: ALL_AMDGPU_TARGETS,
-# OFFICIAL_AMDGPU_TARGETS, ROCM_REQUIRED_USE, and ROCM_USEDEP
+# Set global variables useful to ebuilds: IUSE, ROCM_REQUIRED_USE, and
+# ROCM_USEDEP
 _rocm_set_globals() {
+	# Two lists of AMDGPU_TARGETS of certain ROCm version.  Official support
+	# matrix:
+	# https://docs.amd.com/bundle/ROCm-Installation-Guide-v${ROCM_VERSION}/page/Prerequisite_Actions.html.
+	# There is no well-known unofficial support matrix.
+	# https://github.com/Bengt/ROCm/blob/patch-2/README.md#library-target-matrix
+	# may help. Gentoo have patches to enable gfx1031 as well.
+	local unofficial_amdgpu_targets official_amdgpu_targets
 	case ${ROCM_VERSION} in
 		4.*)
-			ALL_AMDGPU_TARGETS=(
-				gfx803 gfx900 gfx906 gfx908
-				gfx1010 gfx1011 gfx1012 gfx1030
+			unofficial_amdgpu_targets=(
+				gfx803 gfx900 gfx1010 gfx1011 gfx1012 gfx1030
 			)
-			OFFICIAL_AMDGPU_TARGETS=(
+			official_amdgpu_targets=(
 				gfx906 gfx908
 			)
 			;;
 		5.*)
-			ALL_AMDGPU_TARGETS=(
-				gfx803 gfx900 gfx906 gfx908 gfx90a
-				gfx1010 gfx1011 gfx1012 gfx1030 gfx1031
+			unofficial_amdgpu_targets=(
+				gfx803 gfx900 gfx1010 gfx1011 gfx1012 gfx1031
 			)
-			OFFICIAL_AMDGPU_TARGETS=(
+			official_amdgpu_targets=(
 				gfx906 gfx908 gfx90a gfx1030
 			)
 			;;
@@ -168,16 +158,14 @@ _rocm_set_globals() {
 			;;
 	esac
 
-	for gpu_target in "${ALL_AMDGPU_TARGETS[@]}"; do
-		if has "${gpu_target}" "${OFFICIAL_AMDGPU_TARGETS[@]}"; then
-			IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
-		else
-			IUSE+=" ${gpu_target/#/amdgpu_targets_}"
-		fi
-	done
+	local iuse_flags=( "${official_amdgpu_targets[@]/#/+amdgpu_targets_}" "${unofficial_amdgpu_targets[@]/#/amdgpu_targets_}" )
+	einfo "${iuse_flags[*]}"
+	IUSE="${iuse_flags[*]}"
 
-	local flags=( "${ALL_AMDGPU_TARGETS[@]/#/amdgpu_targets_}" )
-	ROCM_REQUIRED_USE=" || ( ${flags[*]} )"
+	local all_amdgpu_targets=( "${official_amdgpu_targets[@]}" "${unofficial_amdgpu_targets[@]}" )
+	local allflags=( "${all_amdgpu_targets[@]/#/amdgpu_targets_}" )
+	ROCM_REQUIRED_USE=" || ( ${allflags[*]} )"
+
 	local optflags=${flags[@]/%/(-)?}
 	ROCM_USEDEP=${optflags// /,}
 }
