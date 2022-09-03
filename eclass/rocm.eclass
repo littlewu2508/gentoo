@@ -191,24 +191,22 @@ unset -f _rocm_set_globals
 # Append default target feature to GPU arch. See
 # https://llvm.org/docs/AMDGPUUsage.html#target-features
 get_amdgpu_flags() {
-	local AMDGPU_TARGET_FLAGS
-	for gpu_target in "${ALL_AMDGPU_TARGETS[@]}"; do
-		local target_feature=
-		if use amdgpu_targets_"${gpu_target}"; then
-			case ${gpu_target} in
-				gfx906|gfx908)
-					target_feature=:xnack-
-					;;
-				gfx90a)
-					target_feature=:xnack+
-					;;
-				*)
-					;;
-			esac
-			AMDGPU_TARGET_FLAGS+="${gpu_target}${target_feature};"
-		fi
+	local amdgpu_target_flags
+	for gpu_target in "${AMDGPU_TARGETS}"; do
+	local target_feature=
+		case ${gpu_target} in
+			gfx906|gfx908)
+				target_feature=:xnack-
+				;;
+			gfx90a)
+				target_feature=:xnack+
+				;;
+			*)
+				;;
+		esac
+		amdgpu_target_flags+="${gpu_target}${target_feature};"
 	done
-	echo "${AMDGPU_TARGET_FLAGS}"
+	echo "${amdgpu_target_flags}"
 }
 
 # @FUNCTION: check_amdgpu
