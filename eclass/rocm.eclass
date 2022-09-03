@@ -143,7 +143,7 @@ esac
 # Set global variables used by the eclass: ALL_AMDGPU_TARGETS,
 # OFFICIAL_AMDGPU_TARGETS, ROCM_REQUIRED_USE, and ROCM_USEDEP
 _rocm_set_globals() {
-	case ${ROCM_VERSION:-${PV}} in
+	case ${ROCM_VERSION} in
 		4.*)
 			ALL_AMDGPU_TARGETS=(
 				gfx803 gfx900 gfx906 gfx908
