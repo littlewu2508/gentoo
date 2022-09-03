@@ -167,16 +167,14 @@ _rocm_set_globals() {
 			;;
 	esac
 
-	ROCM_REQUIRED_USE+=" || ("
 	for gpu_target in "${ALL_AMDGPU_TARGETS[@]}"; do
 		if has "${gpu_target}" "${OFFICIAL_AMDGPU_TARGETS[@]}"; then
 			IUSE+=" ${gpu_target/#/+amdgpu_targets_}"
 		else
 			IUSE+=" ${gpu_target/#/amdgpu_targets_}"
 		fi
-		ROCM_REQUIRED_USE+=" ${gpu_target/#/amdgpu_targets_}"
 	done
-	ROCM_REQUIRED_USE+=" ) "
+	ROCM_REQUIRED_USE="|| ( ${flags[*]} )"
 
 	local flags=( "${ALL_AMDGPU_TARGETS[@]/#/amdgpu_targets_}" )
 	local optflags=${flags[@]/%/(-)?}
