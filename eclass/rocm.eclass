@@ -192,7 +192,7 @@ unset -f _rocm_set_globals
 # https://llvm.org/docs/AMDGPUUsage.html#target-features
 get_amdgpu_flags() {
 	local amdgpu_target_flags
-	for gpu_target in "${AMDGPU_TARGETS}"; do
+	for gpu_target in ${AMDGPU_TARGETS}; do
 	local target_feature=
 		case ${gpu_target} in
 			gfx906|gfx908)
