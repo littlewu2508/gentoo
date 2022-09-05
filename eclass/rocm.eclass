@@ -213,7 +213,7 @@ check_amdgpu() {
 		if [[ ! -r ${device} || ! -w ${device} ]]; then
 			eerror "Cannot read or write ${device}!"
 			eerror "Make sure it is present and check the permission."
-			ewarn "By default render group have access to it. Check if ${USER} is in render group."
+			ewarn "By default render group have access to it. Check if portage user is in render group."
 			die "${device} inaccessible"
 		fi
 	done
