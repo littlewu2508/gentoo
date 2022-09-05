@@ -25,7 +25,7 @@ KEYWORDS="~amd64"
 LICENSE="MIT"
 SLOT="0/$(ver_cut 1-2)"
 
-IUSE="debug doc profile"
+IUSE="debug profile"
 
 DEPEND="
 	>=dev-util/rocminfo-5
