@@ -64,7 +64,8 @@ src_prepare() {
 
 	# Fix https://github.com/ROCmSoftwarePlatform/MIOpen/issues/1731
 	find src/kernels -name "*.s" -exec \
-		sed -e "s/.name: n /.name: x /g" -e "s/.name: y /.name: z /g" -i {} \; || die
+		sed -e "s/.name: n /.name: x /g" -e "s/.name: y /.name: z /g" \
+			-e "s/.name: y,/.name: z,/g" -i {} \; || die
 }
 
 src_configure() {
@@ -86,6 +87,12 @@ src_configure() {
 		-DBUILD_TESTS=$(usex test ON OFF)
 		-DMIOPEN_TEST_ALL=$(usex test ON OFF)
 	)
+
+	if use test; then
+		for gpu_target in ${AMDGPU_TARGETS}; do
+			mycmakeargs+=( -DMIOPEN_TEST_${gpu_target^^}=ON )
+		done
+	fi
 
 	addpredict /dev/kfd
 	addpredict /dev/dri/
