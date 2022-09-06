@@ -45,6 +45,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.1.3-deprecate-clang-ocl.patch"
 	"${FILESDIR}/${PN}-5.1.3-no-strip.patch"
 	"${FILESDIR}/${PN}-5.1.3-include-array.patch"
+	"${FILESDIR}/${PN}-5.1.3-avoid-metadata-error-for-vanilla-clang.patch"
 )
 
 src_prepare() {
@@ -60,6 +61,10 @@ src_prepare() {
 	sed -e "/add_test/s:--build \${CMAKE_CURRENT_BINARY_DIR}:--build ${BUILD_DIR}:" -i test/CMakeLists.txt || die
 
 	sed -e "s:\${AMD_DEVICE_LIBS_PREFIX}/lib:${EPREFIX}/usr/lib/amdgcn/bitcode:" -i cmake/hip-config.cmake || die
+
+	# Fix https://github.com/ROCmSoftwarePlatform/MIOpen/issues/1731
+	find src/kernels -name "*.s" -exec \
+		sed -e "s/.name: n /.name: x /g" -e "s/.name: y /.name: z /g" -i {} \; || die
 }
 
 src_configure() {
