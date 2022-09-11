@@ -19,7 +19,7 @@
 # Most ROCm packages use cmake as build system, so this eclass does not export
 # phase functions which overwrites the phase functions in cmake.eclass. Ebuild
 # should explicitly call rocm_src_* in src_configure and src_test.
-# 
+#
 # @EXAMPLE:
 # # Example for ROCm packages in https://github.com/ROCmSoftwarePlatform
 # inherit cmake rocm
@@ -28,25 +28,25 @@
 # IUSE="test"
 # REQUIRED_USE="${ROCM_REQUIRED_USE}"
 # RESTRICT="!test? ( test )"
-#  
+#
 # RDEPEND="
 #     dev-util/hip
 #     sci-libs/rocBLAS:${SLOT}[${ROCM_USEDEP}]
 # "
-# 
+#
 # S=${WORKDIR}/${PN}-rocm-${PV}
-#  
+#
 # src_configure() {
 #     local mycmakeargs=(
 #         -DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 #     )
 #     rocm_src_configure
 # }
-# 
+#
 # src_test() {
 #     rocm_src_test
 # }
-# 
+#
 # # Example for packages depend on ROCm libraries -- a package depend on
 # # rocBLAS, and use comma seperated ${HCC_AMDGPU_TARGET} to determine GPU
 # # architecture to compile. Requires ROCm version >5.
@@ -67,14 +67,11 @@
 
 if [[ ! ${_ROCM_ECLASS} ]]; then
 
-case ${EAPI} in
-	0|1|2|3|4|5|6)
-		die "${ECLASS}: unsupported EAPI=${EAPI:-0} (too old)"
-		;;
+case "${EAPI:-0}" in
 	7|8)
 		;;
 	*)
-		die "${ECLASS}: unsupported EAPI=${EAPI} (unknown)"
+		die "Unsupported EAPI=${EAPI} for ${ECLASS}"
 		;;
 esac
 
