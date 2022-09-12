@@ -45,7 +45,6 @@ src_prepare() {
 	sed -e "s,\@LLVM_PATH\@,$(get_llvm_prefix ${LLVM_MAX_SLOT}),g" "${FILESDIR}"/${PN}-5.1.3-gentoopath.patch > "${S}"/gentoopath.patch || die
 	eapply $(prefixify_ro "${S}"/gentoopath.patch)
 
-
 	pushd ${PN} || die
 
 	sed -e "/ROCM_SMI_ROOT/s,lib,$(get_libdir)," \
