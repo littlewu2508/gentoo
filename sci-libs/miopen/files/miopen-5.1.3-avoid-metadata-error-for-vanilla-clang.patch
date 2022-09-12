@@ -1,4 +1,5 @@
-diff --git a/src/kernels/Conv_Winograd_v13_3_12_epilogue.inc b/src/kernels/Conv_Winograd_v13_3_12_epilogue.inc
+Together with find-sed command in 5.1.3 ebuild, this fixes
+https://github.com/ROCmSoftwarePlatform/MIOpen/issues/1731
 index 71b2cabf1..60e7fab6e 100644
 --- a/src/kernels/Conv_Winograd_v13_3_12_epilogue.inc
 +++ b/src/kernels/Conv_Winograd_v13_3_12_epilogue.inc

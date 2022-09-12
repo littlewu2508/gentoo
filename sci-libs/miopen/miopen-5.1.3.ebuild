@@ -62,7 +62,8 @@ src_prepare() {
 
 	sed -e "s:\${AMD_DEVICE_LIBS_PREFIX}/lib:${EPREFIX}/usr/lib/amdgcn/bitcode:" -i cmake/hip-config.cmake || die
 
-	# Fix https://github.com/ROCmSoftwarePlatform/MIOpen/issues/1731
+	# This plus avoid-metadata-error-for-vanilla-clang.patch fix bug mentioned
+	# in https://github.com/ROCmSoftwarePlatform/MIOpen/issues/1731
 	find src/kernels -name "*.s" -exec \
 		sed -e "s/.name: n /.name: x /g" -e "s/.name: y /.name: z /g" \
 			-e "s/.name: y,/.name: z,/g" -i {} \; || die
