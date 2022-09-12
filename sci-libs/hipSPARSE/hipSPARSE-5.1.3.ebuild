@@ -61,7 +61,6 @@ src_prepare() {
 
 	cmake_src_prepare
 
-
 	# remove GIT dependency
 	sed -e "/find_package(Git/d" -i cmake/Dependencies.cmake || die
 
