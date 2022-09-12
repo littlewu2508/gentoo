@@ -1,4 +1,4 @@
-Index: hipFFT-rocm-5.1.3/library/CMakeLists.txt
+Fix install location to meet FHS, and remove useless symlink
 ===================================================================
 --- hipFFT-rocm-5.1.3.orig/library/CMakeLists.txt
 +++ hipFFT-rocm-5.1.3/library/CMakeLists.txt
