@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..11} )
+PYTHON_COMPAT=( python3_{8..10} )
 ROCM_VERSION=${PV}
 
 inherit cmake check-reqs edo multiprocessing python-r1 rocm
