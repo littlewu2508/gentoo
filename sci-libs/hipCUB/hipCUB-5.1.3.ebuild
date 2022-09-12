@@ -53,6 +53,9 @@ src_prepare() {
 }
 
 src_configure() {
+	addpredict /dev/kfd
+	addpredict /dev/dri/
+
 	local mycmakeargs=(
 		-DAMDGPU_TARGETS="$(get_amdgpu_flags)"
 		-DBUILD_TEST=$(usex test ON OFF)
