@@ -7,7 +7,7 @@ DOCS_BUILDER="doxygen"
 DOCS_DIR="docs"
 DOCS_DEPEND="media-gfx/graphviz"
 ROCM_VERSION=${PV}
-inherit cmake docs edo prefix rocm
+inherit cmake docs edo multiprocessing prefix rocm
 
 DESCRIPTION="AMD's library for BLAS on ROCm"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/rocBLAS"
@@ -97,7 +97,7 @@ src_compile() {
 
 src_test() {
 	check_amdgpu
-	cd ${BUILD_DIR}/clients/staging || die
+	cd "${BUILD_DIR}"/clients/staging || die
 	export ROCBLAS_TEST_TIMEOUT=3600 ROCBLAS_TENSILE_LIBPATH="${BUILD_DIR}/Tensile/library"
 	export LD_LIBRARY_PATH="${BUILD_DIR}/clients:${BUILD_DIR}/library/src"
 	edob ./${PN,,}-test
