@@ -33,6 +33,7 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-5.0.2-gcc12-memcpy.patch
 	"${FILESDIR}"/${PN}-5.2.3-detect-builtin-amdgpu.patch
 	"${FILESDIR}"/${PN}-5.2.3-correct-install-path.patch
+	"${FILESDIR}"/${PN}-5.2.3-remove-amd64-flags.patch
 )
 
 src_prepare() {
