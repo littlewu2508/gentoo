@@ -1,0 +1,36 @@
+From 47fe512bd69dfb43a701ab3747cd7475c30b78fc Mon Sep 17 00:00:00 2001
+From: Ethan Stewart <ethan.stewart@amd.com>
+Date: Thu, 17 Feb 2022 19:33:01 -0600
+Subject: [PATCH] Comgr changes needed for
+ https://github.com/llvm/llvm-project/commit/2aed07e96c7a4f777e854fec619842c4289f8fbd
+
+Change-Id: I9a81efb7f08c24be1f1a09e5dbe5ab6587efa09c
+---
+ lib/comgr/src/comgr-compiler.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/comgr/src/comgr-compiler.cpp b/lib/comgr/src/comgr-compiler.cpp
+index db4c8d5..465187e 100644
+--- a/src/comgr-compiler.cpp
++++ b/src/comgr-compiler.cpp
+@@ -453,7 +453,7 @@ static bool executeAssemblerImpl(AssemblerInvocation &Opts,
+     std::unique_ptr<MCCodeEmitter> MCE;
+     std::unique_ptr<MCAsmBackend> MAB;
+     if (Opts.ShowEncoding) {
+-      MCE.reset(TheTarget->createMCCodeEmitter(*MCII, *MRI, Ctx));
++      MCE.reset(TheTarget->createMCCodeEmitter(*MCII, Ctx));
+       MCTargetOptions Options;
+       MAB.reset(TheTarget->createMCAsmBackend(*STI, *MRI, Options));
+     }
+@@ -472,7 +472,7 @@ static bool executeAssemblerImpl(AssemblerInvocation &Opts,
+       Out = BOS.get();
+     }
+ 
+-    MCCodeEmitter *CE = TheTarget->createMCCodeEmitter(*MCII, *MRI, Ctx);
++    MCCodeEmitter *CE = TheTarget->createMCCodeEmitter(*MCII, Ctx);
+     MCTargetOptions Options;
+     MCAsmBackend *MAB = TheTarget->createMCAsmBackend(*STI, *MRI, Options);
+     Triple T(Opts.Triple);
+-- 
+2.35.1
+
