@@ -62,7 +62,7 @@ src_prepare() {
 }
 
 python_configure() {
-	cp "${BROOT}$(python_get_sitedir)/notebook/static/style/style.min.css" \
+	cp "$(python_get_sitedir)/notebook/static/style/style.min.css" \
 		share/templates/classic/static/style.css || die
 }
 
