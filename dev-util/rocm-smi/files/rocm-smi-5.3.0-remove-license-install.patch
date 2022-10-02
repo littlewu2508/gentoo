@@ -1,0 +1,15 @@
+Index: rocm_smi_lib-rocm-5.3.0/CMakeLists.txt
+===================================================================
+--- rocm_smi_lib-rocm-5.3.0.orig/CMakeLists.txt
++++ rocm_smi_lib-rocm-5.3.0/CMakeLists.txt
+@@ -191,10 +191,6 @@ export(PACKAGE rocm_smi)
+ install(EXPORT rocm_smiTargets DESTINATION
+   "${CMAKE_INSTALL_LIBDIR}/cmake/${ROCM_SMI}" COMPONENT dev)
+ 
+-#License file
+-set(CPACK_RPM_PACKAGE_LICENSE "NCSA")
+-install( FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/${ROCM_SMI} RENAME LICENSE.txt)
+-
+ ###########################
+ # Packaging directives
+ ###########################

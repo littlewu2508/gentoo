@@ -1,0 +1,13 @@
+Index: rocm_smi_lib-rocm-5.2.3/CMakeLists.txt
+===================================================================
+--- rocm_smi_lib-rocm-5.2.3.orig/CMakeLists.txt
++++ rocm_smi_lib-rocm-5.2.3/CMakeLists.txt
+@@ -65,7 +65,7 @@ endif()
+ 
+ ## Compiler flags
+ set(CMAKE_CXX_FLAGS
+- "${CMAKE_CXX_FLAGS} -Wall -Wextra -fno-rtti -m64 -msse -msse2 -std=c++11 ")
++ "${CMAKE_CXX_FLAGS} -Wall -Wextra -fno-rtti -std=c++11 ")
+ # Security options
+ set(CMAKE_CXX_FLAGS
+  "${CMAKE_CXX_FLAGS} -Wconversion -Wcast-align ")
