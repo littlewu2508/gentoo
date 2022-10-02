@@ -1,0 +1,53 @@
+Index: hipamd-rocm-5.3.0/CMakeLists.txt
+===================================================================
+--- hipamd-rocm-5.3.0.orig/CMakeLists.txt
++++ hipamd-rocm-5.3.0/CMakeLists.txt
+@@ -326,12 +326,6 @@ endif()
+ # Install steps
+ #############################
+ 
+-# Install .hipInfo
+-install(FILES ${PROJECT_BINARY_DIR}/.hipInfo DESTINATION ${CMAKE_INSTALL_LIBDIR})
+-
+-# Install .hipVersion
+-install(FILES ${PROJECT_BINARY_DIR}/.hipVersion DESTINATION ${CMAKE_INSTALL_BINDIR})
+-
+ # Install src, bin, include & cmake if necessary
+ execute_process(COMMAND test ${CMAKE_INSTALL_PREFIX} -ef ${CMAKE_CURRENT_SOURCE_DIR}
+     RESULT_VARIABLE INSTALL_SOURCE)
+@@ -366,7 +360,7 @@ if(NOT ${INSTALL_SOURCE} EQUAL 0)
+     install(DIRECTORY include DESTINATION .)
+     install(DIRECTORY ${HIP_COMMON_INCLUDE_DIR}/hip/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/hip/)
+     if(WIN32)
+-      install(DIRECTORY ${HIP_COMMON_DIR}/cmake DESTINATION .)
++      install(DIRECTORY ${HIP_COMMON_DIR}/cmake/ DESTINATION share/cmake/Modules)
+     else()
+       install(DIRECTORY ${HIP_COMMON_DIR}/cmake/ DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})
+     endif()
+@@ -477,10 +471,3 @@ if(HIP_HIPCC_EXECUTABLE)
+         add_dependencies(analyze cppcheck)
+     endif()
+ endif()
+-
+-#File reorg Backward compatibility function
+-if(NOT WIN32)
+-    if(FILE_REORG_BACKWARD_COMPATIBILITY)
+-        include(hip-backward-compat.cmake)
+-    endif()
+-endif()
+Index: hipamd-rocm-5.3.0/packaging/CMakeLists.txt
+===================================================================
+--- hipamd-rocm-5.3.0.orig/packaging/CMakeLists.txt
++++ hipamd-rocm-5.3.0/packaging/CMakeLists.txt
+@@ -33,11 +33,6 @@ endif()
+ set(CPACK_RPM_COMPONENT_INSTALL ON)
+ set(CPACK_DEB_COMPONENT_INSTALL ON)
+ 
+-###Set License####
+-set(CPACK_RESOURCE_FILE_LICENSE ${hip_SOURCE_DIR}/LICENSE.txt)
+-install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT binary)
+-set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+-
+ #Begin binary files install
+ if(HIP_PLATFORM STREQUAL "amd" )
+    if(BUILD_SHARED_LIBS)
