@@ -1,0 +1,25 @@
+Index: src/core/runtime/trap_handler/CMakeLists.txt
+===================================================================
+--- src.orig/core/runtime/trap_handler/CMakeLists.txt
++++ src/core/runtime/trap_handler/CMakeLists.txt
+@@ -65,7 +65,7 @@ function(gen_kernel_bc TARGET_ID INPUT_F
+   set(CODE_OBJECT "${OUTPUT_FILE}.hsaco")
+ 
+   separate_arguments(CLANG_ARG_LIST UNIX_COMMAND
+-  "-x assembler -target amdgcn-amd-amdhsa -mcpu=${TARGET_ID} -o ${CODE_OBJECT} ${INPUT_FILE}")
++  "-x assembler -target amdgcn-amd-amdhsa --rocm-device-lib-path=@GENTOO_PORTAGE_EPREFIX@/usr/lib/amdgcn/bitcode -mcpu=${TARGET_ID} -o ${CODE_OBJECT} ${INPUT_FILE}")
+ 
+   ## Add custom command to produce a code object file.
+   add_custom_command(OUTPUT ${CODE_OBJECT} COMMAND clang ${CLANG_ARG_LIST}
+Index: src/image/blit_src/CMakeLists.txt
+===================================================================
+--- src.orig/image/blit_src/CMakeLists.txt
++++ src/image/blit_src/CMakeLists.txt
+@@ -67,6 +67,7 @@ function(gen_kernel_bc TARGET_ID INPUT_F
+ 
+   separate_arguments(CLANG_ARG_LIST UNIX_COMMAND
+     "-O2 -x cl -Xclang -finclude-default-header -cl-denorms-are-zero -cl-std=CL2.0
++	--rocm-device-lib-path=@GENTOO_PORTAGE_EPREFIX@/usr/lib/amdgcn/bitcode
+     -target amdgcn-amd-amdhsa -mcpu=${TARGET_ID} -o ${OUTPUT_FILE} ${INPUT_FILE}")
+ 
+   ## Add custom command to produce a code object file.

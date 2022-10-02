@@ -1,0 +1,22 @@
+Index: src/CMakeLists.txt
+===================================================================
+--- src.orig/CMakeLists.txt
++++ src/CMakeLists.txt
+@@ -311,14 +311,9 @@ install ( FILES ${CMAKE_CURRENT_SOURCE_D
+ # Install public headers
+ install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/inc/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/hsa COMPONENT dev )
+ 
+-# Option to build header path migration helpers.
+-option(INCLUDE_PATH_COMPATIBILITY "Generate backward compatible headers and include paths.  Use of these headers will warn when included." ON)
+-if(INCLUDE_PATH_COMPATIBILITY)
+-  include(hsa-backward-compat.cmake)
+-  target_include_directories( ${CORE_RUNTIME_TARGET}
+-    PUBLIC
+-    $<INSTALL_INTERFACE:hsa/include/hsa> )
+-endif()
++target_include_directories( ${CORE_RUNTIME_TARGET}
++PUBLIC
++$<INSTALL_INTERFACE:include/hsa> )
+ 
+ ## Configure and install package config file
+ # Record our usage data for clients find_package calls.
