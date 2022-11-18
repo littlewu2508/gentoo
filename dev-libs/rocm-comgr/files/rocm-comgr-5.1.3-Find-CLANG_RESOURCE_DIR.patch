@@ -1,4 +1,4 @@
-From 4c01c63a49af5748a8ee698553aa107803b60362 Mon Sep 17 00:00:00 2001
+From 8e927b97b6ea6561d4768a096383e71df65c0c21 Mon Sep 17 00:00:00 2001
 From: Yiyang Wu <xgreenlandforwyy@gmail.com>
 Date: Tue, 14 Jun 2022 20:21:22 +0800
 Subject: [PATCH] Find CLANG_RESOURCE_DIR using clang -print-resource-dir
@@ -9,10 +9,10 @@ Signed-off-by: Yiyang Wu <xgreenlandforwyy@gmail.com>
  lib/comgr/cmake/opencl_pch.cmake | 24 +++---------------------
  1 file changed, 3 insertions(+), 21 deletions(-)
 
-Index: comgr/cmake/opencl_pch.cmake
-===================================================================
---- comgr.orig/cmake/opencl_pch.cmake
-+++ comgr/cmake/opencl_pch.cmake
+diff --git a/lib/comgr/cmake/opencl_pch.cmake b/lib/comgr/cmake/opencl_pch.cmake
+index 95311fc..e635f24 100644
+--- a/cmake/opencl_pch.cmake
++++ b/cmake/opencl_pch.cmake
 @@ -1,26 +1,8 @@
  if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
    find_package(Clang REQUIRED CONFIG)
@@ -43,29 +43,6 @@ Index: comgr/cmake/opencl_pch.cmake
  endif()
  
  # Macro to create and install a custom target for generating PCH for given
-Index: comgr/src/comgr-compiler.cpp
-===================================================================
---- comgr.orig/src/comgr-compiler.cpp
-+++ comgr/src/comgr-compiler.cpp
-@@ -42,6 +42,7 @@
- #include "lld/Common/Driver.h"
- #include "clang/Basic/Version.h"
- #include "clang/CodeGen/CodeGenAction.h"
-+#include "clang/Config/config.h"
- #include "clang/Driver/Compilation.h"
- #include "clang/Driver/DriverDiagnostic.h"
- #include "clang/Driver/Job.h"
-@@ -988,11 +989,8 @@ amd_comgr_status_t AMDGPUCompiler::addCo
-   HIPIncludePath = (Twine(env::getHIPPath()) + "/include").str();
-   // HIP headers depend on hsa.h which is in ROCM_DIR/include.
-   ROCMIncludePath = (Twine(env::getROCMPath()) + "/include").str();
--  ClangIncludePath =
--      (Twine(env::getLLVMPath()) + "/lib/clang/" + CLANG_VERSION_STRING).str();
--  ClangIncludePath2 = (Twine(env::getLLVMPath()) + "/lib/clang/" +
--                       CLANG_VERSION_STRING + "/include")
--                          .str();
-+  ClangIncludePath = (Twine(env::getLLVMPath()) + "/bin/" + CLANG_RESOURCE_DIR).str();
-+  ClangIncludePath2 = (Twine(env::getLLVMPath()) + "/bin/" + CLANG_RESOURCE_DIR + "/include").str();
- 
-   Args.push_back("-x");
- 
+-- 
+2.37.3
+

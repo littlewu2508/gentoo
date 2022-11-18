@@ -26,6 +26,8 @@ PATCHES=(
 	"${FILESDIR}/0001-COMGR-changes-needed-for-upstream-llvm.patch"
 	"${FILESDIR}/${PN}-5.1.3-llvm-15-remove-zlib-gnu"
 	"${FILESDIR}/${PN}-5.1.3-llvm-15-args-changed"
+	"${FILESDIR}/0001-Specify-clang-exe-path-in-Driver-Creation.patch"
+	"${FILESDIR}/${PN}-5.1.3-remove-hip-include-dir.patch"
 )
 
 DESCRIPTION="Radeon Open Compute Code Object Manager"
@@ -44,8 +46,6 @@ CMAKE_BUILD_TYPE=Release
 src_prepare() {
 	sed '/sys::path::append(HIPPath/s,"hip","",' -i src/comgr-env.cpp || die
 	sed "/return LLVMPath;/s,LLVMPath,llvm::SmallString<128>(\"$(get_llvm_prefix ${LLVM_MAX_SLOT})\")," -i src/comgr-env.cpp || die
-	sed '/Args.push_back(HIPIncludePath/,+1d' -i src/comgr-compiler.cpp || die
-	sed '/Args.push_back(ROCMIncludePath/,+1d' -i src/comgr-compiler.cpp || die # ROCM and HIPIncludePath is now /usr, which disturb the include order
 	eapply $(prefixify_ro "${FILESDIR}"/${PN}-5.0-rocm_path.patch)
 	cmake_src_prepare
 }
