@@ -152,6 +152,9 @@ _rocm_set_globals() {
 			official_amdgpu_targets=(
 				gfx906 gfx908 gfx90a gfx1030
 			)
+			if [ $(ver_cut 2 ${ROCM_VERSION}) -gt 3 ]; then
+				unofficial_amdgpu_targets+=( gfx1100 gfx1101 gfx1102 )
+			fi
 			;;
 		*)
 			die "Unknown ROCm major version! Please update rocm.eclass before bumping to new ebuilds"
