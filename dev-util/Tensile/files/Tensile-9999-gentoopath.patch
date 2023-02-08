@@ -1,0 +1,41 @@
+Fix incorrect path in scripts and CMakeLists, in order to build tensile_client 
+===================================================================
+Index: Tensile/Tensile/Common.py
+===================================================================
+--- Tensile.orig/Tensile/Common.py
++++ Tensile/Tensile/Common.py
+@@ -2012,7 +2012,7 @@ def assignGlobalParameters( config ):
+     else:
+       print2(" %24s: %8s (unspecified)" % (key, defaultValue))
+ 
+-  globalParameters["ROCmPath"] = "/opt/rocm"
++  globalParameters["ROCmPath"] = "@GENTOO_PORTAGE_EPREFIX@/usr"
+   if "ROCM_PATH" in os.environ:
+     globalParameters["ROCmPath"] = os.environ.get("ROCM_PATH")
+   if "TENSILE_ROCM_PATH" in os.environ:
+Index: Tensile/Tensile/ClientWriter.py
+===================================================================
+--- Tensile.orig/Tensile/ClientWriter.py
++++ Tensile/Tensile/ClientWriter.py
+@@ -180,7 +180,7 @@ def runClient(libraryLogicPath, forBench
+ def getBuildClientLibraryScript(buildPath, libraryLogicPath):
+   callCreateLibraryCmd = ["python"] if os.name == "nt" else []
+ 
+-  callCreateLibraryCmd += [os.path.join(globalParameters["ScriptPath"] , "bin", "TensileCreateLibrary")]
++  callCreateLibraryCmd += ["TensileCreateLibrary"]
+ 
+   if globalParameters["MergeFiles"]:
+     callCreateLibraryCmd += ["--merge-files"]
+Index: Tensile/Tensile/GenerateSummations.py
+===================================================================
+--- Tensile.orig/Tensile/GenerateSummations.py
++++ Tensile/Tensile/GenerateSummations.py
+@@ -59,7 +59,7 @@ def createLibraryForBenchmark(logicPath,
+     Selection.
+     """
+ 
+-    pythonExePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "bin", "TensileCreateLibrary")
++    pythonExePath = "TensileCreateLibrary"
+     args = [pythonExePath, \
+         "--merge-files", "--new-client-only", "--no-short-file-names", "--no-library-print-debug", \
+         "--architecture=all", "--cxx-compiler=hipcc", "--library-format=yaml", \
