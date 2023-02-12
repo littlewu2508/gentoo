@@ -1,0 +1,48 @@
+Index: hipify-9999/CMakeLists.txt
+===================================================================
+--- hipify-9999.orig/CMakeLists.txt
++++ hipify-9999/CMakeLists.txt
+@@ -36,40 +36,11 @@ set(CMAKE_C_COMPILER ${LLVM_TOOLS_BINARY
+ 
+ # Link against LLVM and CLANG libraries
+ target_link_libraries(hipify-clang PRIVATE
+-    clangASTMatchers
+-    clangFrontend
+-    clangTooling
+-    clangParse
+-    clangSerialization
+-    clangSema
+-    clangEdit
+-    clangFormat
+-    clangLex
+-    clangAnalysis
+-    clangDriver
+-    clangAST
+-    clangToolingCore
+-    clangRewrite
+-    clangBasic
+-    LLVMProfileData
+-    LLVMSupport
+-    LLVMMCParser
+-    LLVMMC
+-    LLVMBitReader
+-    LLVMOption
+-    LLVMCore)
++	clang-cpp
++	LLVM
++    )
+ 
+-if(LLVM_PACKAGE_VERSION VERSION_GREATER "6.0.1")
+-    target_link_libraries(hipify-clang PRIVATE clangToolingInclusions)
+-endif()
+ 
+-if(LLVM_PACKAGE_VERSION VERSION_GREATER "9.0.1")
+-    target_link_libraries(hipify-clang PRIVATE LLVMFrontendOpenMP)
+-endif()
+-
+-if(LLVM_PACKAGE_VERSION VERSION_EQUAL "15.0.0" OR LLVM_PACKAGE_VERSION VERSION_GREATER "15.0.0")
+-    target_link_libraries(hipify-clang PRIVATE LLVMWindowsDriver clangSupport)
+-endif()
+ 
+ if(LLVM_PACKAGE_VERSION VERSION_EQUAL "16.0.0" OR LLVM_PACKAGE_VERSION VERSION_GREATER "16.0.0")
+     if(MSVC)
