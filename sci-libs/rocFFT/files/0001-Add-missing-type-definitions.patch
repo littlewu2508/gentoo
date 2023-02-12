@@ -1,0 +1,44 @@
+From 084732b29535e6013d8dc8d9597d8fdc01f1fca5 Mon Sep 17 00:00:00 2001
+From: Yiyang Wu <xgreenlandforwyy@gmail.com>
+Date: Sun, 12 Feb 2023 18:08:41 +0800
+Subject: [PATCH] Add missing type definitions
+
+This fixes compilation errors
+
+Signed-off-by: Yiyang Wu <xgreenlandforwyy@gmail.com>
+---
+ library/src/device/kernels/memory_gfx.h | 2 ++
+ shared/array_validator.h                | 4 ++--
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/library/src/device/kernels/memory_gfx.h b/library/src/device/kernels/memory_gfx.h
+index 114fb6c6..05064b93 100644
+--- a/library/src/device/kernels/memory_gfx.h
++++ b/library/src/device/kernels/memory_gfx.h
+@@ -68,6 +68,8 @@ struct CacheOperation
+ 
+ using float16_t = _Float16;
+ using float32_t = float;
++using uint32_t = unsigned int;
++using int32_t = int;
+ 
+ template <typename T, int N>
+ struct NativeVector
+diff --git a/shared/array_validator.h b/shared/array_validator.h
+index ce851736..a34c3e00 100644
+--- a/shared/array_validator.h
++++ b/shared/array_validator.h
+@@ -24,8 +24,8 @@
+ #include <vector>
+ 
+ // Checks whether the array with given length and stride has multi-index collisions.
+-bool array_valid(const std::vector<size_t>& length,
+-                 const std::vector<size_t>& stride,
++bool array_valid(const std::vector<std::size_t>& length,
++                 const std::vector<std::size_t>& stride,
+                  const int                  verbose = 0);
+ 
+ #endif
+-- 
+2.39.1
+
