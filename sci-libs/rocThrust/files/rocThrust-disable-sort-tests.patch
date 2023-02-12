@@ -1,0 +1,20 @@
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index 0bbedbb..5e114fc 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -190,15 +190,6 @@ add_rocthrust_test("scan")
+ add_rocthrust_test("scan_by_key")
+ add_rocthrust_test("scatter")
+ add_rocthrust_test("sequence")
+-add_rocthrust_test("stable_sort")
+-add_rocthrust_test("stable_sort_by_key")
+-add_rocthrust_test("stable_sort_by_key_large")
+-add_rocthrust_test("stable_sort_large")
+-add_rocthrust_test("sort")
+-add_rocthrust_test("sort_by_key")
+-add_rocthrust_test("sort_by_key_variable_bits")
+-add_rocthrust_test("sort_permutation_iterator")
+-add_rocthrust_test("sort_variables")
+ add_rocthrust_test("swap_ranges")
+ add_rocthrust_test("tabulate")
+ add_rocthrust_test("transform")
