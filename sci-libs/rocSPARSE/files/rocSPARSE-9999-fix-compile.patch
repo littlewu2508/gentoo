@@ -1,0 +1,37 @@
+Fix unimplemented int32_t fma; add mssing include
+index a28483a0..31e483c7 100644
+--- a/clients/include/rocsparse_clients_envariables.hpp
++++ b/clients/include/rocsparse_clients_envariables.hpp
+@@ -23,6 +23,7 @@
+  * ************************************************************************ */
+ 
+ #pragma once
++#include <cstdint>
+ 
+ ///
+ /// @brief Definition of a utility struct to grab environment variables
+diff --git a/library/src/include/common.h b/library/src/include/common.h
+index 60a9a51c..56d36010 100644
+--- a/library/src/include/common.h
++++ b/library/src/include/common.h
+@@ -71,7 +71,6 @@ __device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ld
+ __device__ __forceinline__ rocsparse_float_complex rocsparse_ldg(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__ldg((const float*)ptr), __ldg((const float*)ptr + 1)); }
+ __device__ __forceinline__ rocsparse_double_complex rocsparse_ldg(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__ldg((const double*)ptr), __ldg((const double*)ptr + 1)); }
+ 
+-__device__ __forceinline__ int32_t rocsparse_fma(int32_t p, int32_t q, int32_t r) { return fma(p, q, r); }
+ __device__ __forceinline__ float rocsparse_fma(float p, float q, float r) { return fma(p, q, r); }
+ __device__ __forceinline__ double rocsparse_fma(double p, double q, double r) { return fma(p, q, r); }
+ __device__ __forceinline__ rocsparse_float_complex rocsparse_fma(rocsparse_float_complex p, rocsparse_float_complex q, rocsparse_float_complex r) { return std::fma(p, q, r); }
+diff --git a/library/src/include/envariables.h b/library/src/include/envariables.h
+index b794b23b..69dab02e 100644
+--- a/library/src/include/envariables.h
++++ b/library/src/include/envariables.h
+@@ -23,6 +23,8 @@
+  * ************************************************************************ */
+ 
+ #pragma once
++#include <cstddef>
++#include <cstdint>
+ 
+ template <std::size_t N, typename T>
+ inline constexpr std::size_t countof(T (&)[N])
