@@ -1,0 +1,78 @@
+Index: pytorch-1.12.0/aten/src/ATen/hip/Exceptions.h
+===================================================================
+--- pytorch-1.12.0.orig/aten/src/ATen/hip/Exceptions.h
++++ pytorch-1.12.0/aten/src/ATen/hip/Exceptions.h
+@@ -2,7 +2,7 @@
+ #pragma once
+ 
+ #include <rocblas.h>
+-#include <hipsparse.h>
++#include <hipsparse/hipsparse.h>
+ #include <c10/macros/Export.h>
+ 
+ #ifdef CUDART_VERSION
+Index: pytorch-1.12.0/aten/src/ATen/hip/HIPContext.h
+===================================================================
+--- pytorch-1.12.0.orig/aten/src/ATen/hip/HIPContext.h
++++ pytorch-1.12.0/aten/src/ATen/hip/HIPContext.h
+@@ -4,7 +4,7 @@
+ #include <cstdint>
+ 
+ #include <hip/hip_runtime_api.h>
+-#include <hipsparse.h>
++#include <hipsparse/hipsparse.h>
+ #include <rocblas.h>
+ 
+ #ifdef CUDART_VERSION
+Index: pytorch-1.12.0/aten/src/ATen/native/sparse/hip/SoftMax.hip
+===================================================================
+--- pytorch-1.12.0.orig/aten/src/ATen/native/sparse/hip/SoftMax.hip
++++ pytorch-1.12.0/aten/src/ATen/native/sparse/hip/SoftMax.hip
+@@ -37,7 +37,7 @@
+ #include <thrust/iterator/constant_iterator.h>
+ 
+ #include <hip/hip_runtime_api.h>
+-#include <hipsparse.h>
++#include <hipsparse/hipsparse.h>
+ #include <bitset>
+ 
+ #include <c10/hip/HIPMathCompat.h>
+Index: pytorch-1.12.0/aten/src/ATen/native/sparse/hip/SparseHIPBlas.cpp
+===================================================================
+--- pytorch-1.12.0.orig/aten/src/ATen/native/sparse/hip/SparseHIPBlas.cpp
++++ pytorch-1.12.0/aten/src/ATen/native/sparse/hip/SparseHIPBlas.cpp
+@@ -6,7 +6,7 @@
+ #include <ATen/native/sparse/hip/SparseHIPBlas.h>
+ #include <ATen/hip/impl/HIPCachingAllocatorMasqueradingAsCUDA.h>
+ 
+-#include <hipsparse.h>
++#include <hipsparse/hipsparse.h>
+ 
+ // LIMITATION (cusparseSpMM):
+ // The generic APIs are available on all platforms on CUDA 11.0
+Index: pytorch-1.12.0/aten/src/ATen/native/sparse/hip/SparseHIPTensorMath.hip
+===================================================================
+--- pytorch-1.12.0.orig/aten/src/ATen/native/sparse/hip/SparseHIPTensorMath.hip
++++ pytorch-1.12.0/aten/src/ATen/native/sparse/hip/SparseHIPTensorMath.hip
+@@ -43,7 +43,7 @@
+ #include <thrust/system/hip/execution_policy.h>
+ 
+ #include <bitset>
+-#include <hipsparse.h>
++#include <hipsparse/hipsparse.h>
+ #include <hip/hip_runtime_api.h>
+ #include <memory>
+ 
+Index: pytorch-1.12.0/aten/src/ATen/native/sparse/hip/SparseMatMul.hip
+===================================================================
+--- pytorch-1.12.0.orig/aten/src/ATen/native/sparse/hip/SparseMatMul.hip
++++ pytorch-1.12.0/aten/src/ATen/native/sparse/hip/SparseMatMul.hip
+@@ -28,7 +28,7 @@
+ #include <ATen/hip/HIPDataType.h>
+ #include <ATen/hip/HIPUtils.h>
+ #include <ATen/hip/ThrustAllocator.h>
+-#include <hipsparse.h>
++#include <hipsparse/hipsparse.h>
+ #include <ATen/native/sparse/hip/SparseHIPBlas.h>
+ #include <ATen/hip/impl/HIPCachingAllocatorMasqueradingAsCUDA.h>
+ 

@@ -1,0 +1,12 @@
+Index: pytorch-1.12.0/cmake/public/LoadHIP.cmake
+===================================================================
+--- pytorch-1.12.0.orig/cmake/public/LoadHIP.cmake
++++ pytorch-1.12.0/cmake/public/LoadHIP.cmake
+@@ -134,7 +134,6 @@ else()
+   set(MAGMA_HOME $ENV{MAGMA_HOME})
+ endif()
+ 
+-torch_hip_get_arch_list(PYTORCH_ROCM_ARCH)
+ if(PYTORCH_ROCM_ARCH STREQUAL "")
+   message(FATAL_ERROR "No GPU arch specified for ROCm build. Please use PYTORCH_ROCM_ARCH environment variable to specify GPU archs to build for.")
+ endif()

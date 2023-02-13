@@ -1,0 +1,45 @@
+Index: pytorch-1.12.0/aten/src/ATen/native/hip/CuFFTPlanCache.h
+===================================================================
+--- pytorch-1.12.0.orig/aten/src/ATen/native/hip/CuFFTPlanCache.h
++++ pytorch-1.12.0/aten/src/ATen/native/hip/CuFFTPlanCache.h
+@@ -7,8 +7,8 @@
+ #include <c10/util/accumulate.h>
+ #include <c10/util/irange.h>
+ 
+-#include <hipfft.h>
+-#include <hipfft.h>
++#include <hipfft/hipfft.h>
++#include <hipfft/hipfft.h>
+ 
+ #include <limits>
+ #include <list>
+Index: pytorch-1.12.0/aten/src/ATen/native/hip/CuFFTUtils.h
+===================================================================
+--- pytorch-1.12.0.orig/aten/src/ATen/native/hip/CuFFTUtils.h
++++ pytorch-1.12.0/aten/src/ATen/native/hip/CuFFTUtils.h
+@@ -6,8 +6,8 @@
+ #include <string>
+ #include <stdexcept>
+ #include <sstream>
+-#include <hipfft.h>
+-#include <hipfft.h>
++#include <hipfft/hipfft.h>
++#include <hipfft/hipfft.h>
+ 
+ namespace at { namespace native {
+ 
+Index: pytorch-1.12.0/aten/src/ATen/native/hip/SpectralOps.cpp
+===================================================================
+--- pytorch-1.12.0.orig/aten/src/ATen/native/hip/SpectralOps.cpp
++++ pytorch-1.12.0/aten/src/ATen/native/hip/SpectralOps.cpp
+@@ -24,8 +24,8 @@
+ #include <ATen/ops/mul.h>
+ #endif
+ 
+-#include <hipfft.h>
+-#include <hipfft.h>
++#include <hipfft/hipfft.h>
++#include <hipfft/hipfft.h>
+ 
+ #include <cmath>
+ #include <vector>

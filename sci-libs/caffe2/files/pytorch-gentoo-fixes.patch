@@ -1,0 +1,908 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e2e1f69..6952a5c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+ #cmake_policy(SET CMP0022 NEW)
+ #cmake_policy(SET CMP0023 NEW)
+ 
++set(HIP_ROOT_DIR "/usr/include/hip")
++set(ROCM_PATH "/usr/include")
++string(APPEND CMAKE_CXX_FLAGS " -I${CMAKE_SOURCE_DIR}/fixed-system-libraries/include")
++
+ # Use compiler ID "AppleClang" instead of "Clang" for XCode.
+ # Not setting this sometimes makes XCode C compiler gets detected as "Clang",
+ # even when the C++ one is detected as "AppleClang".
+diff --git a/aten/src/ATen/native/hip/UnaryOpsKernel.hip b/aten/src/ATen/native/hip/UnaryOpsKernel.hip
+index e84618e..cf9421f 100644
+--- a/aten/src/ATen/native/hip/UnaryOpsKernel.hip
++++ b/aten/src/ATen/native/hip/UnaryOpsKernel.hip
+@@ -244,7 +244,7 @@ void frexp_kernel_cuda(TensorIteratorBase& iter) {
+     "frexp_cuda", [&]() {
+       gpu_kernel_multiple_outputs(iter, [=] GPU_LAMBDA (scalar_t a) -> thrust::tuple<scalar_t, int32_t> {
+         int32_t exponent;
+-        scalar_t mantissa = ::frexp(a, &exponent);
++        scalar_t mantissa = ::frexpf(a, &exponent);
+         return {mantissa, exponent};
+       });
+   });
+diff --git a/cmake/public/LoadHIP.cmake b/cmake/public/LoadHIP.cmake
+index 89a61b6..d0f132a 100644
+--- a/cmake/public/LoadHIP.cmake
++++ b/cmake/public/LoadHIP.cmake
+@@ -157,45 +157,7 @@ find_package_and_print_version(HIP 1.0)
+ if(HIP_FOUND)
+   set(PYTORCH_FOUND_HIP TRUE)
+ 
+-  # Find ROCM version for checks
+-  # ROCM 5.0 and later will have header api for version management
+-  if(EXISTS ${ROCM_INCLUDE_DIRS}/rocm_version.h)
+-
+-    set(PROJECT_RANDOM_BINARY_DIR "${PROJECT_BINARY_DIR}")
+-    set(file "${PROJECT_BINARY_DIR}/detect_rocm_version.cc")
+-    file(WRITE ${file} ""
+-      "#include <rocm_version.h>\n"
+-      "#include <cstdio>\n"
+-
+-      "#ifndef ROCM_VERSION_PATCH\n"
+-      "#define ROCM_VERSION_PATCH 0\n"
+-      "#endif\n"
+-      "#define STRINGIFYHELPER(x) #x\n"
+-      "#define STRINGIFY(x) STRINGIFYHELPER(x)\n"
+-      "int main() {\n"
+-      "  printf(\"%d.%d.%s\", ROCM_VERSION_MAJOR, ROCM_VERSION_MINOR, STRINGIFY(ROCM_VERSION_PATCH));\n"
+-      "  return 0;\n"
+-      "}\n"
+-      )
+-
+-    try_run(run_result compile_result ${PROJECT_RANDOM_BINARY_DIR} ${file}
+-      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES=${ROCM_INCLUDE_DIRS}"
+-      RUN_OUTPUT_VARIABLE rocm_version_from_header
+-      COMPILE_OUTPUT_VARIABLE output_var
+-      )
+-    # We expect the compile to be successful if the include directory exists.
+-    if(NOT compile_result)
+-      message(FATAL_ERROR "Caffe2: Couldn't determine version from header: " ${output_var})
+-    endif()
+-    message(STATUS "Caffe2: Header version is: " ${rocm_version_from_header})
+-    set(ROCM_VERSION_DEV_RAW ${rocm_version_from_header})
+-    message("\n***** ROCm version from rocm_version.h ****\n")
+-
+-  # ROCM < 4.5, we don't have the header api file, use flat file
+-  else()
+-    file(READ "${ROCM_PATH}/.info/version-dev" ROCM_VERSION_DEV_RAW)
+-    message("\n***** ROCm version from ${ROCM_PATH}/.info/version-dev ****\n")
+-  endif()
++  set(ROCM_VERSION_DEV_RAW "5.1.3-66")
+ 
+   string(REGEX MATCH "^([0-9]+)\.([0-9]+)\.([0-9]+).*$" ROCM_VERSION_DEV_MATCH ${ROCM_VERSION_DEV_RAW})
+ 
+@@ -244,12 +206,12 @@ if(HIP_FOUND)
+     set(rocblas_DIR ${ROCM_PATH}/lib/cmake/rocblas)
+     set(miopen_DIR ${ROCM_PATH}/lib/cmake/miopen)
+     set(rocfft_DIR ${ROCM_PATH}/lib/cmake/rocfft)
+-    set(hipfft_DIR ${ROCM_PATH}/lib/cmake/hipfft)
++    set(hipfft_DIR ${PROJECT_SOURCE_DIR}/fixed-system-libraries/lib64/cmake/hipfft)
+     set(hipsparse_DIR ${ROCM_PATH}/lib/cmake/hipsparse)
+     set(rccl_DIR ${ROCM_PATH}/lib/cmake/rccl)
+     set(rocprim_DIR ${ROCM_PATH}/lib/cmake/rocprim)
+     set(hipcub_DIR ${ROCM_PATH}/lib/cmake/hipcub)
+-    set(rocthrust_DIR ${ROCM_PATH}/lib/cmake/rocthrust)
++    set(rocthrust_DIR ${PROJECT_SOURCE_DIR}/fixed-system-libraries/lib64/cmake/rocthrust)
+   else()
+     set(hip_DIR ${HIP_PATH}/lib/cmake/hip)
+     set(hsa-runtime64_DIR ${ROCM_PATH}/lib/cmake/hsa-runtime64)
+@@ -260,12 +222,12 @@ if(HIP_FOUND)
+     set(rocblas_DIR ${ROCBLAS_PATH}/lib/cmake/rocblas)
+     set(miopen_DIR ${MIOPEN_PATH}/lib/cmake/miopen)
+     set(rocfft_DIR ${ROCFFT_PATH}/lib/cmake/rocfft)
+-    set(hipfft_DIR ${HIPFFT_PATH}/lib/cmake/hipfft)
++    set(hipfft_DIR ${PROJECT_SOURCE_DIR}/fixed-system-libraries/lib64/cmake/hipfft)
+     set(hipsparse_DIR ${HIPSPARSE_PATH}/lib/cmake/hipsparse)
+     set(rccl_DIR ${RCCL_PATH}/lib/cmake/rccl)
+     set(rocprim_DIR ${ROCPRIM_PATH}/lib/cmake/rocprim)
+     set(hipcub_DIR ${HIPCUB_PATH}/lib/cmake/hipcub)
+-    set(rocthrust_DIR ${ROCTHRUST_PATH}/lib/cmake/rocthrust)
++    set(rocthrust_DIR ${PROJECT_SOURCE_DIR}/fixed-system-libraries/lib64/cmake/rocthrust)
+   endif()
+ 
+   find_package_and_print_version(hip REQUIRED)
+diff --git a/fixed-system-libraries/include/ext/prof_protocol.h b/fixed-system-libraries/include/ext/prof_protocol.h
+new file mode 100644
+index 0000000..1c00e97
+--- /dev/null
++++ b/fixed-system-libraries/include/ext/prof_protocol.h
+@@ -0,0 +1,103 @@
++/*
++Copyright (c) 2018 Advanced Micro Devices, Inc. All rights reserved.
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.
++*/
++
++#ifndef INC_EXT_PROF_PROTOCOL_H_
++#define INC_EXT_PROF_PROTOCOL_H_
++
++#include <stdlib.h>
++
++// Traced API domains
++typedef enum {
++  ACTIVITY_DOMAIN_HSA_API = 0,                    // HSA API domain
++  ACTIVITY_DOMAIN_HSA_OPS = 1,                    // HSA async activity domain
++  ACTIVITY_DOMAIN_HIP_OPS = 2,                    // HIP async activity domain
++  ACTIVITY_DOMAIN_HCC_OPS = ACTIVITY_DOMAIN_HIP_OPS, // HCC async activity domain
++  ACTIVITY_DOMAIN_HIP_VDI = ACTIVITY_DOMAIN_HIP_OPS, // HIP VDI async activity domain
++  ACTIVITY_DOMAIN_HIP_API = 3,                    // HIP API domain
++  ACTIVITY_DOMAIN_KFD_API = 4,                    // KFD API domain
++  ACTIVITY_DOMAIN_EXT_API = 5,                    // External ID domain
++  ACTIVITY_DOMAIN_ROCTX   = 6,                    // ROCTX domain
++  ACTIVITY_DOMAIN_HSA_EVT = 7,                    // HSA events
++  ACTIVITY_DOMAIN_NUMBER
++} activity_domain_t;
++
++// Extension API opcodes
++typedef enum {
++  ACTIVITY_EXT_OP_MARK = 0,
++  ACTIVITY_EXT_OP_EXTERN_ID = 1
++} activity_ext_op_t;
++
++// API calback type
++typedef void (*activity_rtapi_callback_t)(uint32_t domain, uint32_t cid, const void* data, void* arg);
++typedef uint32_t activity_kind_t;
++typedef uint32_t activity_op_t;
++
++// API callback phase
++typedef enum {
++  ACTIVITY_API_PHASE_ENTER = 0,
++  ACTIVITY_API_PHASE_EXIT = 1
++} activity_api_phase_t;
++
++// Trace record types
++// Correlation id
++typedef uint64_t activity_correlation_id_t;
++
++// Activity record type
++typedef struct activity_record_s {
++    uint32_t domain;                               // activity domain id
++    activity_kind_t kind;                          // activity kind
++    activity_op_t op;                              // activity op
++    union {
++      struct {
++        activity_correlation_id_t correlation_id;  // activity ID
++        uint64_t begin_ns;                         // host begin timestamp
++        uint64_t end_ns;                           // host end timestamp
++      };
++      struct {
++        uint32_t se;                               // sampled SE
++        uint64_t cycle;                            // sample cycle
++        uint64_t pc;                               // sample PC
++      } pc_sample;
++    };
++    union {
++      struct {
++        int device_id;                             // device id
++        uint64_t queue_id;                         // queue id
++      };
++      struct {
++        uint32_t process_id;                       // device id
++        uint32_t thread_id;                        // thread id
++      };
++      struct {
++        activity_correlation_id_t external_id;     // external correlatino id
++      };
++    };
++    size_t bytes;                                  // data size bytes
++} activity_record_t;
++
++// Activity sync calback type
++typedef void* (*activity_sync_callback_t)(uint32_t cid, activity_record_t* record, const void* data, void* arg);
++// Activity async calback type
++typedef void (*activity_id_callback_t)(activity_correlation_id_t id);
++typedef void (*activity_async_callback_t)(uint32_t op, void* record, void* arg);
++
++#endif  // INC_EXT_PROF_PROTOCOL_H_
+diff --git a/fixed-system-libraries/lib64/cmake/hipfft/hipfft-config-version.cmake b/fixed-system-libraries/lib64/cmake/hipfft/hipfft-config-version.cmake
+new file mode 100644
+index 0000000..ab51547
+--- /dev/null
++++ b/fixed-system-libraries/lib64/cmake/hipfft/hipfft-config-version.cmake
+@@ -0,0 +1,70 @@
++# This is a basic version file for the Config-mode of find_package().
++# It is used by write_basic_package_version_file() as input file for configure_file()
++# to create a version-file which can be installed along a config.cmake file.
++#
++# The created file sets PACKAGE_VERSION_EXACT if the current version string and
++# the requested version string are exactly the same and it sets
++# PACKAGE_VERSION_COMPATIBLE if the current version is >= requested version,
++# but only if the requested major version is the same as the current one.
++# The variable CVF_VERSION must be set before calling configure_file().
++
++
++set(PACKAGE_VERSION "1.0.7")
++
++if(PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION)
++  set(PACKAGE_VERSION_COMPATIBLE FALSE)
++else()
++
++  if("1.0.7" MATCHES "^([0-9]+)\\.")
++    set(CVF_VERSION_MAJOR "${CMAKE_MATCH_1}")
++    if(NOT CVF_VERSION_MAJOR VERSION_EQUAL 0)
++      string(REGEX REPLACE "^0+" "" CVF_VERSION_MAJOR "${CVF_VERSION_MAJOR}")
++    endif()
++  else()
++    set(CVF_VERSION_MAJOR "1.0.7")
++  endif()
++
++  if(PACKAGE_FIND_VERSION_RANGE)
++    # both endpoints of the range must have the expected major version
++    math (EXPR CVF_VERSION_MAJOR_NEXT "${CVF_VERSION_MAJOR} + 1")
++    if (NOT PACKAGE_FIND_VERSION_MIN_MAJOR STREQUAL CVF_VERSION_MAJOR
++        OR ((PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "INCLUDE" AND NOT PACKAGE_FIND_VERSION_MAX_MAJOR STREQUAL CVF_VERSION_MAJOR)
++          OR (PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "EXCLUDE" AND NOT PACKAGE_FIND_VERSION_MAX VERSION_LESS_EQUAL CVF_VERSION_MAJOR_NEXT)))
++      set(PACKAGE_VERSION_COMPATIBLE FALSE)
++    elseif(PACKAGE_FIND_VERSION_MIN_MAJOR STREQUAL CVF_VERSION_MAJOR
++        AND ((PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "INCLUDE" AND PACKAGE_VERSION VERSION_LESS_EQUAL PACKAGE_FIND_VERSION_MAX)
++        OR (PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "EXCLUDE" AND PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION_MAX)))
++      set(PACKAGE_VERSION_COMPATIBLE TRUE)
++    else()
++      set(PACKAGE_VERSION_COMPATIBLE FALSE)
++    endif()
++  else()
++    if(PACKAGE_FIND_VERSION_MAJOR STREQUAL CVF_VERSION_MAJOR)
++      set(PACKAGE_VERSION_COMPATIBLE TRUE)
++    else()
++      set(PACKAGE_VERSION_COMPATIBLE FALSE)
++    endif()
++
++    if(PACKAGE_FIND_VERSION STREQUAL PACKAGE_VERSION)
++      set(PACKAGE_VERSION_EXACT TRUE)
++    endif()
++  endif()
++endif()
++
++
++# if the installed project requested no architecture check, don't perform the check
++if("FALSE")
++  return()
++endif()
++
++# if the installed or the using project don't have CMAKE_SIZEOF_VOID_P set, ignore it:
++if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "" OR "8" STREQUAL "")
++  return()
++endif()
++
++# check that the installed version has the same 32/64bit-ness as the one which is currently searching:
++if(NOT CMAKE_SIZEOF_VOID_P STREQUAL "8")
++  math(EXPR installedBits "8 * 8")
++  set(PACKAGE_VERSION "${PACKAGE_VERSION} (${installedBits}bit)")
++  set(PACKAGE_VERSION_UNSUITABLE TRUE)
++endif()
+diff --git a/fixed-system-libraries/lib64/cmake/hipfft/hipfft-config.cmake b/fixed-system-libraries/lib64/cmake/hipfft/hipfft-config.cmake
+new file mode 100644
+index 0000000..62b2bee
+--- /dev/null
++++ b/fixed-system-libraries/lib64/cmake/hipfft/hipfft-config.cmake
+@@ -0,0 +1,104 @@
++
++
++####################################################################################
++# Auto generated @PACKAGE_INIT@ by rocm_configure_package_config_file()
++# from hipfft-config.cmake.in
++# Any changes to this file will be overwritten by the next CMake run
++####################################################################################
++
++get_filename_component(_ROCM_CMAKE_CURRENT_LIST_FILE_REAL "${CMAKE_CURRENT_LIST_FILE}" REALPATH)
++get_filename_component(_ROCM_CMAKE_CURRENT_LIST_DIR_REAL "${_ROCM_CMAKE_CURRENT_LIST_FILE_REAL}" DIRECTORY)
++get_filename_component(PACKAGE_PREFIX_DIR "${_ROCM_CMAKE_CURRENT_LIST_DIR_REAL}/../../../" ABSOLUTE)
++
++
++
++macro(set_and_check _var _file)
++    set(${_var} "${_file}")
++    if(NOT EXISTS "${_file}")
++        message(FATAL_ERROR "File or directory ${_file} referenced by variable ${_var} does not exist !")
++    endif()
++endmacro()
++
++include(CMakeFindDependencyMacro OPTIONAL RESULT_VARIABLE _ROCMCMakeFindDependencyMacro_FOUND)
++if (NOT _ROCMCMakeFindDependencyMacro_FOUND)
++    macro(find_dependency dep)
++        if (NOT ${dep}_FOUND)
++            set(rocm_fd_version)
++            if (${ARGC} GREATER 1)
++                set(rocm_fd_version ${ARGV1})
++            endif()
++            set(rocm_fd_exact_arg)
++            if(${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION_EXACT)
++                set(rocm_fd_exact_arg EXACT)
++            endif()
++            set(rocm_fd_quiet_arg)
++            if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
++                set(rocm_fd_quiet_arg QUIET)
++            endif()
++            set(rocm_fd_required_arg)
++            if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
++                set(rocm_fd_required_arg REQUIRED)
++            endif()
++            find_package(${dep} ${rocm_fd_version}
++                ${rocm_fd_exact_arg}
++                ${rocm_fd_quiet_arg}
++                ${rocm_fd_required_arg}
++            )
++            string(TOUPPER ${dep} cmake_dep_upper)
++            if (NOT ${dep}_FOUND AND NOT ${cmake_dep_upper}_FOUND)
++                set(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
++                    "${CMAKE_FIND_PACKAGE_NAME} could not be found because dependency ${dep} could not be found.")
++                set(${CMAKE_FIND_PACKAGE_NAME}_FOUND False)
++                return()
++            endif()
++            set(rocm_fd_version)
++            set(rocm_fd_required_arg)
++            set(rocm_fd_quiet_arg)
++            set(rocm_fd_exact_arg)
++        endif()
++    endmacro()
++endif()
++
++macro(check_required_components _NAME)
++    foreach(comp ${${_NAME}_FIND_COMPONENTS})
++        if(NOT ${_NAME}_${comp}_FOUND)
++            if(${_NAME}_FIND_REQUIRED_${comp})
++                set(${_NAME}_FOUND FALSE)
++            endif()
++        endif()
++    endforeach()
++endmacro()
++
++####################################################################################
++
++
++
++set_and_check(hipfft_INCLUDE_DIR /usr/include/hipfft)
++
++set_and_check(hipfft_INCLUDE_DIRS /usr/include/hipfft)
++
++set_and_check(HIPFFT_INCLUDE_DIR /usr/include/hipfft)
++
++set_and_check(HIPFFT_INCLUDE_DIRS /usr/include/hipfft)
++
++set_and_check(hipfft_INCLUDE_DIR /usr/include/hipfft)
++
++set_and_check(hipfft_INCLUDE_DIRS /usr/include/hipfft)
++
++set_and_check(hipfft_TARGET_FILE ${CMAKE_SOURCE_DIR}/fixed-system-libraries/lib64/cmake/hipfft/hipfft-targets.cmake)
++
++find_dependency(hip)
++
++include(${hipfft_TARGET_FILE})
++
++set(hipfft_LIBRARIES hip::hipfft)
++
++set(hipfft_LIBRARY hip::hipfft)
++
++set(HIPFFT_LIBRARIES hip::hipfft)
++
++set(HIPFFT_LIBRARY hip::hipfft)
++
++set(hipfft_LIBRARIES hip::hipfft)
++
++set(hipfft_LIBRARY hip::hipfft)
+diff --git a/fixed-system-libraries/lib64/cmake/hipfft/hipfft-targets-relwithdebinfo.cmake b/fixed-system-libraries/lib64/cmake/hipfft/hipfft-targets-relwithdebinfo.cmake
+new file mode 100644
+index 0000000..c562df1
+--- /dev/null
++++ b/fixed-system-libraries/lib64/cmake/hipfft/hipfft-targets-relwithdebinfo.cmake
+@@ -0,0 +1,20 @@
++#----------------------------------------------------------------
++# Generated CMake target import file for configuration "RelWithDebInfo".
++#----------------------------------------------------------------
++
++# Commands may need to know the format version.
++set(CMAKE_IMPORT_FILE_VERSION 1)
++
++# Import target "hip::hipfft" for configuration "RelWithDebInfo"
++set_property(TARGET hip::hipfft APPEND PROPERTY IMPORTED_CONFIGURATIONS RELWITHDEBINFO)
++set_target_properties(hip::hipfft PROPERTIES
++  IMPORTED_LINK_DEPENDENT_LIBRARIES_RELWITHDEBINFO "roc::rocfft"
++  IMPORTED_LOCATION_RELWITHDEBINFO "${_IMPORT_PREFIX}/lib64/libhipfft.so"
++  IMPORTED_SONAME_RELWITHDEBINFO "libhipfft.so"
++  )
++
++list(APPEND _cmake_import_check_targets hip::hipfft )
++list(APPEND _cmake_import_check_files_for_hip::hipfft "${_IMPORT_PREFIX}/lib64/libhipfft.so" )
++
++# Commands beyond this point should not need to know the version.
++set(CMAKE_IMPORT_FILE_VERSION)
+diff --git a/fixed-system-libraries/lib64/cmake/hipfft/hipfft-targets.cmake b/fixed-system-libraries/lib64/cmake/hipfft/hipfft-targets.cmake
+new file mode 100644
+index 0000000..139e064
+--- /dev/null
++++ b/fixed-system-libraries/lib64/cmake/hipfft/hipfft-targets.cmake
+@@ -0,0 +1,105 @@
++# Generated by CMake
++
++if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 2.8)
++   message(FATAL_ERROR "CMake >= 2.8.0 required")
++endif()
++if(CMAKE_VERSION VERSION_LESS "2.8.3")
++   message(FATAL_ERROR "CMake >= 2.8.3 required")
++endif()
++cmake_policy(PUSH)
++cmake_policy(VERSION 2.8.3...3.22)
++#----------------------------------------------------------------
++# Generated CMake target import file.
++#----------------------------------------------------------------
++
++# Commands may need to know the format version.
++set(CMAKE_IMPORT_FILE_VERSION 1)
++
++# Protect against multiple inclusion, which would fail when already imported targets are added once more.
++set(_cmake_targets_defined "")
++set(_cmake_targets_not_defined "")
++set(_cmake_expected_targets "")
++foreach(_cmake_expected_target IN ITEMS hip::hipfft)
++  list(APPEND _cmake_expected_targets "${_cmake_expected_target}")
++  if(TARGET "${_cmake_expected_target}")
++    list(APPEND _cmake_targets_defined "${_cmake_expected_target}")
++  else()
++    list(APPEND _cmake_targets_not_defined "${_cmake_expected_target}")
++  endif()
++endforeach()
++unset(_cmake_expected_target)
++if(_cmake_targets_defined STREQUAL _cmake_expected_targets)
++  unset(_cmake_targets_defined)
++  unset(_cmake_targets_not_defined)
++  unset(_cmake_expected_targets)
++  unset(CMAKE_IMPORT_FILE_VERSION)
++  cmake_policy(POP)
++  return()
++endif()
++if(NOT _cmake_targets_defined STREQUAL "")
++  string(REPLACE ";" ", " _cmake_targets_defined_text "${_cmake_targets_defined}")
++  string(REPLACE ";" ", " _cmake_targets_not_defined_text "${_cmake_targets_not_defined}")
++  message(FATAL_ERROR "Some (but not all) targets in this export set were already defined.\nTargets Defined: ${_cmake_targets_defined_text}\nTargets not yet defined: ${_cmake_targets_not_defined_text}\n")
++endif()
++unset(_cmake_targets_defined)
++unset(_cmake_targets_not_defined)
++unset(_cmake_expected_targets)
++
++
++# Compute the installation prefix relative to this file.
++get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
++get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
++get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
++get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
++get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
++if(_IMPORT_PREFIX STREQUAL "/")
++  set(_IMPORT_PREFIX "")
++endif()
++
++set(_IMPORT_PREFIX "/usr")
++
++# Create imported target hip::hipfft
++add_library(hip::hipfft SHARED IMPORTED)
++
++set_target_properties(hip::hipfft PROPERTIES
++  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/hipfft;/usr/include;${_IMPORT_PREFIX}/include"
++)
++
++# Load information for each installed configuration.
++file(GLOB _cmake_config_files "${CMAKE_CURRENT_LIST_DIR}/hipfft-targets-*.cmake")
++foreach(_cmake_config_file IN LISTS _cmake_config_files)
++  include("${_cmake_config_file}")
++endforeach()
++unset(_cmake_config_file)
++unset(_cmake_config_files)
++
++# Cleanup temporary variables.
++set(_IMPORT_PREFIX)
++
++# Loop over all imported files and verify that they actually exist
++foreach(_cmake_target IN LISTS _cmake_import_check_targets)
++  foreach(_cmake_file IN LISTS "_cmake_import_check_files_for_${_cmake_target}")
++    if(NOT EXISTS "${_cmake_file}")
++      message(FATAL_ERROR "The imported target \"${_cmake_target}\" references the file
++   \"${_cmake_file}\"
++but this file does not exist.  Possible reasons include:
++* The file was deleted, renamed, or moved to another location.
++* An install or uninstall procedure did not complete successfully.
++* The installation package was faulty and contained
++   \"${CMAKE_CURRENT_LIST_FILE}\"
++but not all the files it references.
++")
++    endif()
++  endforeach()
++  unset(_cmake_file)
++  unset("_cmake_import_check_files_for_${_cmake_target}")
++endforeach()
++unset(_cmake_target)
++unset(_cmake_import_check_targets)
++
++# This file does not depend on other imported targets which have
++# been exported from the same project but in a separate export set.
++
++# Commands beyond this point should not need to know the version.
++set(CMAKE_IMPORT_FILE_VERSION)
++cmake_policy(POP)
+diff --git a/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-config-version.cmake b/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-config-version.cmake
+new file mode 100644
+index 0000000..f3f3714
+--- /dev/null
++++ b/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-config-version.cmake
+@@ -0,0 +1,70 @@
++# This is a basic version file for the Config-mode of find_package().
++# It is used by write_basic_package_version_file() as input file for configure_file()
++# to create a version-file which can be installed along a config.cmake file.
++#
++# The created file sets PACKAGE_VERSION_EXACT if the current version string and
++# the requested version string are exactly the same and it sets
++# PACKAGE_VERSION_COMPATIBLE if the current version is >= requested version,
++# but only if the requested major version is the same as the current one.
++# The variable CVF_VERSION must be set before calling configure_file().
++
++
++set(PACKAGE_VERSION "2.10.9")
++
++if(PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION)
++  set(PACKAGE_VERSION_COMPATIBLE FALSE)
++else()
++
++  if("2.10.9" MATCHES "^([0-9]+)\\.")
++    set(CVF_VERSION_MAJOR "${CMAKE_MATCH_1}")
++    if(NOT CVF_VERSION_MAJOR VERSION_EQUAL 0)
++      string(REGEX REPLACE "^0+" "" CVF_VERSION_MAJOR "${CVF_VERSION_MAJOR}")
++    endif()
++  else()
++    set(CVF_VERSION_MAJOR "2.10.9")
++  endif()
++
++  if(PACKAGE_FIND_VERSION_RANGE)
++    # both endpoints of the range must have the expected major version
++    math (EXPR CVF_VERSION_MAJOR_NEXT "${CVF_VERSION_MAJOR} + 1")
++    if (NOT PACKAGE_FIND_VERSION_MIN_MAJOR STREQUAL CVF_VERSION_MAJOR
++        OR ((PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "INCLUDE" AND NOT PACKAGE_FIND_VERSION_MAX_MAJOR STREQUAL CVF_VERSION_MAJOR)
++          OR (PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "EXCLUDE" AND NOT PACKAGE_FIND_VERSION_MAX VERSION_LESS_EQUAL CVF_VERSION_MAJOR_NEXT)))
++      set(PACKAGE_VERSION_COMPATIBLE FALSE)
++    elseif(PACKAGE_FIND_VERSION_MIN_MAJOR STREQUAL CVF_VERSION_MAJOR
++        AND ((PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "INCLUDE" AND PACKAGE_VERSION VERSION_LESS_EQUAL PACKAGE_FIND_VERSION_MAX)
++        OR (PACKAGE_FIND_VERSION_RANGE_MAX STREQUAL "EXCLUDE" AND PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION_MAX)))
++      set(PACKAGE_VERSION_COMPATIBLE TRUE)
++    else()
++      set(PACKAGE_VERSION_COMPATIBLE FALSE)
++    endif()
++  else()
++    if(PACKAGE_FIND_VERSION_MAJOR STREQUAL CVF_VERSION_MAJOR)
++      set(PACKAGE_VERSION_COMPATIBLE TRUE)
++    else()
++      set(PACKAGE_VERSION_COMPATIBLE FALSE)
++    endif()
++
++    if(PACKAGE_FIND_VERSION STREQUAL PACKAGE_VERSION)
++      set(PACKAGE_VERSION_EXACT TRUE)
++    endif()
++  endif()
++endif()
++
++
++# if the installed project requested no architecture check, don't perform the check
++if("FALSE")
++  return()
++endif()
++
++# if the installed or the using project don't have CMAKE_SIZEOF_VOID_P set, ignore it:
++if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "" OR "8" STREQUAL "")
++  return()
++endif()
++
++# check that the installed version has the same 32/64bit-ness as the one which is currently searching:
++if(NOT CMAKE_SIZEOF_VOID_P STREQUAL "8")
++  math(EXPR installedBits "8 * 8")
++  set(PACKAGE_VERSION "${PACKAGE_VERSION} (${installedBits}bit)")
++  set(PACKAGE_VERSION_UNSUITABLE TRUE)
++endif()
+diff --git a/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-config.cmake b/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-config.cmake
+new file mode 100644
+index 0000000..dd0dc41
+--- /dev/null
++++ b/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-config.cmake
+@@ -0,0 +1,116 @@
++
++
++####################################################################################
++# Auto generated @PACKAGE_INIT@ by rocm_configure_package_config_file()
++# from rocthrust-config.cmake.in
++# Any changes to this file will be overwritten by the next CMake run
++####################################################################################
++
++get_filename_component(_ROCM_CMAKE_CURRENT_LIST_FILE_REAL "${CMAKE_CURRENT_LIST_FILE}" REALPATH)
++get_filename_component(_ROCM_CMAKE_CURRENT_LIST_DIR_REAL "${_ROCM_CMAKE_CURRENT_LIST_FILE_REAL}" DIRECTORY)
++get_filename_component(PACKAGE_PREFIX_DIR "${_ROCM_CMAKE_CURRENT_LIST_DIR_REAL}/../../../" ABSOLUTE)
++
++
++
++macro(set_and_check _var _file)
++    set(${_var} "${_file}")
++    if(NOT EXISTS "${_file}")
++        message(FATAL_ERROR "File or directory ${_file} referenced by variable ${_var} does not exist !")
++    endif()
++endmacro()
++
++include(CMakeFindDependencyMacro OPTIONAL RESULT_VARIABLE _ROCMCMakeFindDependencyMacro_FOUND)
++if (NOT _ROCMCMakeFindDependencyMacro_FOUND)
++    macro(find_dependency dep)
++        if (NOT ${dep}_FOUND)
++            set(rocm_fd_version)
++            if (${ARGC} GREATER 1)
++                set(rocm_fd_version ${ARGV1})
++            endif()
++            set(rocm_fd_exact_arg)
++            if(${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION_EXACT)
++                set(rocm_fd_exact_arg EXACT)
++            endif()
++            set(rocm_fd_quiet_arg)
++            if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
++                set(rocm_fd_quiet_arg QUIET)
++            endif()
++            set(rocm_fd_required_arg)
++            if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
++                set(rocm_fd_required_arg REQUIRED)
++            endif()
++            find_package(${dep} ${rocm_fd_version}
++                ${rocm_fd_exact_arg}
++                ${rocm_fd_quiet_arg}
++                ${rocm_fd_required_arg}
++            )
++            string(TOUPPER ${dep} cmake_dep_upper)
++            if (NOT ${dep}_FOUND AND NOT ${cmake_dep_upper}_FOUND)
++                set(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
++                    "${CMAKE_FIND_PACKAGE_NAME} could not be found because dependency ${dep} could not be found.")
++                set(${CMAKE_FIND_PACKAGE_NAME}_FOUND False)
++                return()
++            endif()
++            set(rocm_fd_version)
++            set(rocm_fd_required_arg)
++            set(rocm_fd_quiet_arg)
++            set(rocm_fd_exact_arg)
++        endif()
++    endmacro()
++endif()
++
++macro(check_required_components _NAME)
++    foreach(comp ${${_NAME}_FIND_COMPONENTS})
++        if(NOT ${_NAME}_${comp}_FOUND)
++            if(${_NAME}_FIND_REQUIRED_${comp})
++                set(${_NAME}_FOUND FALSE)
++            endif()
++        endif()
++    endforeach()
++endmacro()
++
++####################################################################################
++
++
++
++set_and_check(rocthrust_INCLUDE_DIR /usr/include/thrust)
++
++set_and_check(rocthrust_INCLUDE_DIRS /usr/include/thrust)
++
++set_and_check(ROCTHRUST_INCLUDE_DIR /usr/include/thrust)
++
++set_and_check(ROCTHRUST_INCLUDE_DIRS /usr/include/thrust)
++
++set_and_check(rocthrust_INCLUDE_DIR /usr/include/thrust)
++
++set_and_check(rocthrust_INCLUDE_DIRS /usr/include/thrust)
++
++set_and_check(rocthrust_TARGET_FILE ${CMAKE_SOURCE_DIR}/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-targets.cmake)
++
++find_dependency(rocprim)
++
++include(${rocthrust_TARGET_FILE})
++
++if(NOT (DEFINED PYTORCH_FOUND_HIP AND PYTORCH_FOUND_HIP) )
++    set(rocthrust_LIBRARIES roc::rocthrust)
++endif()
++
++if(NOT (DEFINED PYTORCH_FOUND_HIP AND PYTORCH_FOUND_HIP) )
++    set(rocthrust_LIBRARY roc::rocthrust)
++endif()
++
++if(NOT (DEFINED PYTORCH_FOUND_HIP AND PYTORCH_FOUND_HIP) )
++    set(ROCTHRUST_LIBRARIES roc::rocthrust)
++endif()
++
++if(NOT (DEFINED PYTORCH_FOUND_HIP AND PYTORCH_FOUND_HIP) )
++    set(ROCTHRUST_LIBRARY roc::rocthrust)
++endif()
++
++if(NOT (DEFINED PYTORCH_FOUND_HIP AND PYTORCH_FOUND_HIP) )
++    set(rocthrust_LIBRARIES roc::rocthrust)
++endif()
++
++if(NOT (DEFINED PYTORCH_FOUND_HIP AND PYTORCH_FOUND_HIP) )
++    set(rocthrust_LIBRARY roc::rocthrust)
++endif()
+diff --git a/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-targets.cmake b/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-targets.cmake
+new file mode 100644
+index 0000000..365f029
+--- /dev/null
++++ b/fixed-system-libraries/lib64/cmake/rocthrust/rocthrust-targets.cmake
+@@ -0,0 +1,118 @@
++# Generated by CMake
++
++if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 2.8)
++   message(FATAL_ERROR "CMake >= 2.8.0 required")
++endif()
++if(CMAKE_VERSION VERSION_LESS "2.8.3")
++   message(FATAL_ERROR "CMake >= 2.8.3 required")
++endif()
++cmake_policy(PUSH)
++cmake_policy(VERSION 2.8.3...3.22)
++#----------------------------------------------------------------
++# Generated CMake target import file.
++#----------------------------------------------------------------
++
++# Commands may need to know the format version.
++set(CMAKE_IMPORT_FILE_VERSION 1)
++
++# Protect against multiple inclusion, which would fail when already imported targets are added once more.
++set(_cmake_targets_defined "")
++set(_cmake_targets_not_defined "")
++set(_cmake_expected_targets "")
++foreach(_cmake_expected_target IN ITEMS roc::rocthrust)
++  list(APPEND _cmake_expected_targets "${_cmake_expected_target}")
++  if(TARGET "${_cmake_expected_target}")
++    list(APPEND _cmake_targets_defined "${_cmake_expected_target}")
++  else()
++    list(APPEND _cmake_targets_not_defined "${_cmake_expected_target}")
++  endif()
++endforeach()
++unset(_cmake_expected_target)
++if(_cmake_targets_defined STREQUAL _cmake_expected_targets)
++  unset(_cmake_targets_defined)
++  unset(_cmake_targets_not_defined)
++  unset(_cmake_expected_targets)
++  unset(CMAKE_IMPORT_FILE_VERSION)
++  cmake_policy(POP)
++  return()
++endif()
++if(NOT _cmake_targets_defined STREQUAL "")
++  string(REPLACE ";" ", " _cmake_targets_defined_text "${_cmake_targets_defined}")
++  string(REPLACE ";" ", " _cmake_targets_not_defined_text "${_cmake_targets_not_defined}")
++  message(FATAL_ERROR "Some (but not all) targets in this export set were already defined.\nTargets Defined: ${_cmake_targets_defined_text}\nTargets not yet defined: ${_cmake_targets_not_defined_text}\n")
++endif()
++unset(_cmake_targets_defined)
++unset(_cmake_targets_not_defined)
++unset(_cmake_expected_targets)
++
++
++# Compute the installation prefix relative to this file.
++get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
++# Use original install prefix when loaded through a
++# cross-prefix symbolic link such as /lib -> /usr/lib.
++get_filename_component(_realCurr "${_IMPORT_PREFIX}" REALPATH)
++get_filename_component(_realOrig "/usr/lib64/cmake/rocthrust" REALPATH)
++if(_realCurr STREQUAL _realOrig)
++  set(_IMPORT_PREFIX "/usr/lib64/cmake/rocthrust")
++endif()
++unset(_realOrig)
++unset(_realCurr)
++get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
++get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
++get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
++if(_IMPORT_PREFIX STREQUAL "/")
++  set(_IMPORT_PREFIX "")
++endif()
++
++set(_IMPORT_PREFIX "/usr")
++
++# Create imported target roc::rocthrust
++add_library(roc::rocthrust INTERFACE IMPORTED)
++
++set_target_properties(roc::rocthrust PROPERTIES
++  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include/;${_IMPORT_PREFIX}/include"
++  INTERFACE_LINK_LIBRARIES "roc::rocprim_hip"
++)
++
++if(CMAKE_VERSION VERSION_LESS 3.0.0)
++  message(FATAL_ERROR "This file relies on consumers using CMake 3.0.0 or greater.")
++endif()
++
++# Load information for each installed configuration.
++file(GLOB _cmake_config_files "${CMAKE_CURRENT_LIST_DIR}/rocthrust-targets-*.cmake")
++foreach(_cmake_config_file IN LISTS _cmake_config_files)
++  include("${_cmake_config_file}")
++endforeach()
++unset(_cmake_config_file)
++unset(_cmake_config_files)
++
++# Cleanup temporary variables.
++set(_IMPORT_PREFIX)
++
++# Loop over all imported files and verify that they actually exist
++foreach(_cmake_target IN LISTS _cmake_import_check_targets)
++  foreach(_cmake_file IN LISTS "_cmake_import_check_files_for_${_cmake_target}")
++    if(NOT EXISTS "${_cmake_file}")
++      message(FATAL_ERROR "The imported target \"${_cmake_target}\" references the file
++   \"${_cmake_file}\"
++but this file does not exist.  Possible reasons include:
++* The file was deleted, renamed, or moved to another location.
++* An install or uninstall procedure did not complete successfully.
++* The installation package was faulty and contained
++   \"${CMAKE_CURRENT_LIST_FILE}\"
++but not all the files it references.
++")
++    endif()
++  endforeach()
++  unset(_cmake_file)
++  unset("_cmake_import_check_files_for_${_cmake_target}")
++endforeach()
++unset(_cmake_target)
++unset(_cmake_import_check_targets)
++
++# This file does not depend on other imported targets which have
++# been exported from the same project but in a separate export set.
++
++# Commands beyond this point should not need to know the version.
++set(CMAKE_IMPORT_FILE_VERSION)
++cmake_policy(POP)
+diff --git a/torch/csrc/cuda/shared/nvtx.cpp b/torch/csrc/cuda/shared/nvtx.cpp
+index 099d7e9..9eefc25 100644
+--- a/torch/csrc/cuda/shared/nvtx.cpp
++++ b/torch/csrc/cuda/shared/nvtx.cpp
+@@ -1,7 +1,7 @@
+ #ifdef _WIN32
+ #include <wchar.h> // _wgetenv for nvtx
+ #endif
+-#include <roctracer/roctx.h>
++#include <roctx.h>
+ #include <torch/csrc/utils/pybind.h>
+ 
+ namespace torch {
+diff --git a/torch/csrc/jit/codegen/cuda/instrumentation.h b/torch/csrc/jit/codegen/cuda/instrumentation.h
+index 5373d20..54dded9 100644
+--- a/torch/csrc/jit/codegen/cuda/instrumentation.h
++++ b/torch/csrc/jit/codegen/cuda/instrumentation.h
+@@ -2,7 +2,7 @@
+ 
+ #include <torch/csrc/jit/codegen/cuda/utils.h>
+ 
+-#include <roctracer/roctx.h>
++#include <roctx.h>
+ 
+ // NOLINTNEXTLINE(modernize-deprecated-headers)
+ #include <stdio.h>
+diff --git a/torch/csrc/profiler/cuda.cpp b/torch/csrc/profiler/cuda.cpp
+index b3e79cd..55bcd64 100644
+--- a/torch/csrc/profiler/cuda.cpp
++++ b/torch/csrc/profiler/cuda.cpp
+@@ -1,6 +1,6 @@
+ #include <ATen/hip/impl/HIPGuardImplMasqueradingAsCUDA.h>
+ #include <c10/util/irange.h>
+-#include <roctracer/roctx.h>
++#include <roctx.h>
+ #include <torch/csrc/autograd/profiler.h>
+ 
+ #include <sstream>
+diff --git a/version.txt b/version.txt
+index cc67b88..feaae22 100644
+--- a/version.txt
++++ b/version.txt
+@@ -1 +1 @@
+-1.13.0a0
++1.13.0

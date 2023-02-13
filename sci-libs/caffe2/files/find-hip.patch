@@ -1,0 +1,24 @@
+Index: pytorch-1.12.0/cmake/public/LoadHIP.cmake
+===================================================================
+--- pytorch-1.12.0.orig/cmake/public/LoadHIP.cmake
++++ pytorch-1.12.0/cmake/public/LoadHIP.cmake
+@@ -148,7 +148,7 @@ macro(find_package_and_print_version PAC
+ endmacro()
+ 
+ # Find the HIP Package
+-find_package_and_print_version(HIP 1.0)
++find_package_and_print_version(HIP MODULE)
+ 
+ if(HIP_FOUND)
+   set(PYTORCH_FOUND_HIP TRUE)
+@@ -187,10 +187,6 @@ if(HIP_FOUND)
+     set(ROCM_VERSION_DEV_RAW ${rocm_version_from_header})
+     message("\n***** ROCm version from rocm_version.h ****\n")
+ 
+-  # ROCM < 4.5, we don't have the header api file, use flat file
+-  else()
+-    file(READ "${ROCM_PATH}/.info/version-dev" ROCM_VERSION_DEV_RAW)
+-    message("\n***** ROCm version from ${ROCM_PATH}/.info/version-dev ****\n")
+   endif()
+ 
+   string(REGEX MATCH "^([0-9]+)\.([0-9]+)\.([0-9]+).*$" ROCM_VERSION_DEV_MATCH ${ROCM_VERSION_DEV_RAW})
