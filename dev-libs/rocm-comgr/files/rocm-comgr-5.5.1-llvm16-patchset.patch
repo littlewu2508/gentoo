@@ -1,0 +1,192 @@
+These patches are necessary for using llvm16. They does not enter in
+ROCm official 5.5.1 release but are in amd-stg-open developing branch
+=============================================
+From ceadc06648a293f92432fe16fb6c009b82f20768 Mon Sep 17 00:00:00 2001
+From: Jacob Lambert <jacob.lambert@amd.com>
+Date: Wed, 1 Mar 2023 11:56:27 -0800
+Subject: [PATCH] Fix warnings
+
+  - switched deprecated makeArrayRef to ArrayRef
+  - switched deprecated countTrailingZeros to countr_zero
+
+Change-Id: Ic66ef2a4e4dd7a9b4e1e720adb45a4b8c3b190c3
+---
+ src/comgr-compiler.cpp | 2 +-
+ src/comgr-elfdump.cpp  | 2 +-
+ src/comgr-objdump.cpp  | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/comgr-compiler.cpp b/src/comgr-compiler.cpp
+index 9b57c1c..fc8d887 100644
+--- a/src/comgr-compiler.cpp
++++ b/src/comgr-compiler.cpp
+@@ -615,7 +615,7 @@ static amd_comgr_status_t linkWithLLD(llvm::ArrayRef<const char *> Args,
+   LLDArgs.insert(LLDArgs.begin(), "lld");
+   LLDArgs.push_back("--threads=1");
+ 
+-  ArrayRef<const char *> ArgRefs = llvm::makeArrayRef(LLDArgs);
++  ArrayRef<const char *> ArgRefs = llvm::ArrayRef(LLDArgs);
+   bool LLDRet = lld::elf::link(ArgRefs, LogS, LogE, false, false);
+   lld::CommonLinkerContext::destroy();
+   if (!LLDRet) {
+diff --git a/src/comgr-elfdump.cpp b/src/comgr-elfdump.cpp
+index 32dbd98..248952a 100644
+--- a/src/comgr-elfdump.cpp
++++ b/src/comgr-elfdump.cpp
+@@ -102,7 +102,7 @@ void printProgramHeaders(const ELFFile<ELFT> &ELF, raw_ostream &OS) {
+     OS << "off    " << format(Fmt, (uint64_t)Phdr.p_offset) << "vaddr "
+        << format(Fmt, (uint64_t)Phdr.p_vaddr) << "paddr "
+        << format(Fmt, (uint64_t)Phdr.p_paddr)
+-       << format("align 2**%u\n", countTrailingZeros<uint64_t>(Phdr.p_align))
++       << format("align 2**%u\n", countr_zero<uint64_t>(Phdr.p_align))
+        << "         filesz " << format(Fmt, (uint64_t)Phdr.p_filesz) << "memsz "
+        << format(Fmt, (uint64_t)Phdr.p_memsz) << "flags "
+        << ((Phdr.p_flags & ELF::PF_R) ? "r" : "-")
+diff --git a/src/comgr-objdump.cpp b/src/comgr-objdump.cpp
+index 8aa9389..ff3f996 100644
+--- a/src/comgr-objdump.cpp
++++ b/src/comgr-objdump.cpp
+@@ -671,7 +671,7 @@ public:
+     OS << left_justify(IS.str(), 60)
+        << format("// %012" PRIX64 ": ", Address.Address);
+     typedef support::ulittle32_t U32;
+-    for (auto D : makeArrayRef(reinterpret_cast<const U32 *>(Bytes.data()),
++    for (auto D : ArrayRef(reinterpret_cast<const U32 *>(Bytes.data()),
+                                Bytes.size() / sizeof(U32))) {
+       // D should be explicitly casted to uint32_t here as it is passed
+       // by format to snprintf as vararg.
+-- 
+2.41.0
+
+From 271fddf65f43675e675f0cb4e9aaa3d27d34c58a Mon Sep 17 00:00:00 2001
+From: Ron Lieberman <ron.lieberman@amd.com>
+Date: Thu, 29 Dec 2022 05:17:41 -0600
+Subject: [PATCH] [llvm merge] add include of lld/Common/CommonLinkerContext.h
+
+Change-Id: I5767b4c1e683e9df9146804ba23ef3c0c0b6c07a
+---
+ src/comgr-compiler.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/comgr-compiler.cpp b/src/comgr-compiler.cpp
+index 2a7362a..bb1c9d3 100644
+--- a/src/comgr-compiler.cpp
++++ b/src/comgr-compiler.cpp
+@@ -39,6 +39,7 @@
+ #include "comgr-compiler.h"
+ #include "comgr-device-libs.h"
+ #include "comgr-env.h"
++#include "lld/Common/CommonLinkerContext.h"
+ #include "lld/Common/Driver.h"
+ #include "clang/Basic/Version.h"
+ #include "clang/CodeGen/CodeGenAction.h"
+-- 
+2.41.0
+
+From 48c682d577a7955256d0bfac5d497b3feebff11c Mon Sep 17 00:00:00 2001
+From: Ron Lieberman <ron.lieberman@amd.com>
+Date: Mon, 16 Jan 2023 14:29:05 -0600
+Subject: [PATCH] [llvm merge] Move to Expected on SubtargetFeatures
+
+Change-Id: I060ceaa2b51eaa6ed1b472ea42c6788b98001088
+---
+ src/comgr-objdump.cpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/comgr-objdump.cpp b/src/comgr-objdump.cpp
+index 86a5d7f..6d20a3c 100644
+--- a/src/comgr-objdump.cpp
++++ b/src/comgr-objdump.cpp
+@@ -1270,7 +1270,10 @@ void llvm::DisassemHelper::DisassembleObject(const ObjectFile *Obj,
+   const Target *TheTarget = getTarget(Obj);
+ 
+   // Package up features to be passed to target/subtarget
+-  SubtargetFeatures Features = Obj->getFeatures();
++  Expected<SubtargetFeatures> FeaturesValue = Obj->getFeatures();
++  if (!FeaturesValue)
++    WithColor::error(errs(), ToolName) << FeaturesValue.takeError();
++  SubtargetFeatures Features = *FeaturesValue;
+   std::vector<std::string> MAttrs = lld::getMAttrs();
+   if (MAttrs.size()) {
+     for (unsigned I = 0; I != MAttrs.size(); ++I) {
+-- 
+2.41.0
+
+From b582dfb33fdb51065c22800fe02dd83207185664 Mon Sep 17 00:00:00 2001
+From: Ron Lieberman <ron.lieberman@amd.com>
+Date: Sun, 1 Jan 2023 10:35:49 -0600
+Subject: [PATCH] [llvm] move to inverted OPT_mrelax_relocations_no
+
+Change-Id: I95e48e8acf5b9124d25e5e7b86c418f1a0d9389d
+---
+ src/comgr-compiler.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/comgr-compiler.cpp b/src/comgr-compiler.cpp
+index bb1c9d3..95c1bb4 100644
+--- a/src/comgr-compiler.cpp
++++ b/src/comgr-compiler.cpp
+@@ -259,7 +259,7 @@ bool AssemblerInvocation::createFromArgs(AssemblerInvocation &Opts,
+     }
+   }
+ 
+-  Opts.RelaxELFRelocations = Args.hasArg(OPT_mrelax_relocations);
++  Opts.RelaxELFRelocations = !Args.hasArg(OPT_mrelax_relocations_no);
+   Opts.DwarfVersion = getLastArgIntValue(Args, OPT_dwarf_version_EQ, 2, Diags);
+   Opts.DwarfDebugFlags =
+       std::string(Args.getLastArgValue(OPT_dwarf_debug_flags));
+-- 
+2.41.0
+
+From e1da67c6acb2b0e4a8f9c05c89e3778252ea5aa7 Mon Sep 17 00:00:00 2001
+From: Ron Lieberman <ron.lieberman@amd.com>
+Date: Sat, 17 Dec 2022 19:58:26 -0600
+Subject: [PATCH] None -> std::nullopt
+
+Change-Id: I1cc241aa47de538f9f5b1c12cb5655aca8a4502f
+---
+ lib/comgr/src/comgr-env.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/comgr/src/comgr-env.cpp b/lib/comgr/src/comgr-env.cpp
+index 742f4d4..6ab6f0f 100644
+--- a/src/comgr-env.cpp
++++ b/src/comgr-env.cpp
+@@ -53,7 +53,7 @@ bool shouldSaveTemps() {
+ Optional<StringRef> getRedirectLogs() {
+   static char *RedirectLogs = getenv("AMD_COMGR_REDIRECT_LOGS");
+   if (!RedirectLogs || StringRef(RedirectLogs) == "0") {
+-    return None;
++    return std::nullopt;
+   }
+   return StringRef(RedirectLogs);
+ }
+-- 
+2.41.0
+
+From 5963c2969184364ec69f0ff73849f44e6ea2901c Mon Sep 17 00:00:00 2001
+From: Jacob Lambert <jacob.lambert@amd.com>
+Date: Mon, 16 Jan 2023 10:08:55 -0800
+Subject: [PATCH] Replacing deprecated llvm::None with std::nullopt
+
+Change-Id: Ice1e1529977dc3d170492fce36ad03ae463181b8
+---
+ src/comgr-compiler.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/comgr-compiler.cpp b/src/comgr-compiler.cpp
+index 95c1bb4..35df4fb 100644
+--- a/src/comgr-compiler.cpp
++++ b/src/comgr-compiler.cpp
+@@ -846,7 +846,7 @@ amd_comgr_status_t AMDGPUCompiler::executeOutOfProcessHIPCompilation(
+   llvm::ArrayRef<std::optional<StringRef>> Redirects;
+   std::string ErrMsg;
+   int RC = sys::ExecuteAndWait(Exec, ArgsV,
+-                               /*env=*/None, Redirects, /*secondsToWait=*/0,
++                               /*env=*/std::nullopt, Redirects, /*secondsToWait=*/0,
+                                /*memoryLimit=*/0, &ErrMsg);
+   LogS << ErrMsg;
+   return RC ? AMD_COMGR_STATUS_ERROR : AMD_COMGR_STATUS_SUCCESS;
+-- 
+2.41.0
+
