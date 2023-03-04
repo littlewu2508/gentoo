@@ -1,0 +1,24 @@
+Rename hit test targets to avoid collision
+===================================================================
+--- HIP.orig/tests/Tests.cmake
++++ HIP/tests/Tests.cmake
+@@ -35,8 +35,8 @@ hit_add_directory_recursive(${HIP_CTEST_
+ include_directories(${CMAKE_CURRENT_LIST_DIR}/performance)
+ hit_add_directory_recursive(${HIP_CTEST_CONFIG_PERFORMANCE} ${CMAKE_CURRENT_LIST_DIR}/performance "performance_tests")
+ 
+-# Add top-level tests to build_tests
+-add_custom_target(build_tests DEPENDS directed_tests unit_tests)
++# Add top-level tests to build_hit_tests
++add_custom_target(build_hit_tests DEPENDS directed_tests unit_tests)
+ 
+ # Add top-level tests to build performance_tests.
+ # To build performance tests, just run "make build_perf"
+@@ -47,6 +47,6 @@ add_custom_target(build_perf DEPENDS per
+ add_custom_target(perf COMMAND "${CMAKE_CTEST_COMMAND}" -C "${HIP_CTEST_CONFIG_PERFORMANCE}" -R "performance_tests/" --verbose)
+ 
+ # Add custom target: check
+-add_custom_target(check COMMAND "${CMAKE_COMMAND}" --build . --target test DEPENDS build_tests)
++add_custom_target(check COMMAND "${CMAKE_COMMAND}" --build . --target test DEPENDS build_hit_tests)
+ 
+ # vim: ts=4:sw=4:expandtab:smartindent
+\ No newline at end of file
