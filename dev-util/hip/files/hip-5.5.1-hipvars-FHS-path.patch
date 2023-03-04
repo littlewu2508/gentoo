@@ -1,0 +1,16 @@
+llvm/clang and cuda path need to be corrected according to Gentoo locations,
+and llvm/clang path should be determined by ebuild
+===================================================================
+Index: HIP/bin/hipvars.pm
+===================================================================
+--- HIP.orig/bin/hipvars.pm
++++ HIP/bin/hipvars.pm
+@@ -87,7 +87,7 @@ $CUDA_PATH=$ENV{'CUDA_PATH'} // '/usr/lo
+ if ($isWindows) {
+     $HIP_CLANG_PATH=$ENV{'HIP_CLANG_PATH'} // "$HIP_PATH/bin";
+ } else {
+-    $HIP_CLANG_PATH=$ENV{'HIP_CLANG_PATH'} // "$ROCM_PATH/llvm/bin";
++    $HIP_CLANG_PATH=$ENV{'HIP_CLANG_PATH'} // "@CLANG_PATH@";
+ }
+ # HIP_ROCCLR_HOME is used by Windows builds
+ $HIP_ROCCLR_HOME=$ENV{'HIP_ROCCLR_HOME'};
