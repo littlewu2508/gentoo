@@ -78,6 +78,8 @@ src_prepare() {
 	eapply "${FILESDIR}/${PN}-5.1.3-rocm-path.patch"
 	eapply "${FILESDIR}/${PN}-5.1.3-fno-stack-protector.patch"
 	eapply "${FILESDIR}/${PN}-5.3.3-correct-ldflag.patch"
+	eapply "${FILESDIR}/${PN}-5.4.3-hipcc-hip-version.patch"
+	eapply "${FILESDIR}/${PN}-5.4.3-hipvars-FHS-path.patch"
 	eapply "${FILESDIR}/0001-SWDEV-344620-hipcc-fails-to-parse-version-of-clang-i.patch"
 	eapply "${FILESDIR}/0002-SWDEV-355608-Remove-clang-include-path-2996.patch"
 	eapply "${FILESDIR}/0003-SWDEV-352878-Removed-relative-path-based-CLANG-inclu.patch"
@@ -98,11 +100,7 @@ src_prepare() {
 	hprefixify $(grep -rl --exclude-dir=build/ --exclude="hip-config.cmake.in" "/usr" "${S}")
 	hprefixify $(grep -rl --exclude-dir=build/ --exclude="hipcc.pl" "/usr" "${HIP_S}")
 
-	cp "$(prefixify_ro "${FILESDIR}"/hipvars-5.3.3.pm)" bin/hipvars.pm || die "failed to replace hipvars.pm"
-	sed -e "s,@HIP_BASE_VERSION_MAJOR@,$(ver_cut 1)," -e "s,@HIP_BASE_VERSION_MINOR@,$(ver_cut 2)," \
-		-e "s,@HIP_VERSION_PATCH@,$(ver_cut 3)," \
-		-e "s,@CLANG_PATH@,${LLVM_PREFIX}/bin," -i bin/hipvars.pm || die
-	popd || die
+	sed	-e "s,@CLANG_PATH@,${LLVM_PREFIX}/bin," -i bin/hipvars.pm || die
 
 	pushd ${CLR_S} || die
 	eapply "${FILESDIR}/rocclr-${PV}-fix-include.patch"
