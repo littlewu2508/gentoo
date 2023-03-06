@@ -1,0 +1,54 @@
+Link chain: MIOpenDriver/test binaries -> libMIOpen -> libamd_comgr ->
+llvm/clang/lld libraries.
+Have to manually add llvm/clang/lld libraries when linking MIOpenDriver/test,
+or linker will omit undefined reference error.
+Index: MIOpen-rocm-5.4.3/driver/CMakeLists.txt
+===================================================================
+--- MIOpen-rocm-5.4.3.orig/driver/CMakeLists.txt
++++ MIOpen-rocm-5.4.3/driver/CMakeLists.txt
+@@ -30,6 +30,7 @@ find_package(Threads REQUIRED)
+ add_executable(MIOpenDriver main.cpp InputFlags.cpp)
+ target_link_libraries(MIOpenDriver MIOpen)
+ target_link_libraries(MIOpenDriver ${CMAKE_THREAD_LIBS_INIT})
++target_link_libraries(MIOpenDriver LLVM clang-cpp lldELF lldCommon)
+ if(NOT MIOPEN_EMBED_DB STREQUAL "")
+ target_link_libraries(MIOpenDriver $<BUILD_INTERFACE:miopen_data> )
+ endif()
+Index: MIOpen-rocm-5.4.3/CMakeLists.txt
+===================================================================
+--- MIOpen-rocm-5.4.3.orig/CMakeLists.txt
++++ MIOpen-rocm-5.4.3/CMakeLists.txt
+@@ -60,6 +60,9 @@ include(ROCMCreatePackage)
+ include(CheckCXXCompilerFlag)
+ include(ROCMHeaderWrapper)
+ 
++find_package(LLVM REQUIRED VERSION @LLVM_VERSION@ CONFIG)
++find_package(Clang REQUIRED VERSION @LLVM_VERSION@ CONFIG)
++find_package(LLD REQUIRED VERSION @LLVM_VERSION@ CONFIG)
+ 
+ set(MIOPEN_ENABLE_SQLITE On CACHE BOOL "")
+ # Use SQLITE for compiled kernels, when turned off this will use raw files
+Index: MIOpen-rocm-5.4.3/test/CMakeLists.txt
+===================================================================
+--- MIOpen-rocm-5.4.3.orig/test/CMakeLists.txt
++++ MIOpen-rocm-5.4.3/test/CMakeLists.txt
+@@ -304,6 +304,7 @@ function(add_test_executable TEST_NAME)
+     add_executable (${TEST_NAME} ${ARGN})
+     clang_tidy_check(${TEST_NAME})
+     target_link_libraries(${TEST_NAME} ${CMAKE_THREAD_LIBS_INIT})
++	target_link_libraries(${TEST_NAME} LLVM clang-cpp lldELF lldCommon)
+     # Cmake does not add flags correctly for gcc
+     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+         set_target_properties(${TEST_NAME} PROPERTIES COMPILE_FLAGS -pthread LINK_FLAGS -pthread)
+Index: MIOpen-rocm-5.4.3/speedtests/CMakeLists.txt
+===================================================================
+--- MIOpen-rocm-5.4.3.orig/speedtests/CMakeLists.txt
++++ MIOpen-rocm-5.4.3/speedtests/CMakeLists.txt
+@@ -16,6 +16,7 @@ function(add_speedtest_executable TEST_N
+     endif()
+     separate_arguments(MIOPEN_TEST_FLAGS_ARGS UNIX_COMMAND ${MIOPEN_TEST_FLAGS})
+     target_link_libraries(${TEST_NAME} MIOpen)
++	target_link_libraries(${TEST_NAME} LLVM clang-cpp lldELF lldCommon)
+     target_include_directories(${TEST_NAME} PRIVATE ../test)
+ endfunction(add_speedtest_executable)
+ 
