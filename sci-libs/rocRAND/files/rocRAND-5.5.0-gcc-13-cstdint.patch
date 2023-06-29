@@ -1,0 +1,60 @@
+diff --git a/tools/scrambled_sobol32_constants_generator.cpp b/tools/scrambled_sobol32_constants_generator.cpp
+index 379cb26..37f8618 100644
+--- a/tools/scrambled_sobol32_constants_generator.cpp
++++ b/tools/scrambled_sobol32_constants_generator.cpp
+@@ -23,6 +23,7 @@
+ #include <iostream>
+ #include <random>
+ #include <string>
++#include <cstdint>
+ 
+ using namespace std;
+ 
+diff --git a/tools/scrambled_sobol32_direction_vector_generator.cpp b/tools/scrambled_sobol32_direction_vector_generator.cpp
+index 5623704..a5a981b 100644
+--- a/tools/scrambled_sobol32_direction_vector_generator.cpp
++++ b/tools/scrambled_sobol32_direction_vector_generator.cpp
+@@ -23,6 +23,7 @@
+ #include <iomanip>
+ #include <iostream>
+ #include <string>
++#include <cstdint>
+ 
+ using namespace std;
+ 
+diff --git a/tools/scrambled_sobol64_direction_vector_generator.cpp b/tools/scrambled_sobol64_direction_vector_generator.cpp
+index 0aecd3e..bd6eba0 100644
+--- a/tools/scrambled_sobol64_direction_vector_generator.cpp
++++ b/tools/scrambled_sobol64_direction_vector_generator.cpp
+@@ -23,6 +23,7 @@
+ #include <iomanip>
+ #include <iostream>
+ #include <string>
++#include <cstdint>
+ 
+ using namespace std;
+ 
+diff --git a/tools/sobol32_direction_vector_generator.cpp b/tools/sobol32_direction_vector_generator.cpp
+index 16c4354..334d145 100644
+--- a/tools/sobol32_direction_vector_generator.cpp
++++ b/tools/sobol32_direction_vector_generator.cpp
+@@ -22,6 +22,7 @@
+ #include <fstream>
+ #include <string>
+ #include <iomanip>
++#include <cstdint>
+ 
+ using namespace std;
+ 
+diff --git a/tools/sobol64_direction_vector_generator.cpp b/tools/sobol64_direction_vector_generator.cpp
+index e520903..41cc90e 100644
+--- a/tools/sobol64_direction_vector_generator.cpp
++++ b/tools/sobol64_direction_vector_generator.cpp
+@@ -22,6 +22,7 @@
+ #include <fstream>
+ #include <string>
+ #include <iomanip>
++#include <cstdint>
+ 
+ using namespace std;
+ 

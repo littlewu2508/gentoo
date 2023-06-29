@@ -1,0 +1,15 @@
+diff --git a/library/CMakeLists.txt b/library/CMakeLists.txt
+index e797694..99731aa 100644
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -130,7 +130,9 @@ if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
+   rocm_wrap_header_file(
+     hipfft-version.h hipfft-export.h
+     GUARDS SYMLINK WRAPPER
+-    WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR} hipfft/${CMAKE_INSTALL_INCLUDEDIR}
++    WRAPPER_LOCATIONS include hipFFT/include
++    OUTPUT_LOCATIONS library/include library/hipFFT/include
++    HEADER_LOCATION include/hipFFT
+     ORIGINAL_FILES ${PROJECT_BINARY_DIR}/include/hipfft/hipfft-version.h
+   )
+ endif( )

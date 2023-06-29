@@ -1,0 +1,15 @@
+diff --git a/library/CMakeLists.txt b/library/CMakeLists.txt
+index 7d3b2f8f..28c4feae 100644
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -107,7 +107,9 @@ if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
+   rocm_wrap_header_file(
+     rocsparse-version.h rocsparse-export.h
+     GUARDS SYMLINK WRAPPER
+-    WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR} rocsparse/${CMAKE_INSTALL_INCLUDEDIR}
++    WRAPPER_LOCATIONS include rocsparse/include
++    OUTPUT_LOCATIONS library/include library/rocsparse/include
++    HEADER_LOCATION include/rocsparse
+   )
+ endif( )
+ 
