@@ -108,6 +108,7 @@ src_prepare() {
 	eapply "${FILESDIR}/${PN}-5.1.3-fno-stack-protector.patch"
 	eapply "${FILESDIR}/${PN}-5.5.1-hipcc-hip-version.patch"
 	eapply "${FILESDIR}/${PN}-5.5.1-hipvars-FHS-path.patch"
+	eapply "${FILESDIR}/${PN}-5.4.3-fix-test-build.patch"
 	eapply "${FILESDIR}/${PN}-5.4.3-fix-HIP_CLANG_PATH-detection.patch"
 
 	# Removing incompatible tests
@@ -174,7 +175,7 @@ src_compile() {
 	cmake_src_compile
 	# Compile test binaries; when linking, `-lamdhip64` is used, thus need
 	# LIBRARY_PATH pointing to libamdhip64.so located at ${BUILD_DIR}/lib
-	use test && LIBRARY_PATH="${BUILD_DIR}/lib:$(get_llvm_prefix "${LLVM_MAX_SLOT}")/$(get_libdir)" cmake_src_compile build_tests
+	use test && LIBRARY_PATH="${BUILD_DIR}/lib" cmake_src_compile build_tests
 }
 
 # Copied from rocm.eclass. This ebuild does not need amdgpu_targets
