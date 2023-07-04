@@ -15,28 +15,25 @@ HOMEPAGE="https://github.com/ROCm-Developer-Tools/hipamd"
 
 if [[ ${PV} == *9999 ]] ; then
 	inherit git-r3
-	EGIT_REPO_URI="https://github.com/ROCm-Developer-Tools/hipamd"
+	EGIT_REPO_URI="https://github.com/ROCm-Developer-Tools/clr"
 	EGIT_HIP_REPO_URI="https://github.com/ROCm-Developer-Tools/HIP"
-	EGIT_OCL_REPO_URI="https://github.com/RadeonOpenCompute/ROCm-OpenCL-Runtime"
-	EGIT_CLR_REPO_URI="https://github.com/ROCm-Developer-Tools/ROCclr"
 	EGIT_HIPCC_REPO_URI="https://github.com/ROCm-Developer-Tools/hipcc"
 	EGIT_HIPTEST_REPO_URI="https://github.com/ROCm-Developer-Tools/hiptest"
 	EGIT_BRANCH="develop"
-	S="${WORKDIR}/${P}"
+	S="${WORKDIR}/${P}/hipamd"
 else
 	KEYWORDS="~amd64"
-	SRC_URI="https://github.com/ROCm-Developer-Tools/hipamd/archive/rocm-${PV}.tar.gz -> rocm-hipamd-${PV}.tar.gz
+	SRC_URI="https://github.com/ROCm-Developer-Tools/clr/archive/rocm-${PV}.tar.gz -> rocm-clr-${PV}.tar.gz
 		https://github.com/ROCm-Developer-Tools/HIP/archive/rocm-${PV}.tar.gz -> rocm-hip-${PV}.tar.gz
-		https://github.com/ROCm-Developer-Tools/ROCclr/archive/rocm-${PV}.tar.gz -> rocclr-${PV}.tar.gz
-		https://github.com/RadeonOpenCompute/ROCm-OpenCL-Runtime/archive/rocm-${PV}.tar.gz -> rocm-opencl-runtime-${PV}.tar.gz
 		https://github.com/ROCm-Developer-Tools/HIPCC/archive/refs/tags/rocm-${PV}.tar.gz -> rocm-hipcc-${PV}.tar.gz
 		https://github.com/ROCm-Developer-Tools/hip-tests/archive/refs/tags/rocm-${PV}.tar.gz -> rocm-hip-tests-${PV}.tar.gz"
-	S="${WORKDIR}/hipamd-rocm-${PV}"
+	S="${WORKDIR}/clr-rocm-${PV}/hipamd"
 fi
 
+CMAKE_USE_DIR="${WORKDIR}"/clr-rocm-${PV}
 HIP_S="${WORKDIR}"/HIP-rocm-${PV}
-OCL_S="${WORKDIR}"/ROCm-OpenCL-Runtime-rocm-${PV}
-CLR_S="${WORKDIR}"/ROCclr-rocm-${PV}
+OCL_S="${WORKDIR}"/clr-rocm-${PV}/opencl
+CLR_S="${WORKDIR}"/clr-rocm-${PV}/rocclr
 HIPCC_S="${WORKDIR}"/HIPCC-rocm-${PV}
 HIPTEST_S="${WORKDIR}"/hip-tests-rocm-${PV}
 
@@ -60,10 +57,11 @@ RDEPEND="${DEPEND}
 PATCHES=(
 	"${FILESDIR}/${PN}-5.0.1-hip_vector_types.patch"
 	"${FILESDIR}/${PN}-5.0.2-set-build-id.patch"
-	"${FILESDIR}/${PN}-5.3.3-remove-cmake-doxygen-commands.patch"
+	"${FILESDIR}/${PN}-5.6.0-remove-cmake-doxygen-commands.patch"
 	"${FILESDIR}/${PN}-5.5.1-disable-Werror.patch"
 	"${FILESDIR}/${PN}-5.4.3-make-test-switchable.patch"
 	"${FILESDIR}/${PN}-5.6.0-enable-build-catch-test.patch"
+	"${FILESDIR}/${PN}-5.6.0-remove-.hipInfo.patch"
 	"${FILESDIR}/0001-Install-.hipVersion-into-datadir-for-linux.patch"
 )
 
@@ -89,7 +87,6 @@ src_unpack () {
 		default
 	fi
 
-	cp ${HIPCC_S}/bin/* ${HIP_S}/bin || die # move back hipcc scripts
 	cp -a ${HIPTEST_S}/{catch,perftests} ${HIP_S}/tests || die # move back hip tests
 	cp -a ${HIPTEST_S}/samples ${HIP_S} || die # move back hip tests
 }
@@ -112,43 +109,45 @@ src_prepare() {
 	# correct libs and cmake install dir
 	sed -e "/\${HIP_COMMON_DIR}/s:cmake DESTINATION .):cmake/ DESTINATION share/cmake/Modules):" -i CMakeLists.txt || die
 
-	sed -e "/\.hip/d" \
-		-e "/CPACK_RESOURCE_FILE_LICENSE/d" -i packaging/CMakeLists.txt || die
+	sed -e "/CPACK_RESOURCE_FILE_LICENSE/d" -i packaging/CMakeLists.txt || die
 
-	pushd ${HIP_S} || die
-	eapply "${FILESDIR}/${PN}-5.6.0-rocm-path.patch"
-	eapply "${FILESDIR}/${PN}-5.1.3-fno-stack-protector.patch"
-	eapply "${FILESDIR}/${PN}-5.5.1-hipcc-hip-version.patch"
-	eapply "${FILESDIR}/${PN}-5.6.0-hipvars-FHS-path.patch"
+	# change --hip-device-lib-path to "/usr/lib/amdgcn/bitcode", must align with "dev-libs/rocm-device-libs"
+	sed -e "s:\${AMD_DEVICE_LIBS_PREFIX}/lib:${EPREFIX}/usr/lib/amdgcn/bitcode:" \
+		-i hip-config.cmake.in || die
+
+	pushd "${HIP_S}" || die
 	eapply "${FILESDIR}/${PN}-5.4.3-fix-test-build.patch"
 	eapply "${FILESDIR}/${PN}-5.4.3-fix-HIP_CLANG_PATH-detection.patch"
 	eapply "${FILESDIR}/${PN}-5.6.0-rename-hit-test-target.patch"
 	eapply "${FILESDIR}/${PN}-5.6.0-do-not-run-stress-on-build.patch"
 	eapply "${FILESDIR}/${PN}-5.6.0-remove-test-Werror.patch"
-	eapply "${FILESDIR}/${PN}-5.6.0-hipconfog-clang-include-path.patch"
 
 	# Removing incompatible tests
 	eapply "${FILESDIR}/${PN}-5.6.0-remove-incompatible-tests.patch"
 	rm tests/src/deviceLib/hipLaunchKernelFunc.cpp || die
 	rm tests/src/deviceLib/hipMathFunctions.cpp || die
 
+	# Remove problematic test which leaks processes, see
+	# https://github.com/ROCm-Developer-Tools/HIP/issues/2457
+	rm tests/src/ipc/hipMultiProcIpcMem.cpp || die
+
+	einfo "prefixing hipcc and its utils..."
+	hprefixify $(grep -rl --exclude-dir=build/ --exclude="hip-config.cmake.in" "/usr" "${S}")
+	hprefixify $(grep -rl --exclude-dir=build/ "/usr" "${HIP_S}")
+	hprefixify $(grep -rl --exclude-dir=build/ --exclude="hipcc.pl" "/usr" "${HIPCC_S}")
+
+	pushd "${HIPCC_S}" || die
+	eapply "${FILESDIR}/${PN}-5.1.3-fno-stack-protector.patch"
+	eapply "${FILESDIR}/${PN}-5.5.1-hipcc-hip-version.patch"
+	eapply "${FILESDIR}/${PN}-5.6.0-rocm-path.patch"
+	eapply "${FILESDIR}/${PN}-5.6.0-hipconfig-clang-include-path.patch"
+	eapply "${FILESDIR}/${PN}-5.6.0-hipvars-FHS-path.patch"
+
 	sed -e "/HIP.*FLAGS.*isystem.*HIP_INCLUDE_PATH/d" \
 		-e "s:\$ENV{'DEVICE_LIB_PATH'}:'${EPREFIX}/usr/lib/amdgcn/bitcode':" \
 		-e "s:\$ENV{'HIP_LIB_PATH'}:'${EPREFIX}/usr/$(get_libdir)':" -i bin/hipcc.pl || die
 
-	# change --hip-device-lib-path to "/usr/lib/amdgcn/bitcode", must align with "dev-libs/rocm-device-libs"
-	sed -e "s:\${AMD_DEVICE_LIBS_PREFIX}/lib:${EPREFIX}/usr/lib/amdgcn/bitcode:" \
-		-i "${S}/hip-config.cmake.in" || die
-
-	einfo "prefixing hipcc and its utils..."
-	hprefixify $(grep -rl --exclude-dir=build/ --exclude="hip-config.cmake.in" "/usr" "${S}")
-	hprefixify $(grep -rl --exclude-dir=build/ --exclude="hipcc.pl" "/usr" "${HIP_S}")
-
 	sed -e "s,@CLANG_PATH@,${LLVM_PREFIX}/bin," -i bin/hipvars.pm || die
-
-	# Remove problematic test which leaks processes, see
-	# https://github.com/ROCm-Developer-Tools/HIP/issues/2457
-	rm tests/src/ipc/hipMultiProcIpcMem.cpp || die
 }
 
 src_configure() {
@@ -166,14 +165,15 @@ src_configure() {
 		-DCMAKE_INSTALL_PREFIX="${EPREFIX}/usr"
 		-DCMAKE_SKIP_RPATH=ON
 		-DBUILD_HIPIFY_CLANG=OFF
+		-DCLR_BUILD_HIP=ON
+		-DCLR_BUILD_OCL=OFF
 		-DHIP_PLATFORM=amd
 		-DHIP_COMPILER=clang
 		-DROCM_PATH="${EPREFIX}/usr"
 		-DUSE_PROF_API=0
 		-DFILE_REORG_BACKWARD_COMPATIBILITY=OFF
-		-DROCCLR_PATH=${CLR_S}
-		-DHIP_COMMON_DIR=${HIP_S}
-		-DAMD_OPENCL_PATH=${OCL_S}
+		-DHIP_COMMON_DIR="${HIP_S}"
+		-DHIPCC_BIN_DIR="${HIPCC_S}/bin"
 		-DBUILD_TESTS=$(usex test ON OFF)
 	)
 
@@ -190,15 +190,16 @@ src_configure() {
 }
 
 src_compile() {
+	einfo "${BUILD_DIR}"
 	HIP_PATH=${HIP_S} docs_compile
 	cmake_src_compile
 	# Compile test binaries; when linking, `-lamdhip64` is used, thus need
 	# LIBRARY_PATH pointing to libamdhip64.so located at ${BUILD_DIR}/lib
 	if use test; then
-		export LIBRARY_PATH="${BUILD_DIR}/lib" # link to built libhipamd
+		export LIBRARY_PATH="${BUILD_DIR}/hipamd/lib" # link to built libhipamd
 		# treat the headers in build dir as system include dir to suppress
 		# warnings like "anonymous structs are a GNU extension"
-		export CPLUS_INCLUDE_PATH="${BUILD_DIR}/include"
+		export CPLUS_INCLUDE_PATH="${BUILD_DIR}/hipamd/include"
 		cmake_src_compile build_tests build_hit_tests
 	fi
 }
@@ -221,8 +222,9 @@ check-amdgpu() {
 
 src_test() {
 	check-amdgpu
+	# pushd ="${BUILD_DIR}/hipamd" || die
 	# -j1 to avoid multi process on one GPU which causes coillision
-	MAKEOPTS="-j1" LD_LIBRARY_PATH="${BUILD_DIR}/lib" cmake_src_test
+	BUILD_DIR="${BUILD_DIR}/hipamd" MAKEOPTS="-j1" LD_LIBRARY_PATH="${BUILD_DIR}/lib" cmake_src_test
 }
 
 src_install() {
@@ -231,10 +233,9 @@ src_install() {
 
 	rm "${ED}/usr/include/hip/hcc_detail" || die
 
-	# Don't install .hipInfo and .hipVersion to bin/lib
-	# rm "${ED}/usr/bin/.hipVersion" || die
-
 	# Handle hipvars.pm
 	rm "${ED}/usr/bin/hipvars.pm" || die
-	perl_domodule "${HIP_S}"/bin/hipvars.pm
+	perl_domodule "${HIPCC_S}"/bin/hipvars.pm
+
+	rm "${ED}"/usr/bin/*.bat || die # remove window .bat scripts
 }
