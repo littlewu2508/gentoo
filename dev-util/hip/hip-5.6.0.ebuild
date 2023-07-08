@@ -63,6 +63,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.6.0-enable-build-catch-test.patch"
 	"${FILESDIR}/${PN}-5.6.0-remove-.hipInfo.patch"
 	"${FILESDIR}/0001-Install-.hipVersion-into-datadir-for-linux.patch"
+	"${FILESDIR}/${PN}-5.6.0-extend-hip-isa-compatibility.patch"
 )
 
 DOCS_DIR="${HIP_S}"/docs/doxygen-input
@@ -148,6 +149,9 @@ src_prepare() {
 		-e "s:\$ENV{'HIP_LIB_PATH'}:'${EPREFIX}/usr/$(get_libdir)':" -i bin/hipcc.pl || die
 
 	sed -e "s,@CLANG_PATH@,${LLVM_PREFIX}/bin," -i bin/hipvars.pm || die
+
+	pushd "${CLR_S}" || die
+	eapply "${FILESDIR}/rocclr-5.6.0-improve-isa-compatibility.patch"
 }
 
 src_configure() {

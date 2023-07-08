@@ -22,6 +22,7 @@ HOMEPAGE="https://github.com/RadeonOpenCompute/ROCR-Runtime"
 PATCHES=(
 	"${FILESDIR}/${PN}-4.3.0_no-aqlprofiler.patch"
 	"${FILESDIR}/${PN}-5.6.0-correct-license-install-dir.patch"
+	"${FILESDIR}/${PN}-5.6.0-extend-isa-compatibility.patch"
 )
 
 LICENSE="NCSA-AMD"
