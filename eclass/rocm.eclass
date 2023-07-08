@@ -143,7 +143,7 @@ _rocm_set_globals() {
 				gfx803 gfx900 gfx1010 gfx1011 gfx1012 gfx1031
 			)
 			official_amdgpu_targets=(
-				gfx906 gfx908 gfx90a gfx1030
+				gfx906 gfx908 gfx90a:xnack+ gfx90a:xnack- gfx1030
 			)
 			;;
 		5.*|9999)
@@ -152,7 +152,7 @@ _rocm_set_globals() {
 				gfx1031 gfx1100 gfx1101 gfx1102
 			)
 			official_amdgpu_targets=(
-				gfx906 gfx908 gfx90a gfx1030
+				gfx906 gfx908 gfx90a:xnack+ gfx90a:xnack- gfx1030
 			)
 			;;
 		*)
@@ -181,26 +181,31 @@ unset -f _rocm_set_globals
 
 
 # @FUNCTION: get_amdgpu_flags
-# @USAGE: get_amdgpu_flags
+# @USAGE: get_amdgpu_flags [--no-xnack-flag]
 # @DESCRIPTION:
 # Convert specified use flag of amdgpu_targets to compilation flags.
-# Append default target feature to GPU arch. See
+# Append xnack target feature to GPU arch by default. See
 # https://llvm.org/docs/AMDGPUUsage.html#target-features
+# If specified with --no-xnack-flag, do not append xnack feature flag.
 get_amdgpu_flags() {
+	debug-print-function ${FUNCNAME} "$@"
+
 	local amdgpu_target_flags
 	for gpu_target in ${AMDGPU_TARGETS}; do
-	local target_feature=
-		case ${gpu_target} in
-			gfx906|gfx908)
-				target_feature=:xnack-
-				;;
-			gfx90a)
-				target_feature=:xnack+
-				;;
-			*)
-				;;
-		esac
-		amdgpu_target_flags+="${gpu_target}${target_feature};"
+		local target_feature=
+		if [[ "$1" != "--no-xnack-flag" ]]; then
+			case ${gpu_target} in
+				gfx900|gfx906|gfx908)
+					# These GPUs ususally does not enable xnack, so
+					# disabling xnack generates faster GPU kernels.
+					# See https://llvm.org/docs/AMDGPUUsage.html#target-features
+					target_feature=:xnack-
+					;;
+				*)
+					;;
+			esac
+			amdgpu_target_flags+="${gpu_target}${target_feature};"
+		fi
 	done
 	echo "${amdgpu_target_flags}"
 }
