@@ -191,11 +191,11 @@ get_amdgpu_flags() {
 	for gpu_target in ${AMDGPU_TARGETS}; do
 	local target_feature=
 		case ${gpu_target} in
-			gfx906|gfx908)
-				target_feature=:xnack-
-				;;
-			gfx90a)
-				target_feature=:xnack+
+			gfx906|gfx908|gfx90a)
+				# These GPUs ususally does not enable xnack, so
+				# disabling xnack generates faster GPU kernels.
+				# See https://llvm.org/docs/AMDGPUUsage.html#target-features
+				target_feature=:xnack- 
 				;;
 			*)
 				;;
