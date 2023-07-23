@@ -202,6 +202,7 @@ python_install() {
 	# Install sbin scripts to bindir for python-exec linking
 	# they will be relocated in pkg_preinst()
 	distutils-r1_python_install \
+		--prefix="${EPREFIX}/usr" \
 		--system-prefix="${EPREFIX}/usr" \
 		--bindir="$(python_get_scriptdir)" \
 		--docdir="${EPREFIX}/usr/share/doc/${PF}" \
