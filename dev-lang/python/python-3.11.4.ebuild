@@ -232,6 +232,8 @@ src_configure() {
 	local -x OPT=
 
 	if tc-is-cross-compiler ; then
+		export ac_cv_file__dev_ptc=no
+		export ac_cv_file__dev_ptmx=yes
 		# Hack to workaround get_libdir not being able to handle CBUILD, bug #794181
 		local cbuild_libdir=$(unset PKG_CONFIG_PATH ; $(tc-getBUILD_PKG_CONFIG) --keep-system-libs --libs-only-L libffi)
 
