@@ -343,13 +343,18 @@ _python_export() {
 				debug-print "${FUNCNAME}: PYTHON = ${PYTHON}"
 				;;
 			PYTHON_SITEDIR)
-				[[ -n ${PYTHON} ]] || die "PYTHON needs to be set for ${var} to be exported, or requested before it"
-				PYTHON_SITEDIR=$(
-					"${PYTHON}" - <<-EOF || die
-						import sysconfig
-						print(sysconfig.get_path("purelib"))
-					EOF
-				)
+				debug-print "${CHOST} ${CBUILD}"
+				if [[ "${CHOST}" == "${CBUILD}" ]]; then
+					[[ -n ${PYTHON} ]] || die "PYTHON needs to be set for ${var} to be exported, or requested before it"
+					PYTHON_SITEDIR=$(
+						"${PYTHON}" - <<-EOF || die
+							import sysconfig
+							print(sysconfig.get_path("purelib"))
+						EOF
+					)
+				else
+					PYTHON_SITEDIR=${EPREFIX}/usr/lib/${impl}/site-packages
+				fi
 				export PYTHON_SITEDIR
 				debug-print "${FUNCNAME}: PYTHON_SITEDIR = ${PYTHON_SITEDIR}"
 				;;
