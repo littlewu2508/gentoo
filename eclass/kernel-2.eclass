@@ -906,8 +906,8 @@ install_sources() {
 
 preinst_headers() {
 	local ddir=$(kernel_header_destdir)
-	[[ -L ${EPREFIX}${ddir}/linux ]] && { rm "${EPREFIX}"${ddir}/linux || die; }
-	[[ -L ${EPREFIX}${ddir}/asm ]] && { rm "${EPREFIX}"${ddir}/asm || die; }
+	[[ -L ${EROOT}${ddir}/linux ]] && { rm "${EROOT}"${ddir}/linux || die; }
+	[[ -L ${EROOT}${ddir}/asm ]] && { rm "${EROOT}"${ddir}/asm || die; }
 }
 
 # @FUNCTION: postinst_sources
