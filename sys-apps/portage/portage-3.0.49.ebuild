@@ -107,6 +107,8 @@ pkg_pretend() {
 
 python_prepare_all() {
 	distutils-r1_python_prepare_all
+	# echo $(python_get_sitedir) > "${T}"/PYTHON_SITEDIR || die
+	# echo "${PYTHON}" > "${T}"/BPYTHON || die
 
 	if [[ ${PV} != 9999 ]] ; then
 		sed -e "s:^VERSION = \"HEAD\"$:VERSION = \"${PV}\":" -i lib/portage/__init__.py || die
@@ -247,23 +249,26 @@ python_install_all() {
 pkg_preinst() {
 	if ! use build; then
 		python_setup
+		# local sitedir="$(cat "${T}"/PYTHON_SITEDIR)"
+		# local BPYTHON=$(cat "${T}"/BPYTHON)
 		local sitedir=$(python_get_sitedir)
 		[[ -d ${D}${sitedir} ]] || die "${D}${sitedir}: No such directory"
+		einfo "HAHA ${PORTAGE_CONFIGROOT}"
 		env -u DISTDIR \
 			-u PORTAGE_OVERRIDE_EPREFIX \
 			-u PORTAGE_REPOSITORIES \
 			-u PORTDIR \
 			-u PORTDIR_OVERLAY \
 			PYTHONPATH="${D}${sitedir}${PYTHONPATH:+:${PYTHONPATH}}" \
-			"${PYTHON}" -m portage._compat_upgrade.default_locations || die
+			"${EPYTHON}" -m portage._compat_upgrade.default_locations || die
 
 		env -u BINPKG_COMPRESS -u PORTAGE_REPOSITORIES \
 			PYTHONPATH="${D}${sitedir}${PYTHONPATH:+:${PYTHONPATH}}" \
-			"${PYTHON}" -m portage._compat_upgrade.binpkg_compression || die
+			"${EPYTHON}" -m portage._compat_upgrade.binpkg_compression || die
 
 		env -u FEATURES -u PORTAGE_REPOSITORIES \
 			PYTHONPATH="${D}${sitedir}${PYTHONPATH:+:${PYTHONPATH}}" \
-			"${PYTHON}" -m portage._compat_upgrade.binpkg_multi_instance || die
+			"${EPYTHON}" -m portage._compat_upgrade.binpkg_multi_instance || die
 	fi
 
 	# elog dir must exist to avoid logrotate error for bug #415911.
