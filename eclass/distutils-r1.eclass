@@ -1572,6 +1572,11 @@ _distutils-r1_wrap_scripts() {
 			mkdir -p "${D%/}${bindir}" || die
 		done
 
+		# Fixing shebang for cross-build
+		if [[ "${BROOT}" != "/" ]]; then
+			sed -e "/1/s@${BROOT}@${EPREFIX}@" -i ${python_files[@]} || die
+		fi
+
 		for f in "${python_files[@]}"; do
 			local basename=${f##*/}
 
