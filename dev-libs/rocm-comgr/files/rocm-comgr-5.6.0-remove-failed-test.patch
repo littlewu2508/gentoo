@@ -1,0 +1,17 @@
+Remove gfx7 tests for lookup_code_object which will fail due to hip
+
+Reference: https://github.com/RadeonOpenCompute/ROCm-CompilerSupport/issues/60
+===================================================================
+--- comgr.orig/test/lookup_code_object_test.c
++++ comgr/test/lookup_code_object_test.c
+@@ -57,9 +57,7 @@ void buildFatBinary(const char *Input, c
+ 
+ void createFatBinary(const char *InputName, const char *InputPath,
+                      const char *Output) {
+-  const char *Options1[] = {"--offload-arch=gfx701",
+-                            "--offload-arch=gfx702",
+-                            "--offload-arch=gfx801",
++  const char *Options1[] = {"--offload-arch=gfx801",
+                             "--offload-arch=gfx802",
+                             "--offload-arch=gfx803",
+                             "--offload-arch=gfx810",

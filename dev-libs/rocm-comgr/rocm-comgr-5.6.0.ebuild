@@ -29,6 +29,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.3.3-fno-stack-protector.patch"
 	"${FILESDIR}/${PN}-5.5.1-fix-tests.patch"
 	"${FILESDIR}/${PN}-5.6.0-correct-license-install-dir.patch"
+	"${FILESDIR}/${PN}-5.6.0-remove-failed-test.patch"
 )
 
 DESCRIPTION="Radeon Open Compute Code Object Manager"
@@ -58,6 +59,7 @@ src_configure() {
 		-DLLVM_DIR="$(get_llvm_prefix ${LLVM_MAX_SLOT})"
 		-DCMAKE_STRIP=""  # disable stripping defined at lib/comgr/CMakeLists.txt:58
 		-DBUILD_TESTING=$(usex test ON OFF)
+		-DFILE_REORG_BACKWARD_COMPATIBILITY=OFF
 	)
 	cmake_src_configure
 }
