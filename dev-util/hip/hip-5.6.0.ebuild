@@ -29,6 +29,8 @@ else
 		https://github.com/ROCm-Developer-Tools/hip-tests/archive/refs/tags/rocm-${PV}.tar.gz -> rocm-hip-tests-${PV}.tar.gz"
 	S="${WORKDIR}/clr-rocm-${PV}/hipamd"
 fi
+SRC_URI+="
+https://media.githubusercontent.com/media/littlewu2508/littlewu2508.github.io/main/gentoo-distfiles/hip-gentoo-patchset-5.6.0.tar.xz"
 
 CMAKE_USE_DIR="${WORKDIR}"/clr-rocm-${PV}
 HIP_S="${WORKDIR}"/HIP-rocm-${PV}
@@ -57,13 +59,13 @@ RDEPEND="${DEPEND}
 PATCHES=(
 	"${FILESDIR}/${PN}-5.0.1-hip_vector_types.patch"
 	"${FILESDIR}/${PN}-5.0.2-set-build-id.patch"
-	"${FILESDIR}/${PN}-5.6.0-remove-cmake-doxygen-commands.patch"
-	"${FILESDIR}/${PN}-5.6.0-disable-Werror.patch"
+	"${WORKDIR}/${PN}-5.6.0-remove-cmake-doxygen-commands.patch"
+	"${WORKDIR}/${PN}-5.6.0-disable-Werror.patch"
 	"${FILESDIR}/${PN}-5.4.3-make-test-switchable.patch"
-	"${FILESDIR}/${PN}-5.6.0-enable-build-catch-test.patch"
-	"${FILESDIR}/${PN}-5.6.0-remove-.hipInfo.patch"
+	"${WORKDIR}/${PN}-5.6.0-enable-build-catch-test.patch"
+	"${WORKDIR}/${PN}-5.6.0-remove-.hipInfo.patch"
 	"${FILESDIR}/0001-Install-.hipVersion-into-datadir-for-linux.patch"
-	"${FILESDIR}/${PN}-5.6.0-extend-hip-isa-compatibility.patch"
+	"${WORKDIR}/${PN}-5.6.0-extend-hip-isa-compatibility.patch"
 )
 
 DOCS_DIR="${HIP_S}"/docs/doxygen-input
@@ -119,12 +121,12 @@ src_prepare() {
 	pushd "${HIP_S}" || die
 	eapply "${FILESDIR}/${PN}-5.4.3-fix-test-build.patch"
 	eapply "${FILESDIR}/${PN}-5.4.3-fix-HIP_CLANG_PATH-detection.patch"
-	eapply "${FILESDIR}/${PN}-5.6.0-rename-hit-test-target.patch"
-	eapply "${FILESDIR}/${PN}-5.6.0-do-not-run-stress-on-build.patch"
-	eapply "${FILESDIR}/${PN}-5.6.0-remove-test-Werror.patch"
+	eapply "${WORKDIR}/${PN}-5.6.0-rename-hit-test-target.patch"
+	eapply "${WORKDIR}/${PN}-5.6.0-do-not-run-stress-on-build.patch"
+	eapply "${WORKDIR}/${PN}-5.6.0-remove-test-Werror.patch"
 
 	# Removing incompatible tests
-	eapply "${FILESDIR}/${PN}-5.6.0-remove-incompatible-tests.patch"
+	eapply "${WORKDIR}/${PN}-5.6.0-remove-incompatible-tests.patch"
 	rm tests/src/deviceLib/hipLaunchKernelFunc.cpp || die
 	rm tests/src/deviceLib/hipMathFunctions.cpp || die
 
@@ -139,10 +141,10 @@ src_prepare() {
 
 	pushd "${HIPCC_S}" || die
 	eapply "${FILESDIR}/${PN}-5.1.3-fno-stack-protector.patch"
-	eapply "${FILESDIR}/${PN}-5.6.0-hipcc-hip-version.patch"
-	eapply "${FILESDIR}/${PN}-5.6.0-rocm-path.patch"
-	eapply "${FILESDIR}/${PN}-5.6.0-hipconfig-clang-include-path.patch"
-	eapply "${FILESDIR}/${PN}-5.6.0-hipvars-FHS-path.patch"
+	eapply "${WORKDIR}/${PN}-5.6.0-hipcc-hip-version.patch"
+	eapply "${WORKDIR}/${PN}-5.6.0-rocm-path.patch"
+	eapply "${WORKDIR}/${PN}-5.6.0-hipconfig-clang-include-path.patch"
+	eapply "${WORKDIR}/${PN}-5.6.0-hipvars-FHS-path.patch"
 
 	sed -e "/HIP.*FLAGS.*isystem.*HIP_INCLUDE_PATH/d" \
 		-e "s:\$ENV{'DEVICE_LIB_PATH'}:'${EPREFIX}/usr/lib/amdgcn/bitcode':" \
@@ -151,7 +153,7 @@ src_prepare() {
 	sed -e "s,@CLANG_PATH@,${LLVM_PREFIX}/bin," -i bin/hipvars.pm || die
 
 	pushd "${CLR_S}" || die
-	eapply "${FILESDIR}/rocclr-5.6.0-improve-isa-compatibility.patch"
+	eapply "${WORKDIR}/rocclr-5.6.0-improve-isa-compatibility.patch"
 }
 
 src_configure() {
