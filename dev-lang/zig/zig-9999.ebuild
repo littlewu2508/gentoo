@@ -107,6 +107,12 @@ pkg_setup() {
 	check-reqs_pkg_setup
 }
 
+src_prepare() {
+	hprefixify lib/std/target.zig
+	hprefixify lib/std/zig/system/NativeTargetInfo.zig
+	cmake_src_prepare
+}
+
 src_configure() {
 	local mycmakeargs=(
 		-DZIG_USE_CCACHE=OFF
