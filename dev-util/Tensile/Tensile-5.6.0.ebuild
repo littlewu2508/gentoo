@@ -8,7 +8,7 @@ DISTUTILS_USE_PEP517=setuptools
 ROCM_VERSION=${PV}
 inherit cmake distutils-r1 llvm prefix rocm
 
-LLVM_MAX_SLOT=15
+LLVM_MAX_SLOT=16
 
 DESCRIPTION="Stretching GPU performance for GEMMs and tensor contractions"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/Tensile"
