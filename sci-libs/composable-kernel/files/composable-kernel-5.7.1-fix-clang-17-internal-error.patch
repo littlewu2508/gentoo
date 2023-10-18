@@ -1,0 +1,15 @@
+diff --git a/library/src/tensor_operation_instance/gpu/softmax/CMakeLists.txt b/library/src/tensor_operation_instance/gpu/softmax/CMakeLists.txt
+index fc13261..9f77bf0 100644
+--- a/library/src/tensor_operation_instance/gpu/softmax/CMakeLists.txt
++++ b/library/src/tensor_operation_instance/gpu/softmax/CMakeLists.txt
+@@ -24,3 +24,10 @@ add_instance_library(device_softmax_instance
+     device_softmax_f32_f32_instance_rank4_reduce3.cpp
+     device_softmax_f32_f32_instance_rank4_reduce4.cpp
+ )
++set_source_files_properties(device_softmax_f32_f32_instance_rank3_reduce1.cpp PROPERTIES COMPILE_FLAGS -O1)
++set_source_files_properties(device_softmax_f32_f32_instance_rank3_reduce2.cpp PROPERTIES COMPILE_FLAGS -O1)
++set_source_files_properties(device_softmax_f32_f32_instance_rank3_reduce3.cpp PROPERTIES COMPILE_FLAGS -O1)
++set_source_files_properties(device_softmax_f32_f32_instance_rank4_reduce1.cpp PROPERTIES COMPILE_FLAGS -O1)
++set_source_files_properties(device_softmax_f32_f32_instance_rank4_reduce2.cpp PROPERTIES COMPILE_FLAGS -O1)
++set_source_files_properties(device_softmax_f32_f32_instance_rank4_reduce3.cpp PROPERTIES COMPILE_FLAGS -O1)
++set_source_files_properties(device_softmax_f32_f32_instance_rank4_reduce4.cpp PROPERTIES COMPILE_FLAGS -O1)
