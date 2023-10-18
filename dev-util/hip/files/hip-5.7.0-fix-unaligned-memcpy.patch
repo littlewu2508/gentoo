@@ -1,3 +1,13 @@
+Fix SIGSEGV when compiled with avx-512 instructions.
+
+Due to unaligned allocations, library crashes in
+nontemporalMemcpy in _mm512_stream_si512 (which requires
+64-aligned allocations, but used to copy default-aligned objects).
+
+Without this patch hipamd causes random crashes in dependent
+libraries (tensile, rocBLAS, miopen, etc.).
+
+Bug report in upstream: https://github.com/ROCm-Developer-Tools/clr/issues/18
 --- a/rocclr/device/rocm/rocvirtual.cpp
 +++ b/rocclr/device/rocm/rocvirtual.cpp
 @@ -2790,44 +2790,6 @@ bool VirtualGPU::createVirtualQueue(uint deviceQueueSize)
