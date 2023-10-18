@@ -35,7 +35,8 @@ RDEPEND="${DEPEND}
 	>=dev-libs/roct-thunk-interface-5"
 
 PATCHES=(
-	"${FILESDIR}/hip-5.7.0-install.patch"
+	"${FILESDIR}/${PN}-5.7.0-install.patch"
+	"${FILESDIR}/${PN}-5.7.0-fix-unaligned-memcpy.patch"
 	)
 
 S="${WORKDIR}/clr-rocm-${PV}/"
