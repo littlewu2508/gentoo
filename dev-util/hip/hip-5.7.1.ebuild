@@ -36,7 +36,7 @@ RDEPEND="${DEPEND}
 
 PATCHES=(
 	"${FILESDIR}/${PN}-5.7.0-install.patch"
-	"${FILESDIR}/${PN}-5.7.0-fix-unaligned-memcpy.patch"
+	"${FILESDIR}/${PN}-5.7.0-set-correct-alignement.patch"
 	)
 
 S="${WORKDIR}/clr-rocm-${PV}/"
