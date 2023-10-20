@@ -33,8 +33,13 @@ DEPEND="dev-util/hip
 	${PYTHON_DEPS}"
 
 BDEPEND="
-	test? ( dev-cpp/gtest dev-libs/boost
-	>=sci-libs/fftw-3 sys-libs/libomp )
+	test? (
+		dev-cpp/gtest
+		dev-libs/boost
+		>=sci-libs/fftw-3
+		sys-libs/libomp
+		sci-libs/hipRAND:${SLOT}[${ROCM_USEDEP}]
+	)
 	>=dev-util/cmake-3.22
 	dev-util/rocm-cmake
 	dev-db/sqlite
