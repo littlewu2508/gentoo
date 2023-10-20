@@ -37,7 +37,8 @@ RDEPEND="${DEPEND}
 PATCHES=(
 	"${FILESDIR}/${PN}-5.7.0-install.patch"
 	"${FILESDIR}/${PN}-5.7.0-set-correct-alignement.patch"
-	)
+	"${FILESDIR}/${PN}-5.7.1-extend-isa-compatibility-check.patch"
+)
 
 S="${WORKDIR}/clr-rocm-${PV}/"
 
