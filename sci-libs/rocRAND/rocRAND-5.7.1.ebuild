@@ -22,7 +22,7 @@ RESTRICT="test"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-5.4.2_stdint-gcc13.patch
-	"${FILESDIR}"/${PN}-5.7.1_fix_generator_alignements.patch
+	"${FILESDIR}"/${PN}-5.7.1_fix_generator_alignment.patch
 )
 
 RDEPEND="dev-util/hip"
@@ -57,6 +57,7 @@ src_configure() {
 src_test() {
 	check_amdgpu
 	export LD_LIBRARY_PATH="${BUILD_DIR}/library"
+	# uses HMM to fit tests to default <512M iGPU VRAM
 	MAKEOPTS="-j1" ROCRAND_USE_HMM="1" cmake_src_test
 }
 
