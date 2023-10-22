@@ -1,0 +1,14 @@
+Index: clr-rocm-5.7.1/hipamd/CMakeLists.txt
+===================================================================
+--- clr-rocm-5.7.1.orig/hipamd/CMakeLists.txt
++++ clr-rocm-5.7.1/hipamd/CMakeLists.txt
+@@ -467,7 +467,8 @@ endif()
+ # Testing steps
+ #############################
+ # HIT is not compatible with Windows
+-if(NOT WIN32)
++option(BUILD_TESTS "Build test binaries" ON)
++if(NOT WIN32 AND BUILD_TESTS)
+ set(HIP_ROOT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+ set(HIP_SRC_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+ if(HIP_PLATFORM STREQUAL "nvidia")

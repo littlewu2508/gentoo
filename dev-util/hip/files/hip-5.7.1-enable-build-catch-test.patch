@@ -1,0 +1,25 @@
+Index: clr-rocm-5.7.1/hipamd/CMakeLists.txt
+===================================================================
+--- clr-rocm-5.7.1.orig/hipamd/CMakeLists.txt
++++ clr-rocm-5.7.1/hipamd/CMakeLists.txt
+@@ -486,8 +486,10 @@ file(COPY ${HIPCC_BIN_DIR}/hipconfig.pl
+ file(COPY ${HIPCC_BIN_DIR}/hipvars.pm DESTINATION ${HIP_ROOT_DIR}/bin/)
+ 
+ if(HIP_CATCH_TEST EQUAL "1")
+-	message(STATUS "Building of catch tests through hipamd is no longer supported. Testing targets will not be available. catch tests have been moved to an independent github project hip-tests. Please refer to hip-tests Readme for build instructions! ")
+-else()
++    enable_testing()
++    set(HIP_PATH ${HIP_ROOT_DIR})
++    add_subdirectory(${HIP_COMMON_DIR}/tests/catch ${PROJECT_BINARY_DIR}/catch)
++endif()
+     if(${RUN_HIT} EQUAL 0)
+         set(CMAKE_MODULE_PATH "${HIP_ROOT_DIR}/cmake" ${CMAKE_MODULE_PATH})
+         include(${HIP_COMMON_DIR}/tests/hit/HIT.cmake)
+@@ -496,7 +498,6 @@ else()
+         message(STATUS "Testing targets will not be available. To enable them please ensure that the HIP installation directory is writeable. Use -DCMAKE_INSTALL_PREFIX to specify a suitable location")
+     endif()
+ endif()
+-endif()
+ 
+ #############################
+ # Code analysis
