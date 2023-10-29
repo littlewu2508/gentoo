@@ -5,7 +5,7 @@ EAPI=8
 
 ROCM_VERSION=${PV}
 
-inherit cmake flag-o-matic rocm
+inherit cmake rocm
 
 DESCRIPTION="Generate pseudo-random and quasi-random numbers"
 HOMEPAGE="https://github.com/ROCmSoftwarePlatform/rocRAND"
@@ -17,12 +17,12 @@ SLOT="0/$(ver_cut 1-2)"
 IUSE="benchmark test"
 REQUIRED_USE="${ROCM_REQUIRED_USE}"
 
-# test are failing (90% tests passed, 4 tests failed out of 40)
-RESTRICT="test"
+RESTRICT="!test? ( test )"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-5.4.2_stdint-gcc13.patch
 	"${FILESDIR}"/${PN}-5.7.1_fix_generator_alignment.patch
+	"${FILESDIR}"/${PN}-5.7.1_remove_test_install.patch
 )
 
 RDEPEND="dev-util/hip"
@@ -37,9 +37,6 @@ S="${WORKDIR}/rocRAND-rocm-${PV}"
 src_configure() {
 	addpredict /dev/kfd
 	addpredict /dev/dri/
-
-	# hipcc compiles everything with -O3; other modes cause clang backend errors
-	filter-flags -O?
 
 	local mycmakeargs=(
 		-DCMAKE_SKIP_RPATH=ON

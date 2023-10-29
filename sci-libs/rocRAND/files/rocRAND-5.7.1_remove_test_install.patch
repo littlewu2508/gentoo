@@ -1,0 +1,47 @@
+Disable installation of test components. We use `eninja install` command and it
+cannot distinguish COMPONENT, so just delete the unwanted install in
+CMakeLists.txt
+Reference: https://github.com/ROCmSoftwarePlatform/rocRAND/pull/285#issuecomment-1784025153
+Reference: https://github.com/RadeonOpenCompute/ROCm/issues/1905
+===================================================================
+--- rocRAND-rocm-5.7.1.orig/test/CMakeLists.txt
++++ rocRAND-rocm-5.7.1/test/CMakeLists.txt
+@@ -107,7 +107,6 @@ foreach(test_src ${rocRAND_TEST_SRCS})
+             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test"
+     )
+     add_relative_test(${test_name} ${test_name})
+-    rocm_install(TARGETS ${test_name} COMPONENT tests)
+     if (WIN32 AND NOT DEFINED DLLS_COPIED_TESTS)
+       set(DLLS_COPIED_TESTS "YES")
+       set(DLLS_COPIED_TESTS ${DLLS_COPIED_TESTS} PARENT_SCOPE)
+@@ -133,9 +132,3 @@ endif()
+ # Checks for simple linkage problems
+ add_subdirectory(linkage)
+ 
+-rocm_install(
+-    FILES "${INSTALL_TEST_FILE}"
+-    DESTINATION "${CMAKE_INSTALL_BINDIR}/${PROJECT_NAME}"
+-    COMPONENT tests
+-    RENAME "CTestTestfile.cmake"
+-)
+Index: rocRAND-rocm-5.7.1/test/fortran/CMakeLists.txt
+===================================================================
+--- rocRAND-rocm-5.7.1.orig/test/fortran/CMakeLists.txt
++++ rocRAND-rocm-5.7.1/test/fortran/CMakeLists.txt
+@@ -22,4 +22,3 @@ set_target_properties(${test_rocrand}
+ )
+ 
+ add_relative_test(${test_rocrand} ${test_rocrand})
+-rocm_install(TARGETS ${test_rocrand} COMPONENT tests)
+Index: rocRAND-rocm-5.7.1/test/linkage/CMakeLists.txt
+===================================================================
+--- rocRAND-rocm-5.7.1.orig/test/linkage/CMakeLists.txt
++++ rocRAND-rocm-5.7.1/test/linkage/CMakeLists.txt
+@@ -74,7 +74,6 @@ function(add_rocrand_link_test TEST_SOUR
+             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test"
+     )
+     add_relative_test(${TEST_TARGET} ${TEST_TARGET})
+-    rocm_install(TARGETS ${TEST_TARGET} COMPONENT tests)
+ endfunction()
+ 
+ add_rocrand_link_test("test_rocrand_linkage.cpp;get_rocrand_version.cpp")
