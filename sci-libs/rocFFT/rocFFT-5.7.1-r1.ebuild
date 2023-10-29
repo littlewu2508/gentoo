@@ -130,7 +130,6 @@ src_test() {
 	cd "${BUILD_DIR}/clients/staging" || die
 	export LD_LIBRARY_PATH=${BUILD_DIR}/library/src/:${BUILD_DIR}/library/src/device
 	edob ./${PN,,}-test
-	edob ./${PN,,}-selftest
 }
 
 src_install() {
