@@ -61,6 +61,8 @@ RESTRICT="!test? ( test )"
 S="${WORKDIR}/rocSPARSE-rocm-${PV}"
 
 PATCHES=(
+	"${FILESDIR}"/${PN}-5.7.1-fix-fma.patch
+	"${FILESDIR}"/${PN}-5.7.1-add-cstdint-include.patch
 )
 
 python_check_deps() {
@@ -85,6 +87,10 @@ src_prepare() {
 	# use python interpreter specifyied by python-any-r1
 	sed -e "/COMMAND ..\/common\/rocsparse_gentest.py/s,COMMAND ,COMMAND ${EPYTHON} ," -i clients/tests/CMakeLists.txt || die
 
+	# Do no set /opt/rocm/bin/hipcc as CXX compiler
+	sed -e "/APPEND CMAKE_PREFIX_PATH/d" -e "/APPEND CMAKE_MODULE_PATH/d" -i CMakeLists.txt -i clients/CMakeLists.txt cmake/Dependencies.cmake || die
+	# rm toolchain-linux.cmake || die
+
 	cmake_src_prepare
 
 	# Test need download data from https://sparse.tamu.edu (or other mirror site), check MD5, unpack and convert them into csr format
@@ -93,7 +99,7 @@ src_prepare() {
 		mkdir -p "${BUILD_DIR}"/clients/matrices
 		# compile and use the mtx2csr converter. Do not use any optimization flags, because it causes error!
 		edo $(tc-getCXX) deps/convert.cpp -o deps/convert
-		find "${WORKDIR}" -maxdepth 2 -regextype grep -E -regex ".*/(.*)/\1\.mtx" -print0 |
+		find "${WORKDIR}" -maxdepth 2 -regextype egrep -regex ".*/(.*)/\1\.mtx" -print0 |
 			while IFS= read -r -d '' mtxfile; do
 				destination=${BUILD_DIR}/clients/matrices/$(basename -s '.mtx' ${mtxfile}).csr
 				ebegin "Converting ${mtxfile} to ${destination}"
@@ -113,6 +119,7 @@ src_configure() {
 		-DBUILD_CLIENTS_SAMPLES=OFF
 		-DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF
 		-DCMAKE_INSTALL_INCLUDEDIR="include/rocsparse"
+		-DCMAKE_MATRICES_DIR="${BUILD_DIR}/clients/matrices"
 		-DBUILD_CLIENTS_TESTS=$(usex test ON OFF)
 		-DBUILD_CLIENTS_BENCHMARKS=$(usex benchmark ON OFF)
 	)

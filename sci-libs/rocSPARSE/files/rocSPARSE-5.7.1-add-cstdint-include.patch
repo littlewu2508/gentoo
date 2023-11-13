@@ -1,0 +1,29 @@
+Fix "undeclared identifier 'std'", "unknown type name 'size_t'" and
+"error: unknown type name 'int32_t'" when compiling with clang-15
+===================================================================
+Index: rocSPARSE-rocm-5.7.1/library/src/include/envariables.h
+===================================================================
+--- rocSPARSE-rocm-5.7.1.orig/library/src/include/envariables.h
++++ rocSPARSE-rocm-5.7.1/library/src/include/envariables.h
+@@ -24,6 +24,8 @@
+ 
+ #pragma once
+ 
++#include <cstdint>
++using std::size_t;
+ template <std::size_t N, typename T>
+ inline constexpr std::size_t countof(T (&)[N])
+ {
+Index: rocSPARSE-rocm-5.7.1/clients/include/rocsparse_clients_envariables.hpp
+===================================================================
+--- rocSPARSE-rocm-5.7.1.orig/clients/include/rocsparse_clients_envariables.hpp
++++ rocSPARSE-rocm-5.7.1/clients/include/rocsparse_clients_envariables.hpp
+@@ -24,6 +24,8 @@
+ 
+ #pragma once
+ 
++#include <cstdint>
++
+ ///
+ /// @brief Definition of a utility struct to grab environment variables
+ /// for the rocsparse clients.
