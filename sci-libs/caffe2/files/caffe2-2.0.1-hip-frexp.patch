@@ -1,0 +1,13 @@
+Index: pytorch-2.0.1/torch/utils/hipify/cuda_to_hip_mappings.py
+===================================================================
+--- pytorch-2.0.1.orig/torch/utils/hipify/cuda_to_hip_mappings.py
++++ pytorch-2.0.1/torch/utils/hipify/cuda_to_hip_mappings.py
+@@ -71,7 +71,7 @@ MATH_TRANSPILATIONS = collections.Ordere
+         ("std::fabs", ("::fabs")),
+         ("std::fmod", ("::fmod")),
+         ("std::remainder", ("::remainder")),
+-        ("std::frexp", ("::frexp")),
++        ("std::frexp", ("::frexpf")),
+     ]
+ )
+ 
