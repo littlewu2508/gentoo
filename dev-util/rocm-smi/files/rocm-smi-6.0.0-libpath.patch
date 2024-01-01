@@ -1,0 +1,13 @@
+Index: rocm_smi_lib-rocm-6.0.0/python_smi_tools/rsmiBindings.py.in
+===================================================================
+--- rocm_smi_lib-rocm-6.0.0.orig/python_smi_tools/rsmiBindings.py.in
++++ rocm_smi_lib-rocm-6.0.0/python_smi_tools/rsmiBindings.py.in
+@@ -26,7 +26,7 @@ def initRsmiBindings(silent=False):
+     if (rocm_smi_lib_path != None):
+         path_librocm = rocm_smi_lib_path
+     else:
+-        path_librocm = os.path.dirname(os.path.realpath(__file__)) + '/../../@CMAKE_INSTALL_LIBDIR@/librocm_smi64.so.@VERSION_MAJOR@'
++        path_librocm = "@GENTOO_PORTAGE_EPREFIX@/usr/lib64/librocm_smi64.so"
+ 
+     if not os.path.isfile(path_librocm):
+         print_silent('Unable to find %s . Trying /opt/rocm*' % path_librocm)

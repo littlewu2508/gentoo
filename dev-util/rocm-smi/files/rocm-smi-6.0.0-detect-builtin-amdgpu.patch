@@ -1,0 +1,34 @@
+From fe96886ef1e3f4dc329ee14af274de94aa23ddbc Mon Sep 17 00:00:00 2001
+From: YiyangWu <xgreenlandforwyy@gmail.com>
+Date: Sat, 2 Apr 2022 16:40:11 +0800
+Subject: [PATCH] Just check /sys/module/amdgpu if initstate not present
+
+In case amdgpu is builtin
+
+Closes: #102
+
+Signed-off-by: YiyangWu <xgreenlandforwyy@gmail.com>
+---
+ python_smi_tools/rocm_smi.py | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/python_smi_tools/rocm_smi.py b/python_smi_tools/rocm_smi.py
+index 9ebf071..810a11e 100755
+--- a/python_smi_tools/rocm_smi.py
++++ b/python_smi_tools/rocm_smi.py
+@@ -73,7 +73,14 @@ def driverInitialized():
+     """
+     driverInitialized = ''
+     try:
+-        driverInitialized = str(subprocess.check_output("cat /sys/module/amdgpu/initstate |grep live", shell=True))
++        if os.path.exists("/sys/module/amdgpu") :
++            if os.path.exists("/sys/module/amdgpu/initstate") :
++                # amdgpu is loadable module
++                driverInitialized = str(subprocess.check_output("cat /sys/module/amdgpu/initstate |grep live", shell=True))
++            else :
++                driverInitialized = "live"  # in case the amdgpu driver is built into ther kernel
++        else :
++            driverInitialized = ""
+     except subprocess.CalledProcessError:
+         pass
+     if len(driverInitialized) > 0:
