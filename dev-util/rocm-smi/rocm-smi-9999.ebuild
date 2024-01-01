@@ -1,4 +1,4 @@
-# Copyright 1999-2023 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -28,18 +28,6 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 DEPEND=""
 RDEPEND="${PYTHON_DEPS}"
 BDEPEND=""
-
-PATCHES=(
-	"${FILESDIR}"/${PN}-5.0.2-gcc12-memcpy.patch
-	"${FILESDIR}"/${PN}-5.4.2-detect-builtin-amdgpu.patch
-)
-
-src_prepare() {
-	sed -e "/LICENSE.txt/d" -i CMakeLists.txt || die
-	sed -e "/^path_librocm = /c\path_librocm = '${EPREFIX}/usr/lib64/librocm_smi64.so'" \
-		-i python_smi_tools/rsmiBindings.py || die
-	cmake_src_prepare
-}
 
 src_configure() {
 	local mycmakeargs=(
