@@ -1,4 +1,4 @@
-# Copyright 1999-2023 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -11,7 +11,7 @@ inherit cmake docs llvm rocm
 
 LLVM_MAX_SLOT=17
 
-TEST_PV=5.7.0 # No hip-test-5.7.1 release
+TEST_PV=6.0.0 # No hip-test-5.7.1 release
 
 DESCRIPTION="C++ Heterogeneous-Compute Interface for Portability"
 HOMEPAGE="https://github.com/ROCm-Developer-Tools/hipamd"
@@ -27,7 +27,6 @@ RESTRICT="!test? ( test )"
 IUSE="debug test"
 
 DEPEND="
-	dev-util/hipcc
 	>=dev-util/rocminfo-5
 	sys-devel/clang:${LLVM_MAX_SLOT}
 	dev-libs/rocm-comgr:${SLOT}
@@ -35,7 +34,9 @@ DEPEND="
 	x11-base/xorg-proto
 	virtual/opengl
 "
+BDEPEND="test? ( dev-util/hipcc )"
 RDEPEND="${DEPEND}
+	dev-util/hipcc
 	dev-perl/URI-Encode
 	sys-devel/clang-runtime:=
 	>=dev-libs/roct-thunk-interface-5"
@@ -73,7 +74,7 @@ src_prepare() {
 	cmake_src_prepare
 
 	if use test; then
-		PATCHES=${FILESDIR}/hip-test-5.7.0-rocm_agent_enumerator-location.patch \
+		PATCHES="${FILESDIR}"/hip-test-6.0.0-hipcc-system-install.patch \
 			   hip_test_wrapper cmake_src_prepare
 	fi
 }
@@ -85,7 +86,6 @@ src_configure() {
 		-DCMAKE_PREFIX_PATH="$(get_llvm_prefix "${LLVM_MAX_SLOT}")"
 		-DCMAKE_BUILD_TYPE=${buildtype}
 		-DCMAKE_SKIP_RPATH=ON
-		-DBUILD_HIPIFY_CLANG=OFF
 		-DHIP_PLATFORM=amd
 		-DHIP_COMMON_DIR="${WORKDIR}/HIP-rocm-${PV}"
 		-DROCM_PATH="${EPREFIX}/usr"
