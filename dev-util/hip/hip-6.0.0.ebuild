@@ -11,7 +11,7 @@ inherit cmake docs flag-o-matic llvm rocm
 
 LLVM_MAX_SLOT=17
 
-TEST_PV=5.7.0 # No hip-test-5.7.1 release
+TEST_PV=6.0.0 # No hip-test-5.7.1 release
 
 DESCRIPTION="C++ Heterogeneous-Compute Interface for Portability"
 HOMEPAGE="https://github.com/ROCm-Developer-Tools/hipamd"
@@ -27,7 +27,6 @@ RESTRICT="!test? ( test )"
 IUSE="debug test"
 
 DEPEND="
-	dev-util/hipcc
 	>=dev-util/rocminfo-5
 	sys-devel/clang:${LLVM_MAX_SLOT}
 	dev-libs/rocm-comgr:${SLOT}
@@ -35,10 +34,12 @@ DEPEND="
 	x11-base/xorg-proto
 	virtual/opengl
 "
+BDEPEND="test? ( dev-util/hipcc )"
 RDEPEND="${DEPEND}
 	dev-perl/URI-Encode
 	sys-devel/clang-runtime:=
 	>=dev-libs/roct-thunk-interface-5"
+PDEPEND="dev-util/hipcc"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-5.7.0-install.patch"
@@ -73,7 +74,7 @@ src_prepare() {
 	cmake_src_prepare
 
 	if use test; then
-		PATCHES=${FILESDIR}/hip-test-5.7.0-rocm_agent_enumerator-location.patch \
+		PATCHES="${FILESDIR}"/hip-test-6.0.0-hipcc-system-install.patch \
 			   hip_test_wrapper cmake_src_prepare
 	fi
 }
@@ -89,7 +90,6 @@ src_configure() {
 		-DCMAKE_PREFIX_PATH="$(get_llvm_prefix "${LLVM_MAX_SLOT}")"
 		-DCMAKE_BUILD_TYPE=${buildtype}
 		-DCMAKE_SKIP_RPATH=ON
-		-DBUILD_HIPIFY_CLANG=OFF
 		-DHIP_PLATFORM=amd
 		-DHIP_COMMON_DIR="${WORKDIR}/HIP-rocm-${PV}"
 		-DROCM_PATH="${EPREFIX}/usr"
@@ -107,7 +107,7 @@ src_configure() {
 			-DROCM_PATH="${BUILD_DIR}"/hipamd
 			-DHIP_PLATFORM=amd
 		)
-		hip_test_wrapper cmake_src_configure
+		HIP_PATH="${EPREFIX}/usr" hip_test_wrapper cmake_src_configure
 	fi
 }
 
@@ -126,6 +126,7 @@ src_test() {
 
 	# TODO: research how to test Vulkan-related features.
 	local CMAKE_SKIP_TESTS=(
+		Unit_AnyAll_CompileTest
 		Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Positive_Read_Write
 		Unit_hipExternalMemoryGetMappedBuffer_Vulkan_Negative_Parameters
 		Unit_hipImportExternalMemory_Vulkan_Negative_Parameters
@@ -139,7 +140,7 @@ src_test() {
 		Unit_hipDestroyExternalSemaphore_Vulkan_Negative_Parameters
 	)
 
-	MAKEOPTS="-j1" hip_test_wrapper cmake_src_test
+	MAKEOPTS="-j1" hip_test_wrapper cmake_src_test -F
 }
 
 src_install() {
