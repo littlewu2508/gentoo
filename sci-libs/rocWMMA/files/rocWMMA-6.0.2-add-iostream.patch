@@ -1,0 +1,14 @@
+Bug: https://github.com/ROCm/rocWMMA/issues/360
+--- a/test/gemm/gemm_predicates_base.hpp
++++ b/test/gemm/gemm_predicates_base.hpp
+@@ -26,6 +26,10 @@
+ #ifndef ROCWMMA_TEST_GEMM_PREDICATES_BASE_HPP
+ #define ROCWMMA_TEST_GEMM_PREDICATES_BASE_HPP
+ 
++#if !NDEBUG
++#include <iostream>
++#endif
++
+ #include "gemm_test_traits.hpp"
+ 
+ namespace rocwmma
