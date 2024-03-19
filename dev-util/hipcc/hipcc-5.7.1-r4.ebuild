@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit cmake llvm
+inherit cmake perl-functions llvm
 
 LLVM_MAX_SLOT=17
 
@@ -40,7 +40,6 @@ src_prepare() {
 	sed -e "s:\$ENV{'DEVICE_LIB_PATH'}:'${EPREFIX}/usr/lib/amdgcn/bitcode':" \
 		-e "s:\$ENV{'HIP_LIB_PATH'}:'${EPREFIX}/usr/$(get_libdir)':" \
 		-e "/HIP.*FLAGS.*isystem.*HIP_INCLUDE_PATH/d" \
-		-e 's:${ROCM_PATH}/usr/bin/rocm_agent_enumerator:/usr/bin/rocm_agent_enumerator:' \
 		-i bin/hipcc.pl || die
 }
 
@@ -48,4 +47,7 @@ src_install() {
 	cmake_src_install
 	# rm unwanted copy
 	rm -rf "${ED}/usr/hip" || die
+	# Handle hipvars.pm
+	rm "${ED}/usr/bin/hipvars.pm" || die
+	perl_domodule "${S}"/bin/hipvars.pm
 }
