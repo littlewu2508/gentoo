@@ -10,6 +10,6 @@
         <name>Wilfried Holzke</name>
     </maintainer>
     <upstream>
-        <remote-id type="github">RadeonOpenCompute/ROCR-Runtime</remote-id>
+        <remote-id type="github">ROCm/ROCR-Runtime</remote-id>
     </upstream>
 </pkgmetadata>
