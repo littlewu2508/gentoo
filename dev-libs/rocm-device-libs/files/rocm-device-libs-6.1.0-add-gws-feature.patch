@@ -1,0 +1,30 @@
+From 688c78d85caf499957db175811f8b00c7c818f83 Mon Sep 17 00:00:00 2001
+From: Brian Sumner <brian.sumner@amd.com>
+Date: Fri, 25 Aug 2023 15:22:41 -0700
+Subject: [PATCH] Add newly required gws target attribute
+
+Change-Id: I07446e6c956b8900ab3e97a49d479bf698451e50
+---
+ amd/device-libs/ockl/src/cg.cl | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/amd/device-libs/ockl/src/cg.cl b/amd/device-libs/ockl/src/cg.cl
+index e6d0aa0dccd694..880c9fca44d60c 100644
+--- a/ockl/src/cg.cl
++++ b/ockl/src/cg.cl
+@@ -84,13 +84,13 @@ multi_grid_sync(__global struct mg_sync *s, uint members)
+     }
+ }
+ 
+-void
++__attribute__((target("gws"))) void
+ __ockl_gws_init(uint nwm1, uint rid)
+ {
+     __builtin_amdgcn_ds_gws_init(nwm1, rid);
+ }
+ 
+-void
++__attribute__((target("gws"))) void
+ __ockl_gws_barrier(uint nwm1, uint rid)
+ {
+     __builtin_amdgcn_ds_gws_barrier(nwm1, rid);
