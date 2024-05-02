@@ -52,15 +52,11 @@ src_unpack() {
 	fi
 }
 
-src_prepare() {
-	sed -e "s:amdgcn/bitcode:lib/amdgcn/bitcode:" -i "${S}/cmake/OCL.cmake" || die
-	sed -e "s:amdgcn/bitcode:lib/amdgcn/bitcode:" -i "${S}/cmake/Packages.cmake" || die
-	cmake_src_prepare
-}
-
 src_configure() {
+	LLVM_PREFIX="$(get_llvm_prefix "${LLVM_MAX_SLOT}")"
 	local mycmakeargs=(
-		-DLLVM_DIR="$(get_llvm_prefix "${LLVM_MAX_SLOT}")"
+		-DLLVM_DIR="${LLVM_PREFIX}"
+		-DCMAKE_INSTALL_PREFIX="${LLVM_PREFIX}"
 	)
 	cmake_src_configure
 }
