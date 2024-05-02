@@ -5,7 +5,7 @@ EAPI=8
 
 inherit cmake llvm prefix
 
-LLVM_MAX_SLOT=17
+LLVM_MAX_SLOT=18
 MY_P=llvm-project-rocm-${PV}
 components=( "amd/comgr" )
 
@@ -26,6 +26,7 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.1.3-rocm-path.patch"
 	"${FILESDIR}/0001-Find-CLANG_RESOURCE_DIR-using-clang-print-resource-d.patch"
 	"${FILESDIR}/${PN}-5.7.1-correct-license-install-dir.patch"
+	"${FILESDIR}/${PN}-6.1.0-clang18.patch"
 )
 
 DESCRIPTION="Radeon Open Compute Code Object Manager"
