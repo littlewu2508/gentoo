@@ -36,6 +36,8 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.5.0-test-bitcode-dir.patch"
 	"${FILESDIR}/${PN}-6.1.0-fix-llvm-link.patch"
 	"${FILESDIR}/${PN}-6.1.0-add-gws-feature.patch"
+	"${FILESDIR}/${PN}-6.1.0-fix-test-failures.patch"
+	"${FILESDIR}/${PN}-6.1.0-fix-test-failures2.patch"
 	)
 
 src_unpack() {
