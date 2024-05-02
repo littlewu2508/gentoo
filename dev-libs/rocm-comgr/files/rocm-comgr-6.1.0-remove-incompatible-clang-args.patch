@@ -1,0 +1,44 @@
+From 889624c5c90299d1e94fcc3c0c514c3062a20f3a Mon Sep 17 00:00:00 2001
+From: Yiyang Wu <xgreenlandforwyy@gmail.com>
+Date: Thu, 2 May 2024 23:20:22 +0800
+Subject: [PATCH] Revert "[Comgr] Add -relink-builtin-bitcode-postop to device
+ library linking"
+
+This is only support after clang-18
+
+This reverts commit a7f9e94995c7709eadb0204ed08f7c211d4b4733.
+---
+ amd/comgr/docs/ReleaseNotes.md                              | 5 +----
+ amd/comgr/src/comgr-compiler.cpp                            | 2 --
+ amd/comgr/test/compile_source_with_device_libs_to_bc_test.c | 2 +-
+ 3 files changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/src/comgr-compiler.cpp b/amd/comgr/src/comgr-compiler.cpp
+index eaf3ef991866..90a21eb3fa26 100644
+--- a/src/comgr-compiler.cpp
++++ b/amd/comgr/src/comgr-compiler.cpp
+@@ -1082,8 +1082,6 @@ amd_comgr_status_t AMDGPUCompiler::addDeviceLibraries() {
+     return AMD_COMGR_STATUS_ERROR;
+   }
+   Args.push_back(Saver.save(Twine("--rocm-path=") + FakeRocmDir).data());
+-  Args.push_back("-mllvm");
+-  Args.push_back("-relink-builtin-bitcode-postop");
+   NoGpuLib = false;
+ 
+   for (auto DeviceLib : getDeviceLibraries()) {
+diff --git a/test/compile_source_with_device_libs_to_bc_test.c b/amd/comgr/test/compile_source_with_device_libs_to_bc_test.c
+index f092a539d211..5966ab4c43cd 100644
+--- a/test/compile_source_with_device_libs_to_bc_test.c
++++ b/amd/comgr/test/compile_source_with_device_libs_to_bc_test.c
+@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
+   amd_comgr_action_info_t DataAction;
+   amd_comgr_status_t Status;
+   const char *CodeGenOptions[] = {"-mllvm", "-amdgpu-early-inline-all",
+-    "-mcode-object-version=5", "-mllvm", "-amdgpu-prelink"};
++    "-mcode-object-version=5"};
+   size_t CodeGenOptionsCount =
+       sizeof(CodeGenOptions) / sizeof(CodeGenOptions[0]);
+ 
+-- 
+2.44.0
+

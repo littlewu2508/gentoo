@@ -10,6 +10,6 @@
         <name>Yiyang Wu</name>
     </maintainer>
     <upstream>
-        <remote-id type="github">RadeonOpenCompute/ROCm-CompilerSupport</remote-id>
+        <remote-id type="github">ROCm/ROCm-CompilerSupport</remote-id>
     </upstream>
 </pkgmetadata>
