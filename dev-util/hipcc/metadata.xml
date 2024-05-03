@@ -22,6 +22,6 @@
     <name>Wilfried Holzke</name>
   </maintainer>
   <upstream>
-    <remote-id type="github">ROCm-Developer-Tools/hipcc</remote-id>
+    <remote-id type="github">ROCm/hipcc</remote-id>
   </upstream>
 </pkgmetadata>
