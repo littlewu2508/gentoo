@@ -1,0 +1,21 @@
+Clang 17 and Clang 18 still can't find rocm-path automatically
+
+Related bug: https://github.com/llvm/llvm-project/issues/78344
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -42,6 +42,7 @@ macro(add_test_input_bitcode name input output)
+   add_custom_command(
+     OUTPUT "${output}"
+     COMMAND "$<TARGET_FILE:clang>" -c -emit-llvm -target amdgcn-amd-amdhsa
++    --rocm-path=@GENTOO_PORTAGE_EPREFIX@/usr --hip-device-lib-path=@GENTOO_PORTAGE_EPREFIX@/usr/lib/amdgcn/bitcode
+     -mcpu=gfx900
+     ${ARGN} "${CMAKE_CURRENT_SOURCE_DIR}/${input}"
+     -o "${output}"
+@@ -60,6 +61,7 @@ macro(add_test_input_bundle name input output)
+   add_custom_command(
+     OUTPUT "${output}"
+     COMMAND "$<TARGET_FILE:clang>" -c --offload-arch=gfx900 -emit-llvm -fgpu-rdc
++    --rocm-path=@GENTOO_PORTAGE_EPREFIX@/usr --hip-device-lib-path=@GENTOO_PORTAGE_EPREFIX@/usr/lib/amdgcn/bitcode
+     --gpu-bundle-output ${ARGN} "${CMAKE_CURRENT_SOURCE_DIR}/${input}"
+     -o "${output}"
+     VERBATIM

@@ -3,42 +3,44 @@
 
 EAPI=8
 
-inherit cmake llvm prefix
+LLVM_COMPAT=( 17 18 )
 
-LLVM_MAX_SLOT=17
+inherit cmake llvm-r1 prefix
+
 MY_P=llvm-project-rocm-${PV}
 components=( "amd/comgr" )
 
-if [[ ${PV} == *9999 ]] ; then
-	EGIT_REPO_URI="https://github.com/ROCm/llvm-project"
-	inherit git-r3
-	S="${WORKDIR}/${P}/${components[0]}"
-else
-	SRC_URI="https://github.com/ROCm/llvm-project/archive/rocm-${PV}.tar.gz -> ${MY_P}.tar.gz"
-	S="${WORKDIR}/${MY_P}/${components[0]}"
-	KEYWORDS="~amd64"
-fi
+DESCRIPTION="Radeon Open Compute Code Object Manager"
+HOMEPAGE="https://github.com/ROCm/ROCm-CompilerSupport"
+SRC_URI="https://github.com/ROCm/llvm-project/archive/rocm-${PV}.tar.gz -> ${MY_P}.tar.gz"
+S="${WORKDIR}/${MY_P}/${components[0]}"
+
+LICENSE="MIT"
+SLOT="0/$(ver_cut 1-2)"
+KEYWORDS="~amd64"
 
 IUSE="test"
 RESTRICT="!test? ( test )"
 
 PATCHES=(
-	"${FILESDIR}/${PN}-5.1.3-rocm-path.patch"
-	"${FILESDIR}/0001-Find-CLANG_RESOURCE_DIR-using-clang-print-resource-d.patch"
-	"${FILESDIR}/${PN}-5.7.1-correct-license-install-dir.patch"
-	"${FILESDIR}/${PN}-6.1.0-remove-incompatible-clang-args.patch"
-	"${FILESDIR}/${PN}-6.1.0-HIPIncludePath-not-needed.patch"
+	"${FILESDIR}"/${PN}-5.1.3-rocm-path.patch
+	"${FILESDIR}"/0001-Find-CLANG_RESOURCE_DIR-using-clang-print-resource-d.patch
+	"${FILESDIR}"/${PN}-5.7.1-correct-license-install-dir.patch
+	"${FILESDIR}"/${PN}-6.0.0-extend-isa-compatibility-check.patch
+	"${FILESDIR}"/${PN}-6.1.0-remove-incompatible-clang-args.patch
+	"${FILESDIR}"/${PN}-6.1.0-fix-comgr-default-flags.patch
+	"${FILESDIR}"/${PN}-6.1.0-llvm-18-compat.patch
+	"${FILESDIR}"/${PN}-6.1.0-enforce-oop-compiler.patch
 )
-
-DESCRIPTION="Radeon Open Compute Code Object Manager"
-HOMEPAGE="https://github.com/ROCm/ROCm-CompilerSupport"
-LICENSE="MIT"
-SLOT="0/$(ver_cut 1-2)"
-
-RDEPEND=">=dev-libs/rocm-device-libs-${PV}
-	sys-devel/clang:${LLVM_MAX_SLOT}=
+RDEPEND="
+	>=dev-libs/rocm-device-libs-${PV}[${LLVM_USEDEP}]
+	dev-util/hipcc:${SLOT}[${LLVM_USEDEP}]
 	sys-devel/clang-runtime:=
-	sys-devel/lld:${LLVM_MAX_SLOT}="
+	$(llvm_gen_dep '
+		sys-devel/clang:${LLVM_SLOT}=
+		sys-devel/lld:${LLVM_SLOT}=
+	')
+"
 DEPEND="${RDEPEND}"
 
 CMAKE_BUILD_TYPE=Release
@@ -59,15 +61,20 @@ src_unpack() {
 
 src_prepare() {
 	sed '/sys::path::append(HIPPath/s,"hip","",' -i src/comgr-env.cpp || die
-	sed "/return LLVMPath;/s,LLVMPath,llvm::SmallString<128>(\"$(get_llvm_prefix ${LLVM_MAX_SLOT})\")," \
+	sed "/return LLVMPath;/s,LLVMPath,llvm::SmallString<128>(\"$(get_llvm_prefix)\")," \
 		-i src/comgr-env.cpp || die
+
 	eapply $(prefixify_ro "${FILESDIR}"/${PN}-5.0-rocm_path.patch)
+	eapply $(prefixify_ro "${FILESDIR}"/${PN}-6.1.0-fix-tests-rocm-path.patch)
+
 	cmake_src_prepare
+
+	sed "s/@HIP_VERSION@/${PV}/" -i src/comgr-compiler.cpp || die
 }
 
 src_configure() {
 	local mycmakeargs=(
-		-DLLVM_DIR="$(get_llvm_prefix ${LLVM_MAX_SLOT})"
+		-DLLVM_DIR="$(get_llvm_prefix)"
 		-DCMAKE_STRIP=""  # disable stripping defined at lib/comgr/CMakeLists.txt:58
 		-DBUILD_TESTING=$(usex test ON OFF)
 	)
