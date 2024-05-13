@@ -3,12 +3,12 @@
 
 EAPI=8
 
-inherit cmake flag-o-matic llvm
+LLVM_COMPAT=( 17 18 )
 
-LLVM_MAX_SLOT=17
+inherit cmake flag-o-matic llvm-r1
 
 if [[ ${PV} == *9999 ]] ; then
-	EGIT_REPO_URI="https://github.com/ROCm/ROCR-Runtime/"
+	EGIT_REPO_URI="https://github.com/ROCm/ROCR-Runtime.git"
 	inherit git-r3
 	S="${WORKDIR}/${P}/src"
 else
@@ -35,8 +35,11 @@ COMMON_DEPEND="dev-libs/elfutils
 DEPEND="${COMMON_DEPEND}
 	>=dev-libs/roct-thunk-interface-${PV}
 	>=dev-libs/rocm-device-libs-${PV}
-	sys-devel/clang:${LLVM_MAX_SLOT}=
-	sys-devel/lld:${LLVM_MAX_SLOT}="
+	$(llvm_gen_dep '
+		sys-devel/clang:${LLVM_SLOT}=
+		sys-devel/lld:${LLVM_SLOT}=
+	')
+"
 RDEPEND="${DEPEND}"
 BDEPEND="app-editors/vim-core"
 	# vim-core is needed for "xxd"
