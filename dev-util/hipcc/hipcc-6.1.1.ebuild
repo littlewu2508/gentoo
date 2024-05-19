@@ -3,9 +3,9 @@
 
 EAPI=8
 
-inherit cmake perl-functions llvm
+LLVM_COMPAT=( 17 18 )
 
-LLVM_MAX_SLOT=17
+inherit cmake perl-functions llvm-r1
 
 DESCRIPTION="Radeon Open Compute hipcc"
 HOMEPAGE="https://github.com/ROCm/hipcc"
@@ -27,9 +27,13 @@ SLOT="0/$(ver_cut 1-2)"
 IUSE="debug test"
 RESTRICT="!test? ( test )"
 
-DEPEND="<sys-devel/llvm-18:=
-	<sys-devel/clang-18:=
-	"
+DEPEND="
+	$(llvm_gen_dep '
+		sys-libs/compiler-rt:${LLVM_SLOT}=
+		sys-devel/llvm:${LLVM_SLOT}=
+		sys-devel/clang:${LLVM_SLOT}=
+	')
+"
 RDEPEND="${DEPEND}
 	!<dev-util/hip-5.7"
 
@@ -55,13 +59,19 @@ src_unpack() {
 src_prepare() {
 	cmake_src_prepare
 
-	sed -e "s:\$ROCM_PATH/llvm/bin:$(get_llvm_prefix ${LLVM_MAX_SLOT})/bin:" \
+	sed -e "s:\$ROCM_PATH/llvm/bin:$(get_llvm_prefix)/bin:" \
 		-i bin/hipvars.pm || die
 
 	sed -e "s:\$ENV{'DEVICE_LIB_PATH'}:'${EPREFIX}/usr/lib/amdgcn/bitcode':" \
 		-e "s:\$ENV{'HIP_LIB_PATH'}:'${EPREFIX}/usr/$(get_libdir)':" \
 		-e "/HIP.*FLAGS.*isystem.*HIP_INCLUDE_PATH/d" \
 		-i bin/hipcc.pl || die
+
+	# With Clang>17 -amdgpu-early-inline-all=true causes OOMs in dependencies
+	# https://github.com/llvm/llvm-project/issues/86332
+	if [ "$LLVM_SLOT" != "17" ]; then
+		sed -e "s/-mllvm -amdgpu-early-inline-all=true //g" -i bin/hipcc.pl || die
+	fi
 }
 
 src_install() {
