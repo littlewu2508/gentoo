@@ -3,9 +3,10 @@
 
 EAPI=8
 
-inherit cmake llvm
+LLVM_COMPAT=( 17 18 )
 
-LLVM_MAX_SLOT=17
+inherit cmake llvm-r1
+
 MY_P=llvm-project-rocm-${PV}
 components=( "amd/device-libs" )
 
@@ -27,16 +28,22 @@ SLOT="0/$(ver_cut 1-2)"
 IUSE="test"
 RESTRICT="!test? ( test )"
 
-RDEPEND="sys-devel/clang:${LLVM_MAX_SLOT}"
-DEPEND="${RDEPEND}"
+BDEPEND="
+	dev-build/rocm-cmake
+	$(llvm_gen_dep '
+		sys-devel/clang:${LLVM_SLOT}
+		sys-devel/lld:${LLVM_SLOT}
+	')
+"
 
 CMAKE_BUILD_TYPE=Release
 
 PATCHES=(
-	"${FILESDIR}/${PN}-5.5.0-test-bitcode-dir.patch"
-	"${FILESDIR}/${PN}-6.1.0-fix-llvm-link.patch"
-	"${FILESDIR}/${PN}-6.1.0-fix-test-failures.patch"
-	)
+	"${FILESDIR}"/${PN}-5.5.0-test-bitcode-dir.patch
+	"${FILESDIR}"/${PN}-6.1.0-add-gws-attribute.patch
+	"${FILESDIR}"/${PN}-6.1.0-fix-llvm-link.patch
+	"${FILESDIR}"/${PN}-6.1.0-fix-test-failures.patch
+)
 
 src_unpack() {
 	if [[ ${PV} == *9999 ]] ; then
@@ -60,7 +67,9 @@ src_prepare() {
 
 src_configure() {
 	local mycmakeargs=(
-		-DLLVM_DIR="$(get_llvm_prefix "${LLVM_MAX_SLOT}")"
+		-DLLVM_DIR="$(get_llvm_prefix)"
 	)
-	cmake_src_configure
+	# do not trust CMake with autoselecting Clang, as it autoselects the latest one
+	# producing too modern LLVM bitcode and causing linker errors in other packages
+	CC="$(get_llvm_prefix)/bin/clang" CXX="$(get_llvm_prefix)/bin/clang++" cmake_src_configure
 }
