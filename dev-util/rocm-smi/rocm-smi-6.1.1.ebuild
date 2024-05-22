@@ -29,7 +29,7 @@ RDEPEND="${PYTHON_DEPS}"
 PATCHES=(
 	"${FILESDIR}"/${PN}-5.7.1-no-strip.patch
 	"${FILESDIR}"/${PN}-5.7.1-remove-example.patch
-	"${FILESDIR}"/${PN}-6.0.2-set-soversion.patch
+	"${FILESDIR}"/${PN}-6.1.1-set-soversion.patch
 	"${FILESDIR}"/${PN}-6.1.1-fix-const-qualifier.patch
 	"${FILESDIR}"/${PN}-6.0.0-detect-builtin-amdgpu.patch
 )
