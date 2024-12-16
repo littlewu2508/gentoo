@@ -298,6 +298,11 @@ _distutils_set_globals() {
 					>=dev-python/poetry-core-1.9.0[${PYTHON_USEDEP}]
 				'
 				;;
+			poetry-dynamic)
+				bdep+='
+					>=dev-python/poetry-dynamic-versioning-1.4.1[${PYTHON_USEDEP}]
+				'
+				;;
 			scikit-build-core)
 				bdep+='
 					>=dev-python/scikit-build-core-0.9.4[${PYTHON_USEDEP}]
@@ -1087,6 +1092,9 @@ _distutils-r1_backend_to_key() {
 			;;
 		poetry.core.masonry.api|poetry.masonry.api)
 			echo poetry
+			;;
+		poetry_dynamic_versioning.backend)
+			echo poetry-dynamic
 			;;
 		scikit_build_core.build)
 			echo scikit-build-core
