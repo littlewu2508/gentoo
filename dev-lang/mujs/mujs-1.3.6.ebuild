@@ -43,7 +43,7 @@ src_compile() {
 		VERSION=${PV} \
 		XCFLAGS="${CFLAGS}" \
 		XLDFLAGS="${LDFLAGS}" \
-		prefix=/usr \
+		prefix="${EPREFIX}"/usr \
 		release
 }
 
